@@ -43,6 +43,8 @@ export default function InsightsScreen() {
     insightsLoading,
     setInsightsLoading,
     getInsights,
+    totalProfileViews,
+    setTotalProfileViews
   } = useContext(AuthContext);
 
   const navigation = useNavigation();
@@ -101,7 +103,7 @@ export default function InsightsScreen() {
                   <TouchableOpacity style={styles.squareButtons}>
                     <Text style={styles.buttonText}>Profile Views</Text>
                     <Text style={styles.squareButtonText}>
-                      {userProfileTaps}
+                      {totalProfileViews}
                     </Text>
                     {/* <Image style={styles.squareButtonImage} source={upIcon} /> */}
                   </TouchableOpacity>

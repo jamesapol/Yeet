@@ -158,6 +158,7 @@ export default function ConnectionsScreen() {
     setShowSuccessModal,
     modalHeader,
     modalMessage,
+    addProfileView,
   } = useContext(AuthContext);
 
   const [refreshFlatList, setRefreshFlatList] = useState(false);

@@ -119,6 +119,7 @@ export const AuthProvider = ({ children }) => {
   const [userLinksInsights, setUserLinksInsights] = useState({});
   const [totalUserLinkTaps, setTotalUserLinkTaps] = useState();
   const [totalUserConnections, setTotalUserConnections] = useState();
+  const [totalProfileViews, setTotalProfileViews] = useState();
 
   const [userTheme, setUserTheme] = useState({});
 
@@ -1641,6 +1642,8 @@ export const AuthProvider = ({ children }) => {
 
         let userConnectionStatus = response.data.userConnectionStatus;
         setUserConnectionStatus(userConnectionStatus);
+
+        addProfileView(connectionUUID);
         // console.log(userConnectionLinks);
         console.log(response.data);
 
@@ -1926,7 +1929,8 @@ export const AuthProvider = ({ children }) => {
         let publicProfileDirectLink = response.data.publicProfileDirectLink;
         let connectionStatus = response.data.connectionStatus;
 
-        addProfileTap(response.data.publicProfileInfo.usr_uuid)
+        addProfileTap(response.data.publicProfileInfo.usr_uuid);
+        addProfileView(response.data.publicProfileInfo.usr_uuid);
 
         setUserPrivateStatus(privateStatus);
         setUserBlockStatus(blockStatus);
@@ -2346,11 +2350,13 @@ export const AuthProvider = ({ children }) => {
         let userLinksInsights = response.data.userLinksInsights;
         let totalUserLinkTaps = response.data.totalUserLinkTaps;
         let totalUserConnections = response.data.totalUserConnections;
+        let totalProfileViews = response.data.totalProfileViews;
 
         setUserProfileTaps(userProfileTaps);
         setUserLinksInsights(userLinksInsights);
         setTotalUserLinkTaps(totalUserLinkTaps);
         setTotalUserConnections(totalUserConnections);
+        setTotalProfileViews(totalProfileViews);
 
         console.log(response.data);
         setInsightsLoading(false);
@@ -2368,6 +2374,28 @@ export const AuthProvider = ({ children }) => {
     await axios
       .post(
         `${BASE_URL}api/addProfileTap/${userUUID}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        console.log(response.data);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        setIsLoading(false);
+      });
+  };
+
+  const addProfileView = async (userUUID) => {
+    // let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .post(
+        `${BASE_URL}api/addProfileView/${userUUID}`,
         {},
         {
           headers: { Authorization: `Bearer ${userToken}` },
@@ -2736,6 +2764,9 @@ export const AuthProvider = ({ children }) => {
         setTotalUserConnections,
         addProfileTap,
         addLinkTap,
+        addProfileView,
+        totalProfileViews,
+        setTotalProfileViews,
 
         //MODAL SHOW STATES
         loginModalVisible,

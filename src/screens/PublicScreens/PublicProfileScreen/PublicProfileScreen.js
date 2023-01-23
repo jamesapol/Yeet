@@ -135,12 +135,12 @@ export default function PublicProfileScreen({ route }) {
   }
 
   const onHomePressed = () => {
-    navigation.navigate("WelcomeScreen");
+    navigation.navigate("AuthStack", { screen: "WelcomeScreen" });
     console.log("WELCOME");
   };
 
   const onBackPressed = () => {
-    navigation.navigate('AuthStack', { screen: "HomeScreen"});
+    navigation.navigate("AuthStack", { screen: "HomeScreen" });
     console.log("Home");
   };
 
@@ -219,14 +219,14 @@ export default function PublicProfileScreen({ route }) {
               {!userUUID ? (
                 <FontAwesome5
                   name="home"
-                  size={RFPercentage(2)}
+                  size={RFPercentage(2.5)}
                   color={Colors.yeetPurple}
                   onPress={onHomePressed}
                 />
               ) : (
                 <FontAwesome5
                   name="arrow-left"
-                  size={RFPercentage(2)}
+                  size={RFPercentage(2.5)}
                   color={Colors.yeetPurple}
                   onPress={onBackPressed}
                 />
@@ -403,7 +403,7 @@ export default function PublicProfileScreen({ route }) {
                       //   // onLinkPressed
                       // }}
                       onPress={() => {
-                        addLinkTap(item.uln_id)
+                        addLinkTap(item.uln_id);
                         if (
                           item.lnk_id == 23 ||
                           item.lnk_id == 24 ||
