@@ -302,7 +302,7 @@ export default function ViewConnectionScreen() {
             return (
               <TouchableOpacity
                 style={[
-                  {
+                  { 
                     marginLeft: index % 3 == 0 ? width * 0.15 : width * 0.025,
                     marginRight: index % 3 == 2 ? width * 0.15 : width * 0.025,
                   },
