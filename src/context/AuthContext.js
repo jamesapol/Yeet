@@ -1926,6 +1926,8 @@ export const AuthProvider = ({ children }) => {
         let publicProfileDirectLink = response.data.publicProfileDirectLink;
         let connectionStatus = response.data.connectionStatus;
 
+        addProfileTap(response.data.publicProfileInfo.usr_uuid)
+
         setUserPrivateStatus(privateStatus);
         setUserBlockStatus(blockStatus);
         setPublicProfileInfo(publicProfileData);
@@ -2359,8 +2361,8 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
-  const addProfileTap = async () => {
-    let userUUID = await SecureStore.getItemAsync("userUUID");
+  const addProfileTap = async (userUUID) => {
+    // let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
 
     await axios
@@ -2387,7 +2389,7 @@ export const AuthProvider = ({ children }) => {
 
     await axios
       .post(
-        `${BASE_URL}api/profileTap/${userLinkID}`,
+        `${BASE_URL}api/addLinkTap/${userLinkID}`,
         {},
         {
           headers: { Authorization: `Bearer ${userToken}` },

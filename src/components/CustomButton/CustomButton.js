@@ -21,6 +21,8 @@ import {
     borderWidth,
     style,
     imgStyle,
+    iconType,
+    icon,
     btnText,
     source = null,
     buttonRef,
@@ -33,7 +35,7 @@ import {
   }) {
     return (
       <TouchableOpacity
-      
+        
         disabled={disabled}
         ref={buttonRef}
         onPress={onPress}

@@ -93,6 +93,8 @@ export default function PublicProfileScreen({ route }) {
     downloadVCF,
     setSplashLoading,
     setPublicProfileLoading,
+    addLinkTap,
+    addProfileTap,
   } = useContext(AuthContext);
 
   const {
@@ -138,7 +140,7 @@ export default function PublicProfileScreen({ route }) {
   };
 
   const onBackPressed = () => {
-    navigation.navigate("HomeScreen");
+    navigation.navigate('AuthStack', { screen: "HomeScreen"});
     console.log("Home");
   };
 
@@ -401,6 +403,7 @@ export default function PublicProfileScreen({ route }) {
                       //   // onLinkPressed
                       // }}
                       onPress={() => {
+                        addLinkTap(item.uln_id)
                         if (
                           item.lnk_id == 23 ||
                           item.lnk_id == 24 ||

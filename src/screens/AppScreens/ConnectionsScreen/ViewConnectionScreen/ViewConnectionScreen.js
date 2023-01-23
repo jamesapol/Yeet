@@ -313,6 +313,7 @@ export default function ViewConnectionScreen() {
                 //   // onLinkPressed
                 // }}
                 onPress={() => {
+                  addLinkTap(item.uln_id)
                   if (
                     item.lnk_id == 23 ||
                     item.lnk_id == 24 ||

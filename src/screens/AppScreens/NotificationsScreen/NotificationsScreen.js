@@ -13,7 +13,7 @@ import React, { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { RFPercentage } from "react-native-responsive-fontsize";
 
-import { Ionicons, FontAwesome } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 
 import PageHeader from "../../../components/PageHeader";
 
@@ -29,6 +29,7 @@ import {
 import { Colors, GlobalStyles } from "../../../styles/GlobalStyles";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 import ModalWithButtons from "../../../components/ModalWithButtons/ModalWithButtons";
+import CustomButton from "../../../components/CustomButton/CustomButton";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -39,6 +40,7 @@ const NotificationsButton = ({
   notificationUserImage,
   notificationType,
   notificationRead = 0,
+  notificationDate,
   notificationID,
   onNotificationPressed,
   onRemovePressed,
@@ -159,6 +161,9 @@ const NotificationsButton = ({
               </>
             )}
           </Text>
+          <Text>
+            {notificationDate}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -167,7 +172,7 @@ const NotificationsButton = ({
       onPress={onRemovePressed}
       style={{
         alignItems: "center",
-        justifyContent:'center',
+        justifyContent: "center",
         // justifyContent: "center",
         // backgroundColor: "#562c7340",
         // paddingTop: height * 0.02,
@@ -249,6 +254,20 @@ export default function NotificationsScreen() {
     setModalVisible(false);
   };
 
+  // const pageSize = 10;
+  // const [page, setPage] = useState(0);
+
+  // const handleLoadMore = () => {
+  // if(!userNotificationsLoading){
+  //   setUserNotificationsLoading(true);
+
+  //   setTimeout(() => {
+
+  //   })
+  // }
+  // setPage(page + 1);
+  // };
+
   return (
     <View style={GlobalStyles.root}>
       {userNotificationsLoading == true ? <LoadingScreen /> : null}
@@ -260,11 +279,11 @@ export default function NotificationsScreen() {
         visible={showSuccessModal}
         onRequestClose={closeModal}
       >
-          <ModalMessage
-            modalHeader={modalHeader}
-            modalMessage={modalMessage}
-            onOKPressed={closeModal}
-          />
+        <ModalMessage
+          modalHeader={modalHeader}
+          modalMessage={modalMessage}
+          onOKPressed={closeModal}
+        />
       </Modal>
 
       <Modal
@@ -299,11 +318,36 @@ export default function NotificationsScreen() {
         onRefresh={onRefresh}
         refreshing={refreshing}
         ref={ref}
-        overScrollMode="never"
+        // overScrollMode="never"
         showsVerticalScrollIndicator={false}
         style={{ backgroundColor: "#fff" }}
         extraData={refreshFlatList}
         keyExtractor={(item) => item.ntf_id}
+        // onEndReached={handleLoadMore}
+        // onEndReachedThreshold={0.5}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        // ListFooterComponent={
+        //   !userNotificationsLoading ? (
+        //     <View
+        //       style={{
+        //         width: "100%",
+        //         // height: "50%",
+        //         alignItems: "center",
+        //       }}
+        //     >
+        //       <View style={{ width: "40%", paddingVertical: "5%" }}>
+        //         <TouchableOpacity style={styles.loadMoreButton}>
+        //           <Text style={styles.loadMoreText}>LOAD MORE</Text>
+        //           <MaterialCommunityIcons
+        //             name="reload"
+        //             size={24}
+        //             color={Colors.yeetPurple}
+        //           />
+        //         </TouchableOpacity>
+        //       </View>
+        //     </View>
+        //   ) : null
+        // }
         data={userNotificationsLoading == false ? userNotifications : null}
         renderItem={({ item }) => {
           return (
@@ -312,6 +356,7 @@ export default function NotificationsScreen() {
               notificationConnectionName={item.usr_name}
               notificationRead={item.ntf_read}
               notificationType={item.ntf_type}
+              notificationDate={item.ntf_date_created}
               // notificationMessage={item.usr_bio}
 
               onPress={() => {
@@ -471,5 +516,28 @@ const styles = StyleSheet.create({
     fontSize: RFPercentage(1.5),
     fontWeight: "bold",
     color: "#D81D4C",
+  },
+
+  loadMoreButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    borderRadius: 1000,
+    paddingHorizontal: width * 0.1,
+    paddingVertical: height * 0.013,
+    borderWidth: 2,
+    borderColor: Colors.yeetPurple,
+  },
+  loadMoreText: {
+    color: Colors.yeetPurple,
+    fontSize: RFPercentage(1.6),
+    textAlign: "center",
+    fontWeight: "bold",
+    paddingRight: "5%",
+  },
+  separator: {
+    height: 0.5,
+    backgroundColor: "rgba(0,0,0,0.4)",
   },
 });

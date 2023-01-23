@@ -180,8 +180,8 @@ export default function Navigation() {
   //   }
   // }, []);
 
-  if(splashLoading){
-    return <SplashScreen />
+  if (splashLoading) {
+    return <SplashScreen />;
   }
   return (
     <RootStack.Navigator
@@ -191,12 +191,12 @@ export default function Navigation() {
         <RootStack.Screen name="SplashScreen" component={SplashScreen} />
       ) : (
         <> */}
-          <RootStack.Screen name="AuthStack" component={AuthStackNavigator} />
-          <RootStack.Screen
-            name="PublicProfileScreen"
-            component={PublicProfileScreen}
-          />
-        {/* </>
+      <RootStack.Screen name="AuthStack" component={AuthStackNavigator} />
+      <RootStack.Screen
+        name="PublicProfileScreen"
+        component={PublicProfileScreen}
+      />
+      {/* </>
       )} */}
     </RootStack.Navigator>
   );
