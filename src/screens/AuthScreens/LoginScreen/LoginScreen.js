@@ -33,8 +33,8 @@ var { height } = Dimensions.get("window");
 
 var statusBarHeight = StatusBar.currentHeight;
 export default function LoginScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState(null);
+  const [password, setPassword] = useState(null);
   const {
     loginModalVisible,
     setLoginModalVisible,
@@ -52,6 +52,7 @@ export default function LoginScreen() {
   } = useContext(AuthContext);
 
   const [passwordHidden, setPasswordHidden] = useState(true);
+  const [validFields, setValidFields] = useState(false);
 
   const togglePasswordHidden = () =>
     setPasswordHidden((previousState) => !previousState);
@@ -63,6 +64,7 @@ export default function LoginScreen() {
     if (isFocused) {
       setEmail(null);
       setPassword(null);
+      setValidFields(false);
     }
   }, []);
 
@@ -94,6 +96,14 @@ export default function LoginScreen() {
     let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
     if (reg.test(text) === false) {
       return false;
+    }
+  };
+  // || validateEmail(email) == false
+  const validateFields = (email, password) => {
+    if (!email || !password || password.length < 8) {
+      setValidFields(false);
+    } else {
+      setValidFields(true);
     }
   };
 
@@ -185,6 +195,7 @@ export default function LoginScreen() {
             value={email}
             onChangeText={(text) => {
               setEmail(text);
+              validateFields(text, password);
             }}
             autoCapitalize="none"
             keyboardType="email-address"
@@ -199,7 +210,11 @@ export default function LoginScreen() {
             style={styles.input}
             secureTextEntry={passwordHidden}
             value={password}
-            onChangeText={(text) => setPassword(text)}
+            onChangeText={(text) => {
+              setPassword(text);
+              validateFields(email, text);
+              // console.log(text.length)
+            }}
             autoCapitalize="none"
           />
           <View>
@@ -215,11 +230,11 @@ export default function LoginScreen() {
         <View style={styles.footerContainer}>
           <CustomButton
             fgColor="#FFF"
-            bgColor="#562C73"
+            bgColor={validFields ? Colors.yeetPurple : Colors.yeetGray}
             btnText="Continue"
             onPress={onLogIn}
             loading={userInfoLoading}
-            disabled={userInfoLoading}
+            disabled={userInfoLoading || (validFields ? false : true)}
           />
           <Text
             style={styles.footerText}

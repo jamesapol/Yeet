@@ -12,22 +12,30 @@ import React from "react";
 import { RFPercentage } from "react-native-responsive-fontsize";
 
 import { useState } from "react";
+import { FontAwesome5 } from "@expo/vector-icons";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
 
-export default function ModalTextInput({
+export default function ModalEmbedVideo({
   linkImage,
-  linkName,
-  linkURLHeader,
+
   onCancelPressed,
   onSavePressed,
   placeholder,
-  value,
-  onChangeText,
+  onLinkNameChangeText,
+  onLinkURLChangeText,
   textInputVisible = "flex",
-  warningVisible = "none",
-  defaultValue,
+
+  embedVideoTitleErrorVisible = "none",
+  linkNameErrorMessage,
+  embedVideoURLErrorVisible = "none",
+  embedVideoURLErrorMessage,
+
+  embedVideoTitle,
+  embedVideoURL,
+
+  saveDisabled,
 }) {
   const [link, setLink] = useState(false);
 
@@ -41,38 +49,60 @@ export default function ModalTextInput({
               resizeMode="stretch"
               style={styles.linkImage}
             />
-            <Text style={styles.linkName}>{linkName}</Text>
+            <TextInput
+              style={{
+                ...styles.linkName,
+                borderBottomWidth: 1,
+                borderBottomColor: "#948E8E",
+              }}
+              placeholder="YouTube Link Name"
+              onChangeText={onLinkNameChangeText}
+              value={embedVideoTitle}
+              multiline={false}
+              numberOfLines={1}
+            />
+            <Text
+              style={{
+                fontSize: RFPercentage(1),
+                color: "#D81D4C",
+                display: embedVideoTitleErrorVisible,
+              }}
+            >
+              PLEASE ENTER A LINK NAME!
+            </Text>
           </View>
           <View style={styles.inputContainer}>
             <View
               style={{
                 flexDirection: "row",
-                justifyContent: "center",
-                // width: '50%',
-                maxWidth: '50%',
-                // // backgroundColor: '#9c33',
-                // borderBottomWidth: 1,
-                // borderBottomColor: "#948E8E",
+                width: "80%",
+                // backgroundColor: "red",
               }}
             >
-              <TextInput
+              {/* <View
                 style={{
-                  ...styles.linkHeader,
-                  display: defaultValue ? "flex" : "none",
+                  justifyContent: "center",
+                  alignItems: "center",
+                //   backgroundColor: "#f563",
                 }}
-                defaultValue={defaultValue}
-                value={linkURLHeader}
-                editable={false}
-              />
+              >
+                <TouchableOpacity
+                  style={{
+                    paddingVertical: "15%",
+                    paddingHorizontal: '5%',
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <FontAwesome5 name="paste" size={24} color="black" />
+                  <Text>PASTE</Text>
+                </TouchableOpacity>
+              </View> */}
               <TextInput
                 placeholder={placeholder}
-                value={value}
-                onChangeText={onChangeText}
-                style={{
-                  ...styles.link,
-                  display: textInputVisible,
-                  textAlign: !defaultValue ? "center" : "left",
-                }}
+                value={embedVideoURL}
+                onChangeText={onLinkURLChangeText}
+                style={styles.link}
                 multiline={false}
                 numberOfLines={1}
                 autoFocus
@@ -85,10 +115,10 @@ export default function ModalTextInput({
               style={{
                 fontSize: RFPercentage(1.5),
                 color: "#D81D4C",
-                display: warningVisible,
+                display: embedVideoURLErrorVisible,
               }}
             >
-              PLEASE ENTER A LINK
+              {embedVideoURLErrorMessage}
             </Text>
           </View>
           <View style={styles.buttonContainer}>
@@ -105,6 +135,7 @@ export default function ModalTextInput({
               onPress={onSavePressed}
               style={styles.saveButtonContainer}
               activeOpacity={0.4}
+              disabled={saveDisabled}
             >
               <Text style={[styles.buttonText, { color: "#562C73" }]}>
                 Save
@@ -126,8 +157,8 @@ const styles = StyleSheet.create({
   },
 
   modal: {
-    width: "80%",
-    height: RFPercentage(25),
+    width: "70%",
+    height: RFPercentage(27),
     borderRadius: 25,
     backgroundColor: "#ECECEC",
   },
@@ -135,62 +166,71 @@ const styles = StyleSheet.create({
   modalContent: {
     height: "100%",
     alignItems: "center",
-    width: "100%",
   },
-  
+
   modalHeaderContainer: {
     width: "100%",
-    height: "55%",
-    flexDirection: "row",
+    height: "60%",
     alignItems: "center",
     justifyContent: "space-evenly",
     // backgroundColor: "#f2f2",
   },
-  
+
   linkImage: {
-    width: RFPercentage(8),
-    height: RFPercentage(8),
+    width: RFPercentage(14),
+    height: RFPercentage(10),
+    borderRadius: 25,
   },
-  
+
   linkName: {
     color: "#562C73",
-    fontWeight: "300",
-    fontSize: RFPercentage(4.5),
+    fontWeight: "bold",
+    fontSize: RFPercentage(2.5),
+    textAlign: "center",
+    maxWidth: "50%",
+    width: "50%",
+    // elevation: 50,
+    // backgroundColor:'black',
   },
-  
+
+  modalHeader: {
+    fontWeight: "bold",
+    fontSize: RFPercentage(2),
+  },
+
   inputContainer: {
     alignItems: "center",
-    maxWidth: "100%",
-    width: '100%',
-    height: "25%",
+    justifyContent: "center",
+    // backgroundColor: "#02f2",
+    width: "100%",
+    height: "23%",
   },
 
   linkHeader: {
     // width: "30%",
     marginBottom: 5,
-    paddingLeft: 3,
-    fontSize: RFPercentage(1.7),
+    borderBottomWidth: 1,
+    borderBottomColor: "#948E8E",
+    fontSize: RFPercentage(1.5),
     color: "#000",
     // textAlign: "center",
     alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#948E8E",
   },
-
   link: {
-    maxWidth: "70%",
-    marginBottom: 5,
+    // width: "70%",
+    // marginBottom: 5,
     borderBottomWidth: 1,
     borderBottomColor: "#948E8E",
-    fontSize: RFPercentage(1.7),
-    paddingRight: 2,
+    fontSize: RFPercentage(1.5),
+    textAlign: "center",
     alignItems: "center",
+    flex: 1,
   },
 
   buttonContainer: {
     flexDirection: "row",
     width: "100%",
-    height: "20%",
+    height: "17%",
     borderTopWidth: 1,
     borderTopColor: "#948E8E",
     // backgroundColor: "#f002",

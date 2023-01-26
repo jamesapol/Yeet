@@ -142,26 +142,6 @@ function AuthStackNavigator() {
     </AuthStack.Navigator>
   );
 }
-
-function PublicStackNavigator() {
-  return (
-    <PublicStack.Navigator>
-      <PublicStack.Screen
-        name="PublicProfileScreen"
-        component={PublicProfileScreen}
-      />
-    </PublicStack.Navigator>
-  );
-}
-
-function SplashStackNavigator() {
-  return (
-    <SplashStack.Navigator>
-      <SplashStack.Screen name="SplashScreen" component={SplashScreen} />
-    </SplashStack.Navigator>
-  );
-}
-
 export default function Navigation() {
   const {
     userInfo,
@@ -173,12 +153,6 @@ export default function Navigation() {
     getAllLinks,
     getActiveYeetDevice,
   } = useContext(AuthContext);
-
-  // useEffect(() => {
-  //   if (splashLoading == true) {
-  //     <Stack.Screen name="SplashScreen" component={SplashScreen} />;
-  //   }
-  // }, []);
 
   if (splashLoading) {
     return <SplashScreen />;
@@ -196,64 +170,8 @@ export default function Navigation() {
         name="PublicProfileScreen"
         component={PublicProfileScreen}
       />
-      {/* </>
-      )} */}
     </RootStack.Navigator>
   );
-
-  // <Stack.Navigator screenOptions={{ animation: "fade", headerShown: false }}>
-  //   {splashLoading == true ? (
-  //     <Stack.Screen
-  //       name="SplashScreen"
-  //       component={SplashScreen}
-  //       // options={{ animation: "none" }}
-  //     />
-  //   ) : !userToken ? (
-  //     <>
-  //       <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
-  //       <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
-  //       <Stack.Screen
-  //         name="ConfirmEmailScreen"
-  //         component={ConfirmEmailScreen}
-  //       />
-  //       <Stack.Screen name="InputNameScreen" component={InputNameScreen} />
-  //       <Stack.Screen
-  //         name="MobileNumberScreen"
-  //         component={MobileNumberScreen}
-  //       />
-  //       <Stack.Screen
-  //         name="SelectPhotoScreen"
-  //         component={SelectPhotoScreen}
-  //       />
-  //       <Stack.Screen
-  //         name="ConfirmationScreen"
-  //         component={ConfirmationScreen}
-  //       />
-  //       <Stack.Screen name="LoginScreen" component={LoginScreen} />
-  //       <Stack.Screen
-  //         name="ForgotPasswordScreen"
-  //         component={ForgotPasswordScreen}
-  //       />
-  //       <Stack.Screen
-  //         name="ResetPasswordCodeScreen"
-  //         component={ResetPasswordCodeScreen}
-  //       />
-  //       <Stack.Screen
-  //         name="ResetPasswordScreen"
-  //         component={ResetPasswordScreen}
-  //       />
-  //     </>
-  //   ) : (
-  //     <Stack.Screen name="AppScreens" component={AppScreens} />
-  //   )}
-
-  //   <Stack.Screen
-  //     name="PublicProfileScreen"
-  //     component={PublicProfileScreen}
-  //     options={{ animation: "fade" }}
-  //   />
-  // </Stack.Navigator>
-  // )
 }
 
 const AppScreens = () => {
@@ -470,12 +388,6 @@ const HomeNavigation = () => {
         component={PreviewProfileScreen}
         options={{ animation: "fade", animationDuration: 250 }}
       />
-      <Stack.Screen
-        // navigationKey={userToken ? "user" : "guest"}
-        name="PublicProfileScreen"
-        component={PublicProfileScreen}
-        options={{ animation: "fade" }}
-      />
     </Stack.Navigator>
   );
 };
@@ -488,11 +400,7 @@ const ConnectionsNavigation = () => {
         name="ViewConnectionScreen"
         component={ViewConnectionScreen}
       />
-      <Stack.Screen
-        name="PublicProfileScreen"
-        component={PublicProfileScreen}
-        options={{ animation: "fade" }}
-      />
+
       <Stack.Screen
         name="AddConnectionQRScreen"
         component={AddConnectionQRScreen}
@@ -505,12 +413,6 @@ const YeetNavigation = () => {
   return (
     <Stack.Navigator screenOptions={{ animation: "fade", headerShown: false }}>
       <Stack.Screen name="YeetScreen" component={YeetScreen} />
-      <Stack.Screen
-        // navigationKey={userToken ? "user" : "guest"}
-        name="PublicProfileScreen"
-        component={PublicProfileScreen}
-        options={{ animation: "fade" }}
-      />
     </Stack.Navigator>
   );
 };
@@ -521,12 +423,6 @@ const NotificationsNavigation = () => {
       <Stack.Screen
         name="NotificationsScreen"
         component={NotificationsScreen}
-      />
-      <Stack.Screen
-        // navigationKey={userToken ? "user" : "guest"}
-        name="PublicProfileScreen"
-        component={PublicProfileScreen}
-        options={{ animation: "fade" }}
       />
       <Stack.Screen
         name="ViewConnectionScreen"
@@ -581,11 +477,6 @@ const SettingsNavigation = () => {
       <Stack.Screen
         name="TermsOfServiceScreen"
         component={TermsOfServiceScreen}
-      />
-      <Stack.Screen
-        name="PublicProfileScreen"
-        component={PublicProfileScreen}
-        options={{ animation: "fade" }}
       />
     </Stack.Navigator>
   );

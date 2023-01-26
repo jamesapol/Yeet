@@ -173,7 +173,7 @@ export default function HomeScreen() {
     let coverPhotoResult = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [2, 1],
+      aspect: [16, 9],
       quality: 1,
     });
     console.log(coverPhotoResult);
@@ -199,7 +199,7 @@ export default function HomeScreen() {
     let coverPhotoResult = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [2, 1],
+      aspect: [16, 9],
       quality: 1,
     });
     console.log(coverPhotoResult);
@@ -279,6 +279,21 @@ export default function HomeScreen() {
       {/* {userInfoLoading == true ? <LoadingScreen /> : null} */}
       <View>
         {/* SUCCESS MESSAGE MODAL */}
+        <Modal
+          transparent
+          animationType="fade"
+          hardwareAccelerated
+          visible={showUpdateSuccess}
+          onRequestClose={closeModal}
+        >
+          <ModalMessage
+            modalHeader="Success"
+            modalMessage="Profile successfully updated!"
+            onOKPressed={closeModal}
+          />
+        </Modal>
+
+        {/* ERROR MESSAGE MODAL */}
         <Modal
           transparent
           animationType="fade"

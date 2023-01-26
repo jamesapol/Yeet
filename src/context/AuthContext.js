@@ -31,6 +31,7 @@ export const AuthProvider = ({ children }) => {
 
   //UPDATE PROFILE STATES
   const [showUpdateSuccess, setShowUpdateSuccess] = useState(false);
+  const [updateErrorVisible, setUpdateErrorVisible] = useState(false);
 
   //LOGGED IN USER LINKS
   const [userLinks, setUserLinks] = useState({});
@@ -112,9 +113,6 @@ export const AuthProvider = ({ children }) => {
     useState({});
 
   //INSIGHTS
-  const [totalTaps, setTotalTaps] = useState();
-  const [linkTaps, setLinkTaps] = useState();
-
   const [userProfileTaps, setUserProfileTaps] = useState();
   const [userLinksInsights, setUserLinksInsights] = useState({});
   const [totalUserLinkTaps, setTotalUserLinkTaps] = useState();
@@ -411,6 +409,7 @@ export const AuthProvider = ({ children }) => {
         console.log(response.data);
         let userInfo = response.data;
         setShowUpdateSuccess(true);
+        
         setUserInfo(userInfo);
         setUserInfoLoading(false);
       })
@@ -1258,6 +1257,102 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  const addYouTubeLink = async (userLinkID, youtubeLinkName, youtubeURL, youtubeThumbnailURI) => {
+    setAddLinkLoading(true);
+    // setIsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .post(
+        `${BASE_URL}api/addYouTubeLink`,
+        {
+          userUUID: userUUID,
+          userLinkID: userLinkID,
+          youtubeLinkName: youtubeLinkName,
+          youtubeURL: youtubeURL,
+          youtubeThumbnailURI: youtubeThumbnailURI 
+        },
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        if (response.data.duplicateLink) {
+          setAddLinkLoading(false);
+          setAddLinksModalVisible(true);
+          setModalHeader("Error");
+          setModalMessage(response.data.duplicateLink);
+        } else {
+          let userLinks = response.data;
+
+          console.log(userLinks);
+          setUserLinks(userLinks);
+          setAddLinksModalVisible(true);
+          setModalHeader("Success");
+          setModalMessage("Link saved successfully!");
+          // getUserLinks(userUUID, userToken);
+          // setIsLoading(false);1
+          setAddLinkLoading(false);
+          console.log(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setIsLoading(false);
+      });
+  };
+
+  const editYouTubeLink = async (userLinkIndex, youtubeLinkName, youtubeURL, youtubeThumbnailURI) => {
+    // setAddLinkLoading(true);
+    // setIsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .post(
+        `${BASE_URL}api/editYouTubeLink`,
+        {
+          userUUID: userUUID,
+          userLinkIndex: userLinkIndex,
+          youtubeLinkName: youtubeLinkName,
+          youtubeURL: youtubeURL,
+          youtubeThumbnailURI: youtubeThumbnailURI 
+        },
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        if (response.data.duplicateLink) {
+          setAddLinkLoading(false);
+          setAddLinksModalVisible(true);
+          setModalHeader("Error");
+          setModalMessage(response.data.duplicateLink);
+        } else {
+          let userLinks = response.data;
+
+          console.log(userLinks);
+          setUserLinks(userLinks);
+          setAddLinksModalVisible(true);
+          setModalHeader("Success");
+          setModalMessage("Link saved successfully!");
+          // getUserLinks(userUUID, userToken);
+          // setIsLoading(false);1
+          // setAddLinkLoading(false);
+          console.log(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setIsLoading(false);
+      });
+  };
+
+
+
   const uploadPaymentPhoto = async (
     userLinkID,
     paymentPhotoURI,
@@ -1929,47 +2024,27 @@ export const AuthProvider = ({ children }) => {
         let publicProfileDirectLink = response.data.publicProfileDirectLink;
         let connectionStatus = response.data.connectionStatus;
 
-        addProfileTap(response.data.publicProfileInfo.usr_uuid);
-        addProfileView(response.data.publicProfileInfo.usr_uuid);
+        if (publicProfileData) {
+          addProfileTap(response.data.publicProfileInfo.usr_uuid);
+          addProfileView(response.data.publicProfileInfo.usr_uuid);
 
-        setUserPrivateStatus(privateStatus);
-        setUserBlockStatus(blockStatus);
-        setPublicProfileInfo(publicProfileData);
-        setPublicProfileLinks(publicProfileLinks);
-        setPublicProfileDirectLink(publicProfileDirectLink);
-        setPublicConnectionStatus(connectionStatus);
+          setUserPrivateStatus(privateStatus);
+          setUserBlockStatus(blockStatus);
+          setPublicProfileInfo(publicProfileData);
+          setPublicProfileLinks(publicProfileLinks);
+          setPublicProfileDirectLink(publicProfileDirectLink);
+          setPublicConnectionStatus(connectionStatus);
+        } else if (publicProfileData == undefined){
+          setPublicProfileInfo(null);
+        }
         console.log(response.data);
+        console.log("DATA: " + response.data.publicProfileInfo);
         // console.log(publicProfileLinks);
         setPublicProfileLoading(false);
       })
       .catch((error) => {
         console.log("ERROR: " + error);
         setPublicProfileLoading(false);
-      });
-  };
-
-  const checkConnectionStatus = async (connectionUUID) => {
-    setIsLoading(true);
-
-    let userUUID = await SecureStore.getItemAsync("userUUID");
-    let userToken = await SecureStore.getItemAsync("userToken");
-
-    await axios
-      .post(`${BASE_URL}api/checkConnectionStatus`, {
-        userUUID: userUUID,
-        connectionUUID: connectionUUID,
-      })
-      .then((response) => {
-        let connectionStatus = response.connectionStatus;
-
-        setPublicConnectionStatus(connectionStatus);
-        console.log(connectionStatus);
-        // console.log(publicProfileLinks);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.log(error.response);
-        setIsLoading(false);
       });
   };
 
@@ -2308,30 +2383,6 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
-  const uploadPhoto = (imageURI, imageType, imageName) => {
-    // setIsLoading(true);
-    axios
-      .post(
-        `${BASE_URL}api/uploadPhoto`,
-        {
-          fileURI: imageURI,
-          fileType: imageType,
-          fileName: imageName,
-        },
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      )
-      .then((res) => {
-        console.log(res.data);
-      })
-      .catch((e) => {
-        console.log(e.response.data);
-      });
-  };
-
   const getInsights = async () => {
     setInsightsLoading(true);
     let userUUID = await SecureStore.getItemAsync("userUUID");
@@ -2639,6 +2690,8 @@ export const AuthProvider = ({ children }) => {
         //ADD LINKS
         addLink,
         addCustomLink,
+        addYouTubeLink,
+        editYouTubeLink,
         addLinkLoading,
         setAddLinkLoading,
         showAddLinkMessage,
@@ -2704,9 +2757,6 @@ export const AuthProvider = ({ children }) => {
 
         //FOR LOGOUT
         logout,
-
-        //FOR UPLOADING PHOTO
-        uploadPhoto,
 
         //FOR UPLOADING FILE
         uploadFile,

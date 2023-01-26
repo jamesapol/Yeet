@@ -50,6 +50,7 @@ import ModalViewFile from "../../../components/ModalViewFile/ModalViewFile";
 import ModalCustomLink from "../../../components/ModalCustomLink/ModalCustomLink";
 
 import { themes } from "../../../../themes/themes";
+import ModalEmbedVideo from "../../../components/ModalEmbedVideo/ModalEmbedVideo";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -90,6 +91,7 @@ export default function HomeScreen() {
     setUserDirectLinkID,
     setModalMessage,
     setModalHeader,
+    editYouTubeLink,
 
     setPreviewName,
     setPreviewBio,
@@ -175,6 +177,7 @@ export default function HomeScreen() {
 
   const [error, setError] = useState("none");
 
+  const [oldLink, setOldLink] = useState();
   const [linkID, setLinkID] = useState();
   const [linkIndex, setLinkIndex] = useState();
   const [linkName, setLinkName] = useState();
@@ -191,6 +194,16 @@ export default function HomeScreen() {
     useState("none");
   const [customLinkURLErrorVisible, setCustomLinkURLErrorVisible] =
     useState("none");
+
+  const [embedVideoModalVisible, setEmbedVideoModalVisible] = useState(false);
+  const [embedVideoURL, setEmbedVideoURL] = useState();
+  const [embedVideoTitle, setEmbedVideoTitle] = useState();
+  const [embedVideoThumbnail, setEmbedVideoThumbnail] = useState();
+  const [embedVideoTitleErrorVisible, setEmbedVideoTitleErrorVisible] =
+    useState("none");
+  const [embedVideoURLErrorVisible, setEmbedVideoURLErrorVisible] =
+    useState("none");
+  const [embedVideoURLErrorMessage, setEmbedVideoURLErrorMessage] = useState();
 
   const [file, setFile] = useState();
 
@@ -304,6 +317,12 @@ export default function HomeScreen() {
     setFileTitle();
     setFileType();
     setError("none");
+    setEmbedVideoModalVisible(false);
+    setEmbedVideoTitleErrorVisible("none");
+    setEmbedVideoURLErrorVisible("none");
+    setEmbedVideoURLErrorMessage();
+    setEmbedVideoThumbnail();
+    setOldLink();
   };
 
   const onCloseErrorPressed = () => {
@@ -335,7 +354,6 @@ export default function HomeScreen() {
   };
 
   const onCustomLinkSavePressed = () => {
-    // console.log(linkIndex);
     if (!customLinkName) {
       setCustomLinkNameErrorVisible("flex");
     }
@@ -353,9 +371,53 @@ export default function HomeScreen() {
     }
   };
 
+  const validateYouTubeURL = (url) => {
+    let reg = /^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/;
+    if (reg.test(url) === false) {
+      return false;
+    }
+  };
+
+  const onEmbedVideoSaved = () => {
+    console.log(oldLink);
+    if(oldLink == embedVideoURL){
+      setEmbedVideoURLErrorVisible("flex");
+      setEmbedVideoURLErrorMessage("THIS IS ALREADY AN EXISTING LINK!");
+    }
+    if (!embedVideoTitle) {
+      setEmbedVideoTitleErrorVisible("flex");
+    }
+    if (validateYouTubeURL(embedVideoURL) === false) {
+      setEmbedVideoURLErrorVisible("flex");
+      setEmbedVideoURLErrorMessage("PLEASE ENTER A VALID YOUTUBE LINK!");
+    }
+    if (!embedVideoURL) {
+      setEmbedVideoURLErrorVisible("flex");
+      setEmbedVideoURLErrorMessage("PLEASE ENTER A LINK!");
+    }
+    if (embedVideoURL && embedVideoTitle) {
+      let videoID;
+
+      if (embedVideoURL.includes("youtu.be")) {
+        videoID = embedVideoURL.split(".be/")[1];
+      } else {
+        videoID = embedVideoURL.split("v=")[1].split("&")[0];
+      }
+
+      let thumbnailURI = `https://img.youtube.com/vi/${videoID}/hqdefault.jpg`;
+
+      console.log(linkIndex + embedVideoURL, embedVideoTitle, thumbnailURI);
+      editYouTubeLink(linkIndex, embedVideoTitle, embedVideoURL, thumbnailURI);
+
+      setEmbedVideoModalVisible(false);
+      setEmbedVideoTitleErrorVisible("none");
+      setEmbedVideoURLErrorVisible("none");
+      setEmbedVideoURLErrorMessage();
+      setEmbedVideoThumbnail();
+    }
+  };
+
   const onUploadFilePressed = () => {
-    // uploadFile(fileURI, fileName);
-    // setShowEmbedModal(false);
     let _fileTitle;
     if (!fileTitle) {
       if (fileType == "application/pdf") {
@@ -402,11 +464,11 @@ export default function HomeScreen() {
             visible={registered}
             onRequestClose={closeRegistrationModal}
           >
-              <ModalMessage
-                modalHeader="Welcome to Yeet!"
-                modalMessage="You have successfully registered to Yeet. Enjoy!"
-                onOKPressed={closeRegistrationModal}
-              />
+            <ModalMessage
+              modalHeader="Welcome to Yeet!"
+              modalMessage="You have successfully registered to Yeet. Enjoy!"
+              onOKPressed={closeRegistrationModal}
+            />
           </Modal>
         ) : (
           ""
@@ -420,11 +482,11 @@ export default function HomeScreen() {
           visible={editLinkMessageModalVisible}
           onRequestClose={onCancelPressed}
         >
-            <ModalMessage
-              modalHeader={modalHeader}
-              modalMessage={modalMessage}
-              onOKPressed={onCancelPressed}
-            />
+          <ModalMessage
+            modalHeader={modalHeader}
+            modalMessage={modalMessage}
+            onOKPressed={onCancelPressed}
+          />
         </Modal>
 
         {/* ERROR MESSAGE MODAL */}
@@ -462,7 +524,7 @@ export default function HomeScreen() {
                   setLinkURLContent(text.trim());
                 } else {
                   // if (){}
-                  console.log(text);
+                  // console.log(text);
                   setLinkURLContent(text);
                 }
               }
@@ -517,6 +579,50 @@ export default function HomeScreen() {
             onCancelPressed={onCancelPressed}
             onSavePressed={onCustomLinkSavePressed}
             warningVisible={error}
+          />
+        </Modal>
+
+        {/* EDIT EMBED VIDEO MODAL */}
+        <Modal
+          transparent
+          animationType="fade"
+          hardwareAccelerated
+          visible={embedVideoModalVisible}
+          onRequestClose={onCancelPressed}
+        >
+          <ModalEmbedVideo
+            placeholder={"Enter YouTube link here"}
+            linkImage={{ uri: linkImage }}
+            onLinkURLChangeText={(text) => {
+              if (!text) {
+                setEmbedVideoURLErrorVisible("flex");
+                setEmbedVideoURLErrorMessage("PLEASE ENTER A LINK!");
+                setEmbedVideoURL(null);
+              } else {
+                setEmbedVideoURLErrorVisible("none");
+                if (text.includes(" ")) {
+                  setEmbedVideoURL(text.trim());
+                } else {
+                  setEmbedVideoURL(text);
+                }
+              }
+            }}
+            onLinkNameChangeText={(text) => {
+              if (!text) {
+                setEmbedVideoTitleErrorVisible("flex");
+                setEmbedVideoTitle(null);
+              } else {
+                setEmbedVideoTitleErrorVisible("none");
+                setEmbedVideoTitle(text);
+              }
+            }}
+            embedVideoTitle={embedVideoTitle}
+            embedVideoURL={embedVideoURL}
+            embedVideoTitleErrorVisible={embedVideoTitleErrorVisible}
+            embedVideoURLErrorVisible={embedVideoURLErrorVisible}
+            embedVideoURLErrorMessage={embedVideoURLErrorMessage}
+            onCancelPressed={onCancelPressed}
+            onSavePressed={onEmbedVideoSaved}
           />
         </Modal>
 
@@ -734,10 +840,6 @@ export default function HomeScreen() {
                 );
                 // }
               }
-
-              {
-                Object.keys(userLinks).length == 0 ? "" : "";
-              }
               return (
                 <TouchableOpacity
                   style={[
@@ -762,6 +864,13 @@ export default function HomeScreen() {
                       setLinkIndex(item.uln_id);
 
                       console.log(item.uln_id);
+                    } else if (item.lnk_id == 30) {
+                      setEmbedVideoModalVisible(true);
+                      setLinkImage(item.uln_youtube_thumbnail);
+                      setEmbedVideoTitle(item.uln_custom_link_name);
+                      setEmbedVideoURL(item.uln_url);
+                      setLinkIndex(item.uln_id);
+                      setOldLink(item.uln_url)
                     } else if (item.lnk_id == 31) {
                       setFileTitle(item.uln_file_title);
                       setFileName(item.uln_original_file_name);
@@ -785,7 +894,7 @@ export default function HomeScreen() {
 
                       let linkContent = item.uln_url.replace(item.lnk_url, "");
 
-                      console.log(linkURL);
+                      console.log(item.uln_url);
                       setLinkURLContent(linkContent);
                     }
                     // onLinkPressed
@@ -796,12 +905,17 @@ export default function HomeScreen() {
                 >
                   <Image
                     prefetch
-                    source={{
-                      uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
-                    }}
+                    source={
+                      item.lnk_id == 30
+                        ? { uri: item.uln_youtube_thumbnail }
+                        : {
+                            uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
+                          }
+                    }
                     style={{
+                      borderRadius: item.lnk_id == 30 ? 20 : null,
                       width: width * 0.13,
-                      height: width * 0.13,
+                      height:  width * 0.13,
                       opacity:
                         userDirectLink == 1
                           ? userDirectLinkID == item.uln_id
@@ -818,7 +932,9 @@ export default function HomeScreen() {
                       fontSize: RFPercentage(1.5),
                     }}
                   >
-                    {item.lnk_id == 31
+                    {item.lnk_id == 30
+                      ? item.uln_custom_link_name
+                      : item.lnk_id == 31
                       ? item.uln_file_title
                       : item.lnk_id == 32
                       ? item.uln_custom_link_name

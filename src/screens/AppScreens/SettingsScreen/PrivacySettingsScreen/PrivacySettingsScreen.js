@@ -86,32 +86,6 @@ export default function PrivacySettingsScreen() {
     navigation.navigate("BlockedContactsScreen");
   };
 
-  const closePasswordModal = () => {
-    setPasswordModalVisible(false);
-  };
-
-  const onSubmitPassword = () => {
-    if (!password) {
-      setShowModal(true);
-      setModalHeader("Error");
-      setModalMessage("Please enter your password!");
-    } else {
-      logout();
-      setPasswordModalVisible(false);
-      setPassword(null);
-    }
-    console.log(password);
-  };
-
-  const confirmDeactivateModal = () => {
-    setConfirmDeactivateVisible(true);
-  };
-
-  const showPasswordModal = () => {
-    setConfirmDeactivateVisible(false);
-    setPasswordModalVisible(true);
-  };
-
   const closeModal = () => {
     setShowModal(false);
     setConfirmDeactivateVisible(false);
@@ -122,22 +96,6 @@ export default function PrivacySettingsScreen() {
       contentContainerStyle={{ flexGrow: 1 }}
       showsVerticalScrollIndicator={false}
     >
-      <Modal
-        transparent
-        animationType="fade"
-        hardwareAccelerated
-        visible={passwordModalVisible}
-        onRequestClose={closePasswordModal}
-      >
-        <ModalPassword
-          onCancelPressed={closePasswordModal}
-          secureTextEntry={passwordHidden}
-          onShowPasswordPressed={toggle}
-          value={password}
-          onChangeText={(text) => setPassword(text)}
-          onSavePressed={onSubmitPassword}
-        />
-      </Modal>
 
       <Modal
         transparent
@@ -160,22 +118,7 @@ export default function PrivacySettingsScreen() {
         onPress={onBackPressed}
       />
 
-      <Modal
-        transparent
-        animationType="fade"
-        hardwareAccelerated
-        visible={confirmDeactivateVisible}
-        onRequestClose={closeModal}
-      >
-        <ModalConfirmation
-          modalHeaderText="Confirm Deactivate"
-          modalMessage="Are you sure you want to deactivate your account?"
-          cancelText="Cancel"
-          saveText="Deactivate"
-          onCancelPressed={closeModal}
-          onRemovePressed={showPasswordModal}
-        />
-      </Modal>
+    
       <View style={styles.sectionContainer}>
         <TouchableOpacity
           style={[

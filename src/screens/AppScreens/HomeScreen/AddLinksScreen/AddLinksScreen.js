@@ -13,6 +13,7 @@ import React, { useContext, useEffect, useState } from "react";
 
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
+import * as Clipboard from "expo-clipboard";
 import { AuthContext } from "../../../../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { RFPercentage } from "react-native-responsive-fontsize";
@@ -29,6 +30,7 @@ import { Colors, GlobalStyles } from "../../../../styles/GlobalStyles";
 import ModalUploadImage from "../../../../components/ModalUploadImage/ModalUploadImage";
 import ModalUploadFile from "../../../../components/ModalUploadFile/ModalUploadFile";
 import ModalCustomLink from "../../../../components/ModalCustomLink/ModalCustomLink";
+import ModalEmbedVideo from "../../../../components/ModalEmbedVideo/ModalEmbedVideo";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -110,6 +112,7 @@ export default function AddLinksScreen() {
     setUserLinks,
     addLink,
     addCustomLink,
+    addYouTubeLink,
     addLinkLoading,
     setAddLinkLoading,
     addLinksModalVisible,
@@ -146,10 +149,24 @@ export default function AddLinksScreen() {
   const [fileTitle, setFileTitle] = useState();
   const [fileImage, setFileImage] = useState();
 
-  const [showModal, setShowModal] = useState(false);
+  const [showNewLinkModal, setShowNewLinkModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showEmbedModal, setShowEmbedModal] = useState(false);
   const [showCustomLinkModal, setShowCustomLinkModal] = useState(false);
+  const [embedVideoModalVisible, setEmbedVideoModalVisible] = useState(false);
+
+  const [embedVideoImage, setEmbedVideoImage] = useState();
+  const [embedVideoTitle, setEmbedVideoTitle] = useState();
+  const [embedVideoURL, setEmbedVideoURL] = useState();
+  const [embedVideoThumbnail, setEmbedVideoThumbnail] = useState();
+  // cosnt [embedVi]
+
+  const [embedVideoTitleErrorVisible, setEmbedVideoTitleErrorVisible] =
+    useState("none");
+  const [embedVideoURLErrorVisible, setEmbedVideoURLErrorVisible] =
+    useState("none");
+  const [embedVideoURLErrorMessage, setEmbedVideoURLErrorMessage] = useState();
+
   const [error, setError] = useState("none");
 
   const [linkID, setLinkID] = useState();
@@ -226,12 +243,13 @@ export default function AddLinksScreen() {
 
   const onCancelPressed = () => {
     setError("none");
-    setShowModal(false);
+    setShowNewLinkModal(false);
     setAddLinksModalVisible(false);
     setShowUploadModal(false);
     setShowAddLinkMessage(false);
     setShowEmbedModal(false);
     setShowCustomLinkModal(false);
+    setEmbedVideoModalVisible(false);
     setLinkURL();
     setFile();
     setFileName();
@@ -247,6 +265,12 @@ export default function AddLinksScreen() {
     setCustomLinkURLErrorVisible("none");
     setCustomLinkNameErrorMessage();
     setCustomLinkURLErrorMessage();
+    setEmbedVideoURL();
+    setEmbedVideoTitle();
+    setEmbedVideoTitleErrorVisible("none");
+    setEmbedVideoURLErrorVisible("none");
+    setEmbedVideoURLErrorMessage();
+    setEmbedVideoThumbnail();
   };
 
   const onSavePressed = () => {
@@ -256,7 +280,7 @@ export default function AddLinksScreen() {
       addLink(linkID, linkURLHeader, linkURL);
       console.log(linkURLHeader + linkURL);
 
-      setShowModal(false);
+      setShowNewLinkModal(false);
       setError("none");
       setLinkURL();
     }
@@ -274,9 +298,11 @@ export default function AddLinksScreen() {
     if (customLinkName && customLinkURL) {
       addCustomLink(linkID, customLinkName, customLinkURL);
 
-      setShowModal(false);
+      setShowNewLinkModal(false);
       setCustomLinkNameErrorVisible("none");
       setCustomLinkURLErrorVisible("none");
+      setEmbedVideoURL();
+      setEmbedVideoTitle();
       setCustomLinkName();
       setCustomLinkURL();
     }
@@ -312,6 +338,45 @@ export default function AddLinksScreen() {
     // console.log(fileTitle);
   };
 
+  const validateYouTubeURL = (url) => {
+    let reg = /^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/;
+    if (reg.test(url) === false) {
+      return false;
+    }
+  };
+
+  const onEmbedVideoSaved = () => {
+    if (validateYouTubeURL(embedVideoURL) === false) {
+      setEmbedVideoURLErrorVisible("flex");
+      setEmbedVideoURLErrorMessage("PLEASE ENTER A VALID YOUTUBE LINK!");
+    }
+    if (!embedVideoURL) {
+      setEmbedVideoURLErrorVisible("flex");
+      setEmbedVideoURLErrorMessage("PLEASE ENTER A LINK!");
+    }
+    if (!embedVideoTitle) {
+      setEmbedVideoTitleErrorVisible("flex");
+    }
+    if (embedVideoURL && embedVideoTitle) {
+      let videoID;
+
+      if (embedVideoURL.includes("youtu.be")) {
+        videoID = embedVideoURL.split(".be/")[1];
+      } else {
+        videoID = embedVideoURL.split("v=")[1].split("&")[0];
+      }
+
+      let thumbnailURI = `https://img.youtube.com/vi/${videoID}/hqdefault.jpg`;
+      addYouTubeLink(linkID, embedVideoTitle, embedVideoURL, thumbnailURI);
+
+      setEmbedVideoModalVisible(false);
+      setEmbedVideoTitleErrorVisible("none");
+      setEmbedVideoURLErrorVisible("none");
+      setEmbedVideoURLErrorMessage();
+      setEmbedVideoThumbnail();
+    }
+  };
+
   return (
     <View style={GlobalStyles.root}>
       {/* <Spinner visible={isLoading} animation="fade" overlayColor="transparent" /> */}
@@ -336,7 +401,7 @@ export default function AddLinksScreen() {
         transparent
         animationType="fade"
         hardwareAccelerated
-        visible={showModal}
+        visible={showNewLinkModal}
         onRequestClose={onCancelPressed}
       >
         <ModalTextInput
@@ -430,6 +495,50 @@ export default function AddLinksScreen() {
         />
       </Modal>
 
+      {/* EMBED VIDEO MODAL */}
+      <Modal
+        transparent
+        animationType="fade"
+        hardwareAccelerated
+        visible={embedVideoModalVisible}
+        onRequestClose={onCancelPressed}
+      >
+        <ModalEmbedVideo
+          placeholder={"Enter YouTube link here"}
+          onLinkURLChangeText={(text) => {
+            if (!text) {
+              setEmbedVideoURLErrorVisible("flex");
+              setEmbedVideoURLErrorMessage("PLEASE ENTER A LINK!");
+              setEmbedVideoURL(null);
+            } else {
+              setEmbedVideoURLErrorVisible("none");
+              if (text.includes(" ")) {
+                setEmbedVideoURL(text.trim());
+              } else {
+                setEmbedVideoURL(text);
+              }
+            }
+          }}
+          onLinkNameChangeText={(text) => {
+            if (!text) {
+              setEmbedVideoTitleErrorVisible("flex");
+              setEmbedVideoTitle(null);
+            } else {
+              setEmbedVideoTitleErrorVisible("none");
+              setEmbedVideoTitle(text);
+            }
+          }}
+          embedVideoTitle={embedVideoTitle}
+          embedVideoURL={embedVideoURL}
+          embedVideoTitleErrorVisible={embedVideoTitleErrorVisible}
+          embedVideoURLErrorVisible={embedVideoURLErrorVisible}
+          embedVideoURLErrorMessage={embedVideoURLErrorMessage}
+          linkImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
+          onCancelPressed={onCancelPressed}
+          onSavePressed={onEmbedVideoSaved}
+        />
+      </Modal>
+
       {/* UPLOAD FILE MODAL */}
       <Modal
         transparent
@@ -454,6 +563,7 @@ export default function AddLinksScreen() {
           disabled={file ? false : true}
         />
       </Modal>
+
       <SectionList
         overScrollMode="never"
         showsVerticalScrollIndicator={false}
@@ -484,8 +594,13 @@ export default function AddLinksScreen() {
                 setLinkImage(item.lnk_image);
                 setLinkID(item.lnk_id);
                 setLinkURLHeader(item.lnk_url);
+              } else if (item.lnk_id == 30) {
+                setEmbedVideoModalVisible(true);
+                setLinkImage(item.lnk_image);
+                setLinkID(item.lnk_id);
               } else if (item.lnk_id == 31) {
                 setLinkImage(item.lnk_image);
+                setLinkID(item.lnk_id);
                 pickPDF();
               } else if (item.lnk_id == 32) {
                 setLinkID(item.lnk_id);
@@ -498,7 +613,7 @@ export default function AddLinksScreen() {
                 setLinkID(item.lnk_id);
                 // console.log(item.lnk_image);
 
-                setShowModal(true);
+                setShowNewLinkModal(true);
               }
             }}
           />

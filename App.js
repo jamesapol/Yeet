@@ -51,6 +51,7 @@ export default function App() {
           parse: {
             id: (id) => `${id}`,
           },
+          
         },
         // WelcomeScreen: {
         //   path: "welcome",
@@ -125,16 +126,9 @@ export default function App() {
     <AuthProvider>
       <NavigationContainer linking={linking}>
         <StatusBar backgroundColor="#0000" translucent={true} />
-        {/* <Stack.Navigator>
-          <Stack.Screen name="Home" component={Home} />
-          <Stack.Screen name="2Home" component={InputNameScreen} />
-        </Stack.Navigator> */}
         <Navigation />
       </NavigationContainer>
     </AuthProvider>
-    //   <View style={styles.container}>
-    //   <Text style={{ fontFamily: 'Montserrat_400Regular', fontSize: 40 }}>Inter Black</Text>
-    // </View>
   );
 }
 

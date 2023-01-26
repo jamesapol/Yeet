@@ -325,7 +325,7 @@ export default function ViewConnectionScreen() {
                     setPaymentImageVisible(true);
                   } else if (item.lnk_id == 31) {
                     Linking.openURL(
-                      "http://192.168.254.125:8000/api/downloadFile/" +
+                      `${BASE_URL}api/downloadFile/` +
                         item.uln_file
                     );
                     console.log(item.uln_file);

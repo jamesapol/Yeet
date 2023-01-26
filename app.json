@@ -23,12 +23,17 @@
     "android": {
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/UXMaterials/adaptiveAppIcon.png",
+        "foregroundImage": "./assets/UXMaterials/adaptiveAppIcon.png"
       },
       "package": "com.jamesapol.Yeet"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "51933bff-1ac9-4980-bad5-846f0b01c605"
+      }
     }
   }
 }
