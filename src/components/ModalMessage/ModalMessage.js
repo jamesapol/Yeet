@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
 
   modal: {
     width: width * 0.7,
-    height: RFPercentage(15),
+    height: RFPercentage(17),
     borderRadius: 25,
     backgroundColor: "#ECECEC",
     alignItems: "center",
@@ -56,6 +56,7 @@ const styles = StyleSheet.create({
   },
 
   modalHeaderContainer: {
+    marginTop: '3%',
     alignItems: "center",
     justifyContent: "flex-end",
     paddingBottom: "1%",

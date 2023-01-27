@@ -110,6 +110,8 @@ export default function ResetPasswordScreen({ route }) {
 
   const closeErrorModal = () => {
     setErrorPasswordModalVisible(false);
+    setPassword();
+    setConfirmPassword();
     // navigation.navigate("LoginScreen");
   };
 

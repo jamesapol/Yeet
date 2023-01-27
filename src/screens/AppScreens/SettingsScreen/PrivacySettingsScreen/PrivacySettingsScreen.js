@@ -120,7 +120,7 @@ export default function PrivacySettingsScreen() {
 
     
       <View style={styles.sectionContainer}>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={[
             styles.buttons,
             {
@@ -139,7 +139,7 @@ export default function PrivacySettingsScreen() {
             onValueChange={toggleNotificationsSwitch}
             value={isNotificationsEnabled}
           />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity
           style={[

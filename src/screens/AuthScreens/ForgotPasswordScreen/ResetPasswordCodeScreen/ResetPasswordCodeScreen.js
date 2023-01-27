@@ -135,7 +135,7 @@ export default function ResetPasswordCodeScreen({ route }) {
         />
       </Modal>
       <PageHeader headerText="Reset Password" onPress={onBackPressed} />
-      <SectionHeader sectionHeaderText="A code has been sent to your email." />
+      <SectionHeader sectionHeaderText="A reset code has been sent to your email address. Please check your inbox and enter the code below to rest your password." />
 
       <View style={styles.sectionContainer}>
         <View style={styles.inputContainer}>

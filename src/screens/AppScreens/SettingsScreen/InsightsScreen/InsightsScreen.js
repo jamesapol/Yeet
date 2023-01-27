@@ -44,7 +44,7 @@ export default function InsightsScreen() {
     setInsightsLoading,
     getInsights,
     totalProfileViews,
-    setTotalProfileViews
+    setTotalProfileViews,
   } = useContext(AuthContext);
 
   const navigation = useNavigation();
@@ -54,8 +54,8 @@ export default function InsightsScreen() {
 
   const onRefresh = () => {
     getInsights();
-  }
-  
+  };
+
   return (
     <View style={GlobalStyles.root}>
       <PageHeader
@@ -70,7 +70,6 @@ export default function InsightsScreen() {
         <FlatList
           onRefresh={onRefresh}
           refreshing={refreshing}
-          
           // ref={ref}
           overScrollMode="never"
           showsVerticalScrollIndicator={false}
@@ -127,18 +126,29 @@ export default function InsightsScreen() {
                 <TouchableOpacity style={styles.buttons}>
                   <View style={styles.socialMediaContainer}>
                     <Image
-                      style={styles.socialMediaImage}
+                    resizeMode="contain"
+                      style={{
+                        ...styles.socialMediaImage,
+                        height: RFPercentage(5),
+                        width: item.lnk_id == 30 ? RFPercentage(6) : RFPercentage(5),
+                        // width: item.lnk_id == 
+                        borderRadius: item.lnk_id == 30 ? 15 : 0,
+                      }}
                       source={
                         item.lnk_image
-                          ? {
-                              uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
-                            }
+                          ? item.lnk_id == 30
+                            ? { uri: item.uln_youtube_thumbnail }
+                            : {
+                                uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
+                              }
                           : null
                       }
                     />
                     <View style={styles.socialMediaTextContainer}>
                       <Text style={styles.socialMediaText}>
-                        {item.lnk_id == 31
+                        {item.lnk_id == 30
+                          ? item.uln_custom_link_name
+                          : item.lnk_id == 31
                           ? item.uln_file_title
                           : item.lnk_id == 32
                           ? item.uln_custom_link_name
@@ -152,8 +162,12 @@ export default function InsightsScreen() {
                     </View>
                   </View>
                   <View style={{ width: "10%", alignItems: "center" }}>
-                    <Text style={styles.socialMediaTapsText}>{!item.ltp_count ? 0 : item.ltp_count}</Text>
-                    <Text style={styles.buttonText}>{item.ltp_count > 1 || !item.ltp_count ? 'Taps' : 'Tap'}</Text>
+                    <Text style={styles.socialMediaTapsText}>
+                      {!item.ltp_count ? 0 : item.ltp_count}
+                    </Text>
+                    <Text style={styles.buttonText}>
+                      {item.ltp_count > 1 || !item.ltp_count ? "Taps" : "Tap"}
+                    </Text>
                   </View>
                 </TouchableOpacity>
               );
@@ -251,15 +265,13 @@ const styles = StyleSheet.create({
   socialMediaImage: {
     // backgroundColor: "#ff04",
     // borderRadius: 1000,
-    height: RFPercentage(5),
-    width: RFPercentage(5),
-    marginRight: '4%',
+    marginRight: "4%",
     fleX: 1,
   },
-   
+
   socialMediaTextContainer: {
     flex: 1,
-    marginRight: '4%'
+    marginRight: "4%",
   },
 
   socialMediaText: {
@@ -283,118 +295,117 @@ const styles = StyleSheet.create({
   },
 });
 
+// <ScrollView
+//   style={GlobalStyles.root}
+//   contentContainerStyle={{ flexGrow: 1 }}
+//   showsVerticalScrollIndicator={false}
+// >
+//   <PageHeader
+//     headerText="Insights"
+//     iconColor="#562C73"
+//     textColor="#562C73"
+//     onPress={onBackPressed}
+//   />
+//   {/* <UnderConstructionScreen /> */}
+//   <View style={styles.sectionContainer}>
+//     <View style={styles.headerButtons}>
+//       <View style={styles.row}>
+//         <TouchableOpacity style={styles.squareButtons}>
+//           <Text style={styles.buttonText}>Taps</Text>
+//           <Text style={styles.squareButtonText}>8</Text>
+//           <Image style={styles.squareButtonImage} source={upIcon} />
+//         </TouchableOpacity>
+//         <TouchableOpacity style={styles.squareButtons}>
+//           <Text style={styles.buttonText}>Link Taps</Text>
+//           <Text style={styles.squareButtonText}>2</Text>
+//           <Image style={styles.squareButtonImage} source={downIcon} />
+//         </TouchableOpacity>
+//       </View>
 
-    // <ScrollView
-    //   style={GlobalStyles.root}
-    //   contentContainerStyle={{ flexGrow: 1 }}
-    //   showsVerticalScrollIndicator={false}
-    // >
-    //   <PageHeader
-    //     headerText="Insights"
-    //     iconColor="#562C73"
-    //     textColor="#562C73"
-    //     onPress={onBackPressed}
-    //   />
-    //   {/* <UnderConstructionScreen /> */}
-    //   <View style={styles.sectionContainer}>
-    //     <View style={styles.headerButtons}>
-    //       <View style={styles.row}>
-    //         <TouchableOpacity style={styles.squareButtons}>
-    //           <Text style={styles.buttonText}>Taps</Text>
-    //           <Text style={styles.squareButtonText}>8</Text>
-    //           <Image style={styles.squareButtonImage} source={upIcon} />
-    //         </TouchableOpacity>
-    //         <TouchableOpacity style={styles.squareButtons}>
-    //           <Text style={styles.buttonText}>Link Taps</Text>
-    //           <Text style={styles.squareButtonText}>2</Text>
-    //           <Image style={styles.squareButtonImage} source={downIcon} />
-    //         </TouchableOpacity>
-    //       </View>
+//       <View style={styles.row}>
+//         <TouchableOpacity style={styles.squareButtons}>
+//           <Text style={styles.buttonText}>Profile Views</Text>
+//           <Text style={styles.squareButtonText}>8</Text>
+//           <Image style={styles.squareButtonImage} source={upIcon} />
+//         </TouchableOpacity>
+//         <TouchableOpacity style={styles.squareButtons}>
+//           <Text style={styles.buttonText}>Connections</Text>
+//           <Text style={styles.squareButtonText}>5</Text>
+//           <Image style={styles.squareButtonImage} source={downIcon} />
+//         </TouchableOpacity>
+//       </View>
+//     </View>
 
-    //       <View style={styles.row}>
-    //         <TouchableOpacity style={styles.squareButtons}>
-    //           <Text style={styles.buttonText}>Profile Views</Text>
-    //           <Text style={styles.squareButtonText}>8</Text>
-    //           <Image style={styles.squareButtonImage} source={upIcon} />
-    //         </TouchableOpacity>
-    //         <TouchableOpacity style={styles.squareButtons}>
-    //           <Text style={styles.buttonText}>Connections</Text>
-    //           <Text style={styles.squareButtonText}>5</Text>
-    //           <Image style={styles.squareButtonImage} source={downIcon} />
-    //         </TouchableOpacity>
-    //       </View>
-    //     </View>
-
-    //     <View style={styles.footerButtons}>
-    //       <TouchableOpacity style={styles.buttons}>
-    //         <View style={styles.socialMediaContainer}>
-    //           <Image style={styles.socialMediaImage} source={facebookIcon} />
-    //           <View>
-    //             <Text style={styles.socialMediaText}>Facebook</Text>
-    //             <Text style={styles.socialMediaLinkText}>
-    //               www.facebook.com/apol.james.79
-    //             </Text>
-    //           </View>
-    //         </View>
-    //         <View style={{ alignItems: "center" }}>
-    //           <Text style={styles.socialMediaTapsText}>8</Text>
-    //           <Text style={styles.buttonText}>Taps</Text>
-    //         </View>
-    //       </TouchableOpacity>
-    //       <TouchableOpacity style={styles.buttons}>
-    //         <View style={styles.socialMediaContainer}>
-    //           <Image style={styles.socialMediaImage} source={instagramIcon} />
-    //           <View>
-    //             <Text style={styles.socialMediaText}>Instagram</Text>
-    //             <Text style={styles.socialMediaLinkText}>@jamesapolz</Text>
-    //           </View>
-    //         </View>
-    //         <View style={{ alignItems: "center" }}>
-    //           <Text style={styles.socialMediaTapsText}>1</Text>
-    //           <Text style={styles.buttonText}>Taps</Text>
-    //         </View>
-    //       </TouchableOpacity>
-    //       <TouchableOpacity style={styles.buttons}>
-    //         <View style={styles.socialMediaContainer}>
-    //           <Image style={styles.socialMediaImage} source={twitterIcon} />
-    //           <View>
-    //             <Text style={styles.socialMediaText}>Twitter</Text>
-    //             <Text style={styles.socialMediaLinkText}>@apolz</Text>
-    //           </View>
-    //         </View>
-    //         <View style={{ alignItems: "center" }}>
-    //           <Text style={styles.socialMediaTapsText}>2</Text>
-    //           <Text style={styles.buttonText}>Taps</Text>
-    //         </View>
-    //       </TouchableOpacity>
-    //       <TouchableOpacity style={styles.buttons}>
-    //         <View style={styles.socialMediaContainer}>
-    //           <Image style={styles.socialMediaImage} source={embedVideoIcon} />
-    //           <View>
-    //             <Text style={styles.socialMediaText}>Embedded Video</Text>
-    //             <Text style={styles.socialMediaLinkText}>
-    //               https://www.youtube.com/watch?v=WNcsUNKlAKw&ab
-    //             </Text>
-    //           </View>
-    //         </View>
-    //         <View style={{ alignItems: "center" }}>
-    //           <Text style={styles.socialMediaTapsText}>3</Text>
-    //           <Text style={styles.buttonText}>Taps</Text>
-    //         </View>
-    //       </TouchableOpacity>
-    //       <TouchableOpacity style={styles.buttons}>
-    //         <View style={styles.socialMediaContainer}>
-    //           <Image style={styles.socialMediaImage} source={embedFileIcon} />
-    //           <View>
-    //             <Text style={styles.socialMediaText}>Embedded File</Text>
-    //             <Text style={styles.socialMediaLinkText}>Laravel Files</Text>
-    //           </View>
-    //         </View>
-    //         <View style={{ alignItems: "center" }}>
-    //           <Text style={styles.socialMediaTapsText}>4</Text>
-    //           <Text style={styles.buttonText}>Taps</Text>
-    //         </View>
-    //       </TouchableOpacity>
-    //     </View>
-    //   </View>
-    // </ScrollView>
+//     <View style={styles.footerButtons}>
+//       <TouchableOpacity style={styles.buttons}>
+//         <View style={styles.socialMediaContainer}>
+//           <Image style={styles.socialMediaImage} source={facebookIcon} />
+//           <View>
+//             <Text style={styles.socialMediaText}>Facebook</Text>
+//             <Text style={styles.socialMediaLinkText}>
+//               www.facebook.com/apol.james.79
+//             </Text>
+//           </View>
+//         </View>
+//         <View style={{ alignItems: "center" }}>
+//           <Text style={styles.socialMediaTapsText}>8</Text>
+//           <Text style={styles.buttonText}>Taps</Text>
+//         </View>
+//       </TouchableOpacity>
+//       <TouchableOpacity style={styles.buttons}>
+//         <View style={styles.socialMediaContainer}>
+//           <Image style={styles.socialMediaImage} source={instagramIcon} />
+//           <View>
+//             <Text style={styles.socialMediaText}>Instagram</Text>
+//             <Text style={styles.socialMediaLinkText}>@jamesapolz</Text>
+//           </View>
+//         </View>
+//         <View style={{ alignItems: "center" }}>
+//           <Text style={styles.socialMediaTapsText}>1</Text>
+//           <Text style={styles.buttonText}>Taps</Text>
+//         </View>
+//       </TouchableOpacity>
+//       <TouchableOpacity style={styles.buttons}>
+//         <View style={styles.socialMediaContainer}>
+//           <Image style={styles.socialMediaImage} source={twitterIcon} />
+//           <View>
+//             <Text style={styles.socialMediaText}>Twitter</Text>
+//             <Text style={styles.socialMediaLinkText}>@apolz</Text>
+//           </View>
+//         </View>
+//         <View style={{ alignItems: "center" }}>
+//           <Text style={styles.socialMediaTapsText}>2</Text>
+//           <Text style={styles.buttonText}>Taps</Text>
+//         </View>
+//       </TouchableOpacity>
+//       <TouchableOpacity style={styles.buttons}>
+//         <View style={styles.socialMediaContainer}>
+//           <Image style={styles.socialMediaImage} source={embedVideoIcon} />
+//           <View>
+//             <Text style={styles.socialMediaText}>Embedded Video</Text>
+//             <Text style={styles.socialMediaLinkText}>
+//               https://www.youtube.com/watch?v=WNcsUNKlAKw&ab
+//             </Text>
+//           </View>
+//         </View>
+//         <View style={{ alignItems: "center" }}>
+//           <Text style={styles.socialMediaTapsText}>3</Text>
+//           <Text style={styles.buttonText}>Taps</Text>
+//         </View>
+//       </TouchableOpacity>
+//       <TouchableOpacity style={styles.buttons}>
+//         <View style={styles.socialMediaContainer}>
+//           <Image style={styles.socialMediaImage} source={embedFileIcon} />
+//           <View>
+//             <Text style={styles.socialMediaText}>Embedded File</Text>
+//             <Text style={styles.socialMediaLinkText}>Laravel Files</Text>
+//           </View>
+//         </View>
+//         <View style={{ alignItems: "center" }}>
+//           <Text style={styles.socialMediaTapsText}>4</Text>
+//           <Text style={styles.buttonText}>Taps</Text>
+//         </View>
+//       </TouchableOpacity>
+//     </View>
+//   </View>
+// </ScrollView>

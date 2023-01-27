@@ -141,6 +141,7 @@ export default function LoginScreen() {
     setLockedAccountModalVisible(false);
     setPassword(null);
     setEmail(null);
+    setPasswordHidden(true);
   };
 
   const onResetPasswordPressed = () => {

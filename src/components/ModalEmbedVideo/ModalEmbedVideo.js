@@ -13,6 +13,7 @@ import { RFPercentage } from "react-native-responsive-fontsize";
 
 import { useState } from "react";
 import { FontAwesome5 } from "@expo/vector-icons";
+import { BASE_URL } from "../../config";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -36,6 +37,7 @@ export default function ModalEmbedVideo({
   embedVideoURL,
 
   saveDisabled,
+  videoID,
 }) {
   const [link, setLink] = useState(false);
 
@@ -45,9 +47,17 @@ export default function ModalEmbedVideo({
         <View style={styles.modalContent}>
           <View style={styles.modalHeaderContainer}>
             <Image
-              source={linkImage}
+              source={
+                linkImage
+                  ? linkImage
+                  : { uri: `${BASE_URL}images/social-logo/video.png` }
+              }
               resizeMode="stretch"
-              style={styles.linkImage}
+              style={{
+                width: linkImage ? RFPercentage(14) : RFPercentage(8),
+                height: linkImage ? RFPercentage(10) : RFPercentage(8),
+                borderRadius: 25,
+              }}
             />
             <TextInput
               style={{
@@ -176,19 +186,15 @@ const styles = StyleSheet.create({
     // backgroundColor: "#f2f2",
   },
 
-  linkImage: {
-    width: RFPercentage(14),
-    height: RFPercentage(10),
-    borderRadius: 25,
-  },
+  linkImage: {},
 
   linkName: {
     color: "#562C73",
     fontWeight: "bold",
     fontSize: RFPercentage(2.5),
     textAlign: "center",
-    maxWidth: "50%",
-    width: "50%",
+    maxWidth: "75%",
+    width: "100%",
     // elevation: 50,
     // backgroundColor:'black',
   },

@@ -64,7 +64,7 @@ export default function ViewConnectionScreen() {
     modalHeader,
     modalMessage,
 
-    addLinkTap
+    addLinkTap,
   } = useContext(AuthContext);
 
   const ref = React.useRef(null);
@@ -302,7 +302,7 @@ export default function ViewConnectionScreen() {
             return (
               <TouchableOpacity
                 style={[
-                  { 
+                  {
                     marginLeft: index % 3 == 0 ? width * 0.15 : width * 0.025,
                     marginRight: index % 3 == 2 ? width * 0.15 : width * 0.025,
                   },
@@ -313,7 +313,7 @@ export default function ViewConnectionScreen() {
                 //   // onLinkPressed
                 // }}
                 onPress={() => {
-                  addLinkTap(item.uln_id)
+                  addLinkTap(item.uln_id);
                   if (
                     item.lnk_id == 23 ||
                     item.lnk_id == 24 ||
@@ -325,8 +325,7 @@ export default function ViewConnectionScreen() {
                     setPaymentImageVisible(true);
                   } else if (item.lnk_id == 31) {
                     Linking.openURL(
-                      `${BASE_URL}api/downloadFile/` +
-                        item.uln_file
+                      `${BASE_URL}api/downloadFile/` + item.uln_file
                     );
                     console.log(item.uln_file);
                     console.log(item.uln_original_file_name);
@@ -350,10 +349,15 @@ export default function ViewConnectionScreen() {
                 }}
               >
                 <Image
-                  source={{
-                    uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
-                  }}
+                  source={
+                    item.lnk_id == 30
+                      ? { uri: item.uln_youtube_thumbnail }
+                      : {
+                          uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
+                        }
+                  }
                   style={{
+                    borderRadius: item.lnk_id == 30 ? 20 : null,
                     width: width * 0.13,
                     height: width * 0.13,
                   }}
@@ -366,7 +370,9 @@ export default function ViewConnectionScreen() {
                     fontSize: RFPercentage(1.5),
                   }}
                 >
-                  {item.lnk_id == 31
+                  {item.lnk_id == 30
+                    ? item.uln_custom_link_name
+                    : item.lnk_id == 31
                     ? item.uln_file_title
                     : item.lnk_id == 32
                     ? item.uln_custom_link_name

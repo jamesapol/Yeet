@@ -7,6 +7,7 @@ import {
   Modal,
   TouchableOpacity,
   Text,
+  BackHandler,
 } from "react-native";
 import React, { useContext, useState, useEffect, useFocusEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
@@ -34,9 +35,29 @@ export default function MobileNumberScreen({ route }) {
   const [inputMobileVisible, setInputMobileVisible] = useState(false);
   const { email, password, fullName } = route.params;
 
+  // useEffect(() => {
+  //   const backAction = () => {
+  //     // navigation.navigate("InputNameScreen")
+  //     navigation.navigate("InputNameScreen", {
+  //       email: email,
+  //       password: password,
+  //     });
+  //   };
+
+  //   const backHandler = BackHandler.addEventListener(
+  //     "hardwareBackPress",
+  //     backAction
+  //   );
+
+  //   return () => {
+  //     backHandler.remove();
+  //   };
+  // });
+
   const navigation = useNavigation();
   const onBackPressed = () => {
-    navigation.navigate("RegisterScreen");
+    navigation.goBack();
+    // navigation.navigate("InputNameScreen", { email: email, password: password });
   };
 
   const onSaveName = () => {

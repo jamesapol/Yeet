@@ -49,6 +49,18 @@ export default function ConfirmEmailScreen({ route }) {
   const navigation = useNavigation();
   useEffect(() => {
     if (valid) {
+      setPin1();
+      setPin2();
+      setPin3();
+      setPin4();
+      setPin5();
+      setPin6();
+      pin1Ref.current.clear();
+      pin2Ref.current.clear();
+      pin3Ref.current.clear();
+      pin4Ref.current.clear();
+      pin5Ref.current.clear();
+      pin6Ref.current.clear();
       navigation.navigate("InputNameScreen", {
         email: email,
         password: password,
@@ -140,7 +152,7 @@ export default function ConfirmEmailScreen({ route }) {
         iconColor="#FFF"
         textColor="#FFF"
       />
-      <SectionHeader sectionHeaderText="A code has been sent to your email." />
+      <SectionHeader sectionHeaderText="A verification code has been sent to your email address. Please check your inbox and enter the code below to confirm your email." />
 
       <View style={styles.sectionContainer}>
         <View style={styles.inputContainer}>

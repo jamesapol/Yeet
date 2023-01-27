@@ -19,6 +19,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { RFPercentage } from "react-native-responsive-fontsize";
 
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 
 import { AuthContext } from "../../../../context/AuthContext";
 import { BASE_URL } from "../../../../config";
@@ -52,14 +53,20 @@ export default function HomeScreen() {
     userInfo,
     updateProfile,
     userInfoLoading,
+    setModalHeader,
+    setModalMessage,
+    modalHeader,
+    modalMessage,
 
     setPreviewName,
     setPreviewBio,
     setPreviewProfilePhotoURI,
     setPreviewCoverPhotoURI,
 
-    showUpdateSuccess,
-    setShowUpdateSuccess,
+    updateSuccessModalVisible,
+    setUpdateSuccessModalVisible,
+    updateErrorModalVisible,
+    setUpdateErrorModalVisible,
   } = useContext(AuthContext);
 
   const ref = React.useRef(null);
@@ -129,16 +136,24 @@ export default function HomeScreen() {
     console.log(profilePhotoResult);
     if (!profilePhotoResult.cancelled) {
       closeUploadModal();
-      // setProfilePhoto(profilePhotoResult.assets[0].uri);
-      setProfilePhoto(profilePhotoResult.uri);
-      // const profilePhotoFileUri = profilePhotoResult.assets[0].uri;
-      const profilePhotoFileUri = profilePhotoResult.uri;
-      let profilePhotoFileName = profilePhotoFileUri.split("/").pop();
-      const profilePhotoExtArr = /\.(\w+)$/.exec(profilePhotoFileName);
-      const profilePhotoFileType = getMimeType(profilePhotoExtArr[1]);
-      setProfilePhotoURI(profilePhotoFileUri);
-      setProfilePhotoName(profilePhotoFileName);
-      setProfilePhotoType(profilePhotoFileType);
+
+      const fileInfo = await FileSystem.getInfoAsync(profilePhotoResult.uri);
+      if (fileInfo.size >= 5000000) {
+        setUpdateErrorModalVisible(true);
+        setModalHeader("Error");
+        setModalMessage("File size exceeds 5MB!");
+      } else {
+        // setProfilePhoto(profilePhotoResult.assets[0].uri);
+        setProfilePhoto(profilePhotoResult.uri);
+        // const profilePhotoFileUri = profilePhotoResult.assets[0].uri;
+        const profilePhotoFileUri = profilePhotoResult.uri;
+        let profilePhotoFileName = profilePhotoFileUri.split("/").pop();
+        const profilePhotoExtArr = /\.(\w+)$/.exec(profilePhotoFileName);
+        const profilePhotoFileType = getMimeType(profilePhotoExtArr[1]);
+        setProfilePhotoURI(profilePhotoFileUri);
+        setProfilePhotoName(profilePhotoFileName);
+        setProfilePhotoType(profilePhotoFileType);
+      }
     }
   };
 
@@ -152,16 +167,24 @@ export default function HomeScreen() {
     console.log(profilePhotoResult);
     if (!profilePhotoResult.cancelled) {
       closeUploadModal();
-      // setProfilePhoto(profilePhotoResult.assets[0].uri);
-      setProfilePhoto(profilePhotoResult.uri);
-      // const profilePhotoFileUri = profilePhotoResult.assets[0].uri;
-      const profilePhotoFileUri = profilePhotoResult.uri;
-      let profilePhotoFileName = profilePhotoFileUri.split("/").pop();
-      const profilePhotoExtArr = /\.(\w+)$/.exec(profilePhotoFileName);
-      const profilePhotoFileType = getMimeType(profilePhotoExtArr[1]);
-      setProfilePhotoURI(profilePhotoFileUri);
-      setProfilePhotoName(profilePhotoFileName);
-      setProfilePhotoType(profilePhotoFileType);
+
+      const fileInfo = await FileSystem.getInfoAsync(profilePhotoResult.uri);
+      if (fileInfo.size >= 5000000) {
+        setUpdateErrorModalVisible(true);
+        setModalHeader("Error");
+        setModalMessage("File size exceeds 5MB!");
+      } else {
+        // setProfilePhoto(profilePhotoResult.assets[0].uri);
+        setProfilePhoto(profilePhotoResult.uri);
+        // const profilePhotoFileUri = profilePhotoResult.assets[0].uri;
+        const profilePhotoFileUri = profilePhotoResult.uri;
+        let profilePhotoFileName = profilePhotoFileUri.split("/").pop();
+        const profilePhotoExtArr = /\.(\w+)$/.exec(profilePhotoFileName);
+        const profilePhotoFileType = getMimeType(profilePhotoExtArr[1]);
+        setProfilePhotoURI(profilePhotoFileUri);
+        setProfilePhotoName(profilePhotoFileName);
+        setProfilePhotoType(profilePhotoFileType);
+      }
     }
   };
 
@@ -179,19 +202,27 @@ export default function HomeScreen() {
     console.log(coverPhotoResult);
     if (!coverPhotoResult.cancelled) {
       closeUploadModal();
-      // setCoverPhoto(coverPhotoResult.assets[0].uri);
-      setCoverPhoto(coverPhotoResult.uri);
 
-      // const coverPhotoFileUri = coverPhotoResult.assets[0].uri;
-      const coverPhotoFileUri = coverPhotoResult.uri;
+      const fileInfo = await FileSystem.getInfoAsync(coverPhotoResult.uri);
+      if (fileInfo.size >= 5000000) {
+        setUpdateErrorModalVisible(true);
+        setModalHeader("Error");
+        setModalMessage("File size exceeds 5MB!");
+      } else {
+        // setCoverPhoto(coverPhotoResult.assets[0].uri);
+        setCoverPhoto(coverPhotoResult.uri);
 
-      let coverPhotoFileName = coverPhotoFileUri.split("/").pop();
-      const coverPhotoExtArr = /\.(\w+)$/.exec(coverPhotoFileName);
-      const coverPhotoFileType = getMimeType(coverPhotoExtArr[1]);
+        // const coverPhotoFileUri = coverPhotoResult.assets[0].uri;
+        const coverPhotoFileUri = coverPhotoResult.uri;
 
-      setCoverPhotoURI(coverPhotoFileUri);
-      setCoverPhotoName(coverPhotoFileName);
-      setCoverPhotoType(coverPhotoFileType);
+        let coverPhotoFileName = coverPhotoFileUri.split("/").pop();
+        const coverPhotoExtArr = /\.(\w+)$/.exec(coverPhotoFileName);
+        const coverPhotoFileType = getMimeType(coverPhotoExtArr[1]);
+
+        setCoverPhotoURI(coverPhotoFileUri);
+        setCoverPhotoName(coverPhotoFileName);
+        setCoverPhotoType(coverPhotoFileType);
+      }
     }
   };
 
@@ -205,19 +236,26 @@ export default function HomeScreen() {
     console.log(coverPhotoResult);
     if (!coverPhotoResult.cancelled) {
       closeUploadModal();
-      // setCoverPhoto(coverPhotoResult.assets[0].uri);
-      setCoverPhoto(coverPhotoResult.uri);
+      const fileInfo = await FileSystem.getInfoAsync(coverPhotoResult.uri);
+      if (fileInfo.size >= 5000000) {
+        setUpdateErrorModalVisible(true);
+        setModalHeader("Error");
+        setModalMessage("File size exceeds 5MB!");
+      } else {
+        // setCoverPhoto(coverPhotoResult.assets[0].uri);
+        setCoverPhoto(coverPhotoResult.uri);
 
-      // const coverPhotoFileUri = coverPhotoResult.assets[0].uri;
-      const coverPhotoFileUri = coverPhotoResult.uri;
+        // const coverPhotoFileUri = coverPhotoResult.assets[0].uri;
+        const coverPhotoFileUri = coverPhotoResult.uri;
 
-      let coverPhotoFileName = coverPhotoFileUri.split("/").pop();
-      const coverPhotoExtArr = /\.(\w+)$/.exec(coverPhotoFileName);
-      const coverPhotoFileType = getMimeType(coverPhotoExtArr[1]);
+        let coverPhotoFileName = coverPhotoFileUri.split("/").pop();
+        const coverPhotoExtArr = /\.(\w+)$/.exec(coverPhotoFileName);
+        const coverPhotoFileType = getMimeType(coverPhotoExtArr[1]);
 
-      setCoverPhotoURI(coverPhotoFileUri);
-      setCoverPhotoName(coverPhotoFileName);
-      setCoverPhotoType(coverPhotoFileType);
+        setCoverPhotoURI(coverPhotoFileUri);
+        setCoverPhotoName(coverPhotoFileName);
+        setCoverPhotoType(coverPhotoFileType);
+      }
     }
   };
 
@@ -226,13 +264,17 @@ export default function HomeScreen() {
   };
 
   const closeUploadModal = () => {
-    // setShowUpdateSuccess(false);
+    // setUpdateSuccessModalVisible(false);
     setProfilePhotoModalVisible(false);
     setCoverPhotoModalVisible(false);
   };
 
+  const closeErrorModal = () => {
+    setUpdateErrorModalVisible(false);
+  };
+
   const closeModal = () => {
-    setShowUpdateSuccess(false);
+    setUpdateSuccessModalVisible(false);
     navigation.goBack();
   };
 
@@ -283,7 +325,7 @@ export default function HomeScreen() {
           transparent
           animationType="fade"
           hardwareAccelerated
-          visible={showUpdateSuccess}
+          visible={updateSuccessModalVisible}
           onRequestClose={closeModal}
         >
           <ModalMessage
@@ -298,13 +340,13 @@ export default function HomeScreen() {
           transparent
           animationType="fade"
           hardwareAccelerated
-          visible={showUpdateSuccess}
-          onRequestClose={closeModal}
+          visible={updateErrorModalVisible}
+          onRequestClose={closeErrorModal}
         >
           <ModalMessage
-            modalHeader="Success"
-            modalMessage="Profile successfully updated!"
-            onOKPressed={closeModal}
+            modalHeader={modalHeader}
+            modalMessage={modalMessage}
+            onOKPressed={closeErrorModal}
           />
         </Modal>
 
@@ -326,7 +368,7 @@ export default function HomeScreen() {
               onUploadImagePressed={uploadProfilePhoto}
               onTakePhotoPressed={takeProfilePhoto}
               modalHeader={
-                userInfo.usr_profile_photo
+                userInfo.usr_profile_photo_storage
                   ? "Change Profile Photo"
                   : "Select Profile Photo"
               }
@@ -352,7 +394,7 @@ export default function HomeScreen() {
               onUploadImagePressed={uploadCoverPhoto}
               onTakePhotoPressed={takeCoverPhoto}
               modalHeader={
-                userInfo.usr_cover_photo
+                userInfo.usr_cover_photo_storage
                   ? "Change Cover Photo"
                   : "Select Cover Photo"
               }
@@ -384,7 +426,7 @@ export default function HomeScreen() {
             ) : (
               <Image
                 source={
-                  userInfo.usr_cover_photo
+                  userInfo.usr_cover_photo_storage
                     ? {
                         uri: `${BASE_URL}images/mobile/cover/${userInfo.usr_cover_photo_storage}`,
                       }
@@ -436,7 +478,7 @@ export default function HomeScreen() {
                   backgroundColor="#DEDEDE"
                   size={RFPercentage(15)}
                   source={
-                    userInfo.usr_profile_photo
+                    userInfo.usr_profile_photo_storage
                       ? {
                           uri: `${BASE_URL}images/mobile/photos/${userInfo.usr_profile_photo_storage}`,
                         }

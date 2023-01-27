@@ -175,7 +175,7 @@ export default function ManageLinksScreen() {
             <View style={GlobalStyles.coverPhotoContainer}>
               <Image
                 source={
-                  userInfo.usr_cover_photo
+                  userInfo.usr_cover_photo_storage
                     ? {
                         uri: `${BASE_URL}images/mobile/cover/${userInfo.usr_cover_photo_storage}`,
                       }
@@ -192,7 +192,7 @@ export default function ManageLinksScreen() {
                   backgroundColor="#DEDEDE"
                   size={RFPercentage(15)}
                   source={
-                    userInfo.usr_profile_photo
+                    userInfo.usr_profile_photo_storage
                       ? {
                           uri: `${BASE_URL}images/mobile/photos/${userInfo.usr_profile_photo_storage}`,
                         }

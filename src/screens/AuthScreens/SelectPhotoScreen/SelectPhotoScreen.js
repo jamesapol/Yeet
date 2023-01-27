@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 
 import DefaultImage from "../../../../assets/UXMaterials/icons/user.png";
 import { useNavigation } from "@react-navigation/native";
@@ -22,6 +23,7 @@ import { useContext } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { AuthStyles, Colors, GlobalStyles } from "../../../styles/GlobalStyles";
 import ModalPhotoOptions from "../../../components/ModalPhotoOptions/ModalPhotoOptions";
+import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -30,6 +32,9 @@ export default function SelectPhotoScreen({ route }) {
   const { email, password, fullName, mobileNumber } = route.params;
 
   const [image, setImage] = useState(null);
+  const [fileSizeErrorModalVisible, setFileSizeErrorModalVisible] =
+    useState(false);
+
   useEffect(() => {
     (async () => {
       if (Platform.OS !== "web") {
@@ -64,9 +69,12 @@ export default function SelectPhotoScreen({ route }) {
   const closeUploadModal = () => {
     setPhotoModalVisible(false);
   };
-  const removePhoto =() => {
+  const closeErrorModal = () => {
+    setFileSizeErrorModalVisible(false);
+  };
+  const removePhoto = () => {
     setImage();
-  }
+  };
 
   const uploadPhoto = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -78,9 +86,15 @@ export default function SelectPhotoScreen({ route }) {
 
     console.log(result);
     if (!result.cancelled) {
-      setPhotoModalVisible(false);
-      // setImage(result.assets[0].uri);
-      setImage(result.uri);
+      closeUploadModal();
+      const fileInfo = await FileSystem.getInfoAsync(result.uri);
+      if (fileInfo.size >= 5000000) {
+        setFileSizeErrorModalVisible(true);
+      } else {
+        setPhotoModalVisible(false);
+        // setImage(result.assets[0].uri);
+        setImage(result.uri);
+      }
     }
   };
 
@@ -94,9 +108,15 @@ export default function SelectPhotoScreen({ route }) {
 
     console.log(result);
     if (!result.cancelled) {
-      setPhotoModalVisible(false);
-      // setImage(result.assets[0].uri);
-      setImage(result.uri);
+      closeUploadModal();
+      const fileInfo = await FileSystem.getInfoAsync(result.uri);
+      if (fileInfo.size >= 5000000) {
+        setFileSizeErrorModalVisible(true);
+      } else {
+        setPhotoModalVisible(false);
+        // setImage(result.assets[0].uri);
+        setImage(result.uri);
+      }
     }
   };
 
@@ -125,6 +145,12 @@ export default function SelectPhotoScreen({ route }) {
 
   const onBackPressed = () => {
     navigation.goBack();
+    // navigation.navigate("MobileNumberScreen", {
+    //   email: email,
+    //   password: password,
+    //   fullName: fullName,
+    //   mobileNumber: mobileNumber,
+    // });
   };
 
   const onSkipPressed = () => {
@@ -157,6 +183,21 @@ export default function SelectPhotoScreen({ route }) {
             modalHeader="Select Profile Photo"
           />
         </TouchableOpacity>
+      </Modal>
+
+      {/* ERROR MESSAGE MODAL */}
+      <Modal
+        transparent
+        animationType="fade"
+        hardwareAccelerated
+        visible={fileSizeErrorModalVisible}
+        onRequestClose={closeErrorModal}
+      >
+        <ModalMessage
+          modalHeader="Error"
+          modalMessage="File Size exceeds 5MB!"
+          onOKPressed={closeErrorModal}
+        />
       </Modal>
 
       <PageHeader headerText="Select a photo" onPress={onBackPressed} />

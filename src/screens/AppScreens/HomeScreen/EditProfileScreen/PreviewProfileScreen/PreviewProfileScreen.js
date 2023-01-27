@@ -59,7 +59,7 @@ import {
                       ? {
                           uri: previewCoverPhotoURI,
                         }
-                      : userInfo.usr_cover_photo
+                      : userInfo.usr_cover_photo_storage
                       ? {
                           uri: `${BASE_URL}images/mobile/cover/${userInfo.usr_cover_photo_storage}`,
                         }
@@ -80,7 +80,7 @@ import {
                         ? {
                             uri: previewProfilePhotoURI,
                           }
-                        : userInfo.usr_profile_photo
+                        : userInfo.usr_profile_photo_storage
                         ? {
                             uri: `${BASE_URL}images/mobile/photos/${userInfo.usr_profile_photo_storage}`,
                             cache: "reload",

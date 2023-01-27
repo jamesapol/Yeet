@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
 
   secondRow: {
     alignItems: "center",
-    width: '50%',
+    width: '70%',
   },
 
   yeetLogo: {

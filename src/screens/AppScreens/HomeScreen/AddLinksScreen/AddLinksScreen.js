@@ -14,6 +14,7 @@ import React, { useContext, useEffect, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
 import * as Clipboard from "expo-clipboard";
+import * as FileSystem from "expo-file-system";
 import { AuthContext } from "../../../../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { RFPercentage } from "react-native-responsive-fontsize";
@@ -146,6 +147,9 @@ export default function AddLinksScreen() {
   const [fileSize, setFileSize] = useState();
   const [fileType, setFileType] = useState();
 
+  const [fileSizeErrorModalVisible, setFileSizeErrorModalVisible] =
+    useState(false);
+
   const [fileTitle, setFileTitle] = useState();
   const [fileImage, setFileImage] = useState();
 
@@ -209,12 +213,17 @@ export default function AddLinksScreen() {
     });
     console.log(result);
     if (result.uri) {
-      setFileURI(result.uri);
-      setFileSize(result.size);
-      setFileName(result.name);
-      setFileType(result.mimeType);
+      const fileInfo = await FileSystem.getInfoAsync(result.uri);
+      if (fileInfo.size >= 5000000) {
+        setFileSizeErrorModalVisible(true);
+      } else {
+        setFileURI(result.uri);
+        setFileSize(result.size);
+        setFileName(result.name);
+        setFileType(result.mimeType);
 
-      setShowEmbedModal(true);
+        setShowEmbedModal(true);
+      }
     }
   };
 
@@ -228,7 +237,12 @@ export default function AddLinksScreen() {
 
     console.log(result);
     if (!result.cancelled) {
-      setImage(result.uri);
+      const fileInfo = await FileSystem.getInfoAsync(result.uri);
+      if (fileInfo.size >= 5000000) {
+        setFileSizeErrorModalVisible(true);
+      } else {
+        setImage(result.uri);
+      }
     }
   };
 
@@ -239,6 +253,10 @@ export default function AddLinksScreen() {
 
   const onTestPressed = () => {
     console.log(userLinks);
+  };
+
+  const closeErrorModal = () => {
+    setFileSizeErrorModalVisible(false);
   };
 
   const onCancelPressed = () => {
@@ -367,7 +385,8 @@ export default function AddLinksScreen() {
       }
 
       let thumbnailURI = `https://img.youtube.com/vi/${videoID}/hqdefault.jpg`;
-      addYouTubeLink(linkID, embedVideoTitle, embedVideoURL, thumbnailURI);
+      // addYouTubeLink(linkID, embedVideoTitle, embedVideoURL, thumbnailURI);
+      console.log(linkID)
 
       setEmbedVideoModalVisible(false);
       setEmbedVideoTitleErrorVisible("none");
@@ -393,6 +412,21 @@ export default function AddLinksScreen() {
           modalHeader={modalHeader}
           modalMessage={modalMessage}
           onOKPressed={onCancelPressed}
+        />
+      </Modal>
+
+      {/* ERROR MESSAGE MODAL */}
+      <Modal
+        transparent
+        animationType="fade"
+        hardwareAccelerated
+        visible={fileSizeErrorModalVisible}
+        onRequestClose={closeErrorModal}
+      >
+        <ModalMessage
+          modalHeader="Error"
+          modalMessage="File Size exceeds 5MB!"
+          onOKPressed={closeErrorModal}
         />
       </Modal>
 
@@ -533,7 +567,7 @@ export default function AddLinksScreen() {
           embedVideoTitleErrorVisible={embedVideoTitleErrorVisible}
           embedVideoURLErrorVisible={embedVideoURLErrorVisible}
           embedVideoURLErrorMessage={embedVideoURLErrorMessage}
-          linkImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
+          linkImage={linkImage}
           onCancelPressed={onCancelPressed}
           onSavePressed={onEmbedVideoSaved}
         />
@@ -596,7 +630,8 @@ export default function AddLinksScreen() {
                 setLinkURLHeader(item.lnk_url);
               } else if (item.lnk_id == 30) {
                 setEmbedVideoModalVisible(true);
-                setLinkImage(item.lnk_image);
+                setLinkImage();
+                // setLinkImage(item.lnk_image);
                 setLinkID(item.lnk_id);
               } else if (item.lnk_id == 31) {
                 setLinkImage(item.lnk_image);

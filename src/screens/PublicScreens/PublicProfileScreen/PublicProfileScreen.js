@@ -411,8 +411,7 @@ export default function PublicProfileScreen({ route }) {
                         setPaymentImageVisible(true);
                       } else if (item.lnk_id == 31) {
                         Linking.openURL(
-                          "http://192.168.254.125:8000/api/downloadFile/" +
-                            item.uln_file
+                          `${BASE_URL}/api/downloadFile/` + item.uln_file
                         );
                         console.log(item.uln_file);
                         console.log(item.uln_original_file_name);
@@ -432,10 +431,15 @@ export default function PublicProfileScreen({ route }) {
                     }}
                   >
                     <Image
-                      source={{
-                        uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
-                      }}
+                      source={
+                        item.lnk_id == 30
+                          ? { uri: item.uln_youtube_thumbnail }
+                          : {
+                              uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
+                            }
+                      }
                       style={{
+                        borderRadius: item.lnk_id == 30 ? 20 : null,
                         width: width * 0.13,
                         height: width * 0.13,
                       }}
@@ -448,7 +452,13 @@ export default function PublicProfileScreen({ route }) {
                         fontSize: RFPercentage(1.3),
                       }}
                     >
-                      {item.lnk_name}
+                      {item.lnk_id == 30
+                        ? item.uln_custom_link_name
+                        : item.lnk_id == 31
+                        ? item.uln_file_title
+                        : item.lnk_id == 32
+                        ? item.uln_custom_link_name
+                        : item.lnk_name}
                     </Text>
                   </TouchableOpacity>
                 );

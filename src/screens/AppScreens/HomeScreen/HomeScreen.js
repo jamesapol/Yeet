@@ -691,7 +691,7 @@ export default function HomeScreen() {
                   <Image
                     source={
                       userInfoLoading == false
-                        ? userInfo.usr_cover_photo
+                        ? userInfo.usr_cover_photo_storage
                           ? {
                               uri: `${BASE_URL}images/mobile/cover/${userInfo.usr_cover_photo_storage}`,
                             }
@@ -923,7 +923,7 @@ export default function HomeScreen() {
                             : 0.3
                           : 1,
                     }}
-                    resizeMode="stretch"
+                    resizeMode="contain"
                   />
                   {/* <Text>{item.uln_id}</Text>
                         <Text>{item.lnk_id}</Text> */}

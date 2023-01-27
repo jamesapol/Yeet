@@ -42,14 +42,10 @@ export default function RegisterScreen() {
     setModalHeader,
     setModalMessage,
   } = useContext(AuthContext);
-  const [newPassword, setNewPassword] = useState();
-
   const [passwordHidden, setPasswordHidden] = useState(true);
   const [confirmPasswordHidden, setConfirmPasswordHidden] = useState(true);
-  const [continueButtonDisabled, setContinueButtonDisabled] = useState(true);
   const [validEmail, setValidEmail] = useState(false);
   const [validPassword, setValidPassword] = useState(false);
-  const [validRegistration, setValidRegistration] = useState(false);
   const [errorTextVisible, setErrorTextVisible] = useState(false);
   const [errorText, setErrorText] = useState("");
 
@@ -59,22 +55,22 @@ export default function RegisterScreen() {
     setConfirmPasswordHidden((previousState) => !previousState);
 
   const onCheckEmail = () => {
-    if (!email || !password || !confirmPassword) {
-      setRegistrationModalVisible(true);
-      setModalHeader("Error");
-      setModalMessage("Please fill out all of the required fields!");
-    } else if (password != confirmPassword) {
-      setRegistrationModalVisible(true);
-      setModalHeader("Error");
-      setModalMessage("Passwords do not match!");
-    } else if ((password && confirmPassword).length < 8) {
-      setRegistrationModalVisible(true);
-      setModalHeader("Error");
-      setModalMessage("Passwords must be at least 8 characters!");
-    } else {
-      console.log(isLoading);
-      checkEmailAvailability(email, password, confirmPassword);
-    }
+    // if (!email || !password || !confirmPassword) {
+    //   setRegistrationModalVisible(true);
+    //   setModalHeader("Error");
+    //   setModalMessage("Please fill out all of the required fields!");
+    // } else if (password != confirmPassword) {
+    //   setRegistrationModalVisible(true);
+    //   setModalHeader("Error");
+    //   setModalMessage("Passwords do not match!");
+    // } else if ((password && confirmPassword).length < 8) {
+    //   setRegistrationModalVisible(true);
+    //   setModalHeader("Error");
+    //   setModalMessage("Passwords must be at least 8 characters!");
+    // } else {
+    //   console.log(isLoading);
+    // }
+    checkEmailAvailability(email, password, confirmPassword);
   };
 
   useEffect(() => {
@@ -83,9 +79,23 @@ export default function RegisterScreen() {
         email: email,
         password: password,
       });
-      setValid(false);
+      clearAll()
     }
   });
+
+  const clearAll = () => {
+    setValid(false);
+    setEmail();
+    setPassword();
+    setConfirmPassword();
+    setPasswordHidden(true);
+    setConfirmPasswordHidden(true);
+    setValidEmail(false);
+    setValidPassword(false);
+    setErrorTextVisible();
+    setErrorText("");
+    setRegistrationModalVisible(false);
+  };
 
   const navigation = useNavigation();
   const onBackPressed = () => {
@@ -94,6 +104,11 @@ export default function RegisterScreen() {
 
   const closeModal = () => {
     setRegistrationModalVisible(false);
+    navigation.navigate("ConfirmEmailScreen", {
+      email: email,
+      password: password,
+    });
+    clearAll();
   };
 
   const containsNumber = (text) => {
@@ -120,7 +135,7 @@ export default function RegisterScreen() {
   const validatePassword = (password, confirmPassword) => {
     let hasNumber = containsNumber(password);
     let hasUppercase = containsUppercase(password);
-    if (password.length < 8) {
+    if (password.length < 8 || password.length === undefined) {
       setValidPassword(false);
       setErrorText("Password must be at least 8 characters");
       setErrorTextVisible(true);
@@ -142,7 +157,7 @@ export default function RegisterScreen() {
       setValidPassword(true);
       setErrorTextVisible(false);
     }
-    console.log(password + " " + confirmPassword);
+    // console.log(password + " " + confirmPassword);
   };
 
   return (
@@ -161,7 +176,7 @@ export default function RegisterScreen() {
         />
       </Modal>
       <PageHeader headerText="Create an account" onPress={onBackPressed} />
-      <SectionHeader sectionHeaderText="Enter your email and password below" />
+      <SectionHeader sectionHeaderText="Create your Yeet account" />
       <View style={styles.sectionContainer}>
         <View style={styles.emailInputContainer}>
           <Text style={styles.inputLabel}>Email</Text>

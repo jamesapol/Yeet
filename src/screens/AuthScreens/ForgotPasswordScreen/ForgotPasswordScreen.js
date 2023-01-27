@@ -47,6 +47,7 @@ export default function ForgotPasswordScreen() {
   } = useContext(AuthContext);
 
   const navigation = useNavigation();
+  
 
   useEffect(() => {
     if (validEmail) {
@@ -86,9 +87,17 @@ export default function ForgotPasswordScreen() {
   const closeModal = () => {
     setForgotEmailModalVisible(false);
   };
+  
+  const closeCodeSentModal = () => {
+    navigation.navigate("ResetPasswordCodeScreen", { email: email });
+    setForgotEmailModalVisible(false);
+    setEmail(null);
+    setValidEmail(false);
+  };
 
   return (
     <View style={GlobalStyles.root}>
+      {/* ERROR MESSAGE MODAL */}
       <Modal
         transparent
         animationType="fade"
@@ -100,6 +109,21 @@ export default function ForgotPasswordScreen() {
           modalHeader={modalHeader}
           modalMessage={modalMessage}
           onOKPressed={closeModal}
+        />
+      </Modal>
+
+      {/* CODE MESSAGE MODAL */}
+      <Modal
+        transparent
+        animationType="fade"
+        hardwareAccelerated
+        visible={forgotEmailModalVisible}
+        onRequestClose={closeCodeSentModal}
+      >
+        <ModalMessage
+          modalHeader={modalHeader}
+          modalMessage={modalMessage}
+          onOKPressed={closeCodeSentModal}
         />
       </Modal>
 

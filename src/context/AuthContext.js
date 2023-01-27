@@ -30,8 +30,9 @@ export const AuthProvider = ({ children }) => {
   const [userBlockedConnections, setUserBlockedConnections] = useState({});
 
   //UPDATE PROFILE STATES
-  const [showUpdateSuccess, setShowUpdateSuccess] = useState(false);
-  const [updateErrorVisible, setUpdateErrorVisible] = useState(false);
+  const [updateSuccessModalVisible, setUpdateSuccessModalVisible] =
+    useState(false);
+  const [updateErrorModalVisible, setUpdateErrorModalVisible] = useState(false);
 
   //LOGGED IN USER LINKS
   const [userLinks, setUserLinks] = useState({});
@@ -181,9 +182,16 @@ export const AuthProvider = ({ children }) => {
         {}
       )
       .then((response) => {
-        console.log(response.data);
+        if (response.data.coolDown) {
+          setRegistrationModalVisible(true);
+          setModalHeader("Confirmation Code");
+          setModalMessage(response.data.coolDown);
+          setValid(false);
+        } else {
+          console.log(response.data.success);
+          setValid(true);
+        }
         setIsLoading(false);
-        setValid(true);
       })
       .catch((e) => {
         console.log("Error: " + e);
@@ -407,10 +415,20 @@ export const AuthProvider = ({ children }) => {
     })
       .then((response) => {
         console.log(response.data);
-        let userInfo = response.data;
-        setShowUpdateSuccess(true);
-        
-        setUserInfo(userInfo);
+        if (response.data.profilePhotoError) {
+          setUpdateErrorModalVisible(true);
+          setModalHeader("Profile Photo Upload Error");
+          setModalMessage(response.data.profilePhotoError);
+        } else if (response.data.coverPhotoError) {
+          setUpdateErrorModalVisible(true);
+          setModalHeader("Cover Photo Upload Error");
+          setModalMessage(response.data.coverPhotoError);
+        } else {
+          let userInfo = response.data.success;
+          setUpdateSuccessModalVisible(true);
+          setUserInfo(userInfo);
+        }
+
         setUserInfoLoading(false);
       })
       .catch((error) => {
@@ -578,16 +596,18 @@ export const AuthProvider = ({ children }) => {
       .then((response) => {
         console.log(response.data);
         if (response.data.emailError) {
-          setIsLoading(false);
           setValidEmail(false);
           setForgotEmailModalVisible(true);
           setModalHeader("Error");
           setModalMessage(response.data.emailError);
+        } else if (response.data.coolDown) {
+          setForgotEmailModalVisible(true);
+          setModalHeader("Password Reset Code");
+          setModalMessage(response.data.coolDown);
         } else {
-          setIsLoading(false);
           setValidEmail(true);
         }
-        // setIsLoading(false);
+        setIsLoading(false);
       })
       .catch((error) => {
         console.log("Error: " + error);
@@ -909,74 +929,61 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     // setUserLinksLoading(true);
     setUserInfoLoading(true);
-    if (attemptCount < 3) {
-      axios
-        .post(`${BASE_URL}api/login`, {
-          email: email,
-          password: password,
-          deviceName: Device.modelName,
-        })
-        .then((response) => {
-          if (response.data.emailError) {
-            setLoginModalVisible(true);
-            setModalHeader("Error");
-            setModalMessage(response.data.emailError);
-            // setAttemptCount(attemptCount + 1);
-            // console.log(attemptCount);
-            console.log(response.data);
-          } else if (response.data.passwordError) {
-            setLoginModalVisible(true);
-            setModalHeader("Error");
-            setModalMessage(response.data.passwordError);
-            setAttemptCount(attemptCount + 1);
-            // console.log(attemptCount);
-            console.log(response.data);
-          } else if (response.data.blockedAccount) {
-            setLockedAccountModalVisible(true);
-            setModalHeader("Account Locked");
-            setModalMessage(response.data.blockedAccount);
-            console.log(response.data);
-          } else {
-            setAttemptCount(0);
-            let userInfo = response.data;
-            setUserInfo(userInfo.user);
-            setUserActiveNFCDevice(userInfo.activeNFCDevice);
-            setUserNFCDevices(userInfo.nfcDevice);
-            setUserToken(userInfo.token);
-            setUserDirectLink(userInfo.user.usr_direct_link_active);
-            setUserDirectLinkID(userInfo.user.uln_id);
-            setUserLinks(userInfo.userLinks);
-            setUserTheme(userInfo.userTheme);
-            console.log(userInfo);
-
-            SecureStore.setItemAsync("userUUID", userInfo.user.usr_uuid);
-            SecureStore.setItemAsync("userToken", userInfo.token);
-
-            console.log("EXECUTED");
-          }
-          setUserInfoLoading(false);
-        })
-        .catch((error) => {
-          setUserInfoLoading(false);
-          console.log(error.response);
-        });
-    } else {
-      axios
-        .post(`${BASE_URL}api/lockProfile`, {
-          email: email,
-        })
-        .then((response) => {
+    axios
+      .post(`${BASE_URL}api/login`, {
+        email: email,
+        password: password,
+        deviceName: Device.modelName,
+      })
+      .then((response) => {
+        if (response.data.emailError) {
+          setLoginModalVisible(true);
+          setModalHeader("Error");
+          setModalMessage(response.data.emailError);
+          // setAttemptCount(attemptCount + 1);
+          // console.log(attemptCount);
+          console.log(response.data);
+        } else if (response.data.passwordError) {
+          setLoginModalVisible(true);
+          setModalHeader("Error");
+          setModalMessage(response.data.passwordError);
+          // console.log(attemptCount);
+          console.log(response.data);
+        } else if (response.data.finalWarning) {
+          setLoginModalVisible(true);
+          setModalHeader("Error");
+          setModalMessage(response.data.finalWarning);
+          // console.log(attemptCount);
+          console.log(response.data);
+        } else if (response.data.blockedAccount) {
           setLockedAccountModalVisible(true);
           setModalHeader("Account Locked");
           setModalMessage(response.data.blockedAccount);
-          setUserInfoLoading(false);
-        })
-        .catch((error) => {
-          setUserInfoLoading(false);
-          console.log(error.response);
-        });
-      setAttemptCount(0);
-    }
+          console.log(response.data);
+        } else {
+          setAttemptCount(0);
+          let userInfo = response.data;
+          setUserInfo(userInfo.user);
+          setUserActiveNFCDevice(userInfo.activeNFCDevice);
+          setUserNFCDevices(userInfo.nfcDevice);
+          setUserToken(userInfo.token);
+          setUserDirectLink(userInfo.user.usr_direct_link_active);
+          setUserDirectLinkID(userInfo.user.uln_id);
+          setUserLinks(userInfo.userLinks);
+          setUserTheme(userInfo.userTheme);
+          console.log(userInfo);
+
+          SecureStore.setItemAsync("userUUID", userInfo.user.usr_uuid);
+          SecureStore.setItemAsync("userToken", userInfo.token);
+
+          console.log("EXECUTED");
+        }
+        setUserInfoLoading(false);
+      })
+      .catch((error) => {
+        setUserInfoLoading(false);
+        console.log(error.response);
+      });
   };
 
   const logout = () => {
@@ -1257,7 +1264,12 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
-  const addYouTubeLink = async (userLinkID, youtubeLinkName, youtubeURL, youtubeThumbnailURI) => {
+  const addYouTubeLink = async (
+    userLinkID,
+    youtubeLinkName,
+    youtubeURL,
+    youtubeThumbnailURI
+  ) => {
     setAddLinkLoading(true);
     // setIsLoading(true);
 
@@ -1272,7 +1284,7 @@ export const AuthProvider = ({ children }) => {
           userLinkID: userLinkID,
           youtubeLinkName: youtubeLinkName,
           youtubeURL: youtubeURL,
-          youtubeThumbnailURI: youtubeThumbnailURI 
+          youtubeThumbnailURI: youtubeThumbnailURI,
         },
         {
           headers: { Authorization: `Bearer ${userToken}` },
@@ -1304,7 +1316,12 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
-  const editYouTubeLink = async (userLinkIndex, youtubeLinkName, youtubeURL, youtubeThumbnailURI) => {
+  const editYouTubeLink = async (
+    userLinkIndex,
+    youtubeLinkName,
+    youtubeURL,
+    youtubeThumbnailURI
+  ) => {
     // setAddLinkLoading(true);
     // setIsLoading(true);
 
@@ -1319,7 +1336,7 @@ export const AuthProvider = ({ children }) => {
           userLinkIndex: userLinkIndex,
           youtubeLinkName: youtubeLinkName,
           youtubeURL: youtubeURL,
-          youtubeThumbnailURI: youtubeThumbnailURI 
+          youtubeThumbnailURI: youtubeThumbnailURI,
         },
         {
           headers: { Authorization: `Bearer ${userToken}` },
@@ -1336,7 +1353,7 @@ export const AuthProvider = ({ children }) => {
 
           console.log(userLinks);
           setUserLinks(userLinks);
-          setAddLinksModalVisible(true);
+          setEditLinkMessageModalVisible(true);
           setModalHeader("Success");
           setModalMessage("Link saved successfully!");
           // getUserLinks(userUUID, userToken);
@@ -1350,8 +1367,6 @@ export const AuthProvider = ({ children }) => {
         setIsLoading(false);
       });
   };
-
-
 
   const uploadPaymentPhoto = async (
     userLinkID,
@@ -2034,7 +2049,7 @@ export const AuthProvider = ({ children }) => {
           setPublicProfileLinks(publicProfileLinks);
           setPublicProfileDirectLink(publicProfileDirectLink);
           setPublicConnectionStatus(connectionStatus);
-        } else if (publicProfileData == undefined){
+        } else if (publicProfileData == undefined) {
           setPublicProfileInfo(null);
         }
         console.log(response.data);
@@ -2397,6 +2412,7 @@ export const AuthProvider = ({ children }) => {
         }
       )
       .then((response) => {
+        console.log(response.data);
         let userProfileTaps = response.data.userProfileTaps;
         let userLinksInsights = response.data.userLinksInsights;
         let totalUserLinkTaps = response.data.totalUserLinkTaps;
@@ -2724,8 +2740,10 @@ export const AuthProvider = ({ children }) => {
         updateCoverPhoto,
         updateNameAndBio,
         updateProfile,
-        showUpdateSuccess,
-        setShowUpdateSuccess,
+        updateSuccessModalVisible,
+        setUpdateSuccessModalVisible,
+        updateErrorModalVisible,
+        setUpdateErrorModalVisible,
 
         updateEmail,
         updatePassword,
