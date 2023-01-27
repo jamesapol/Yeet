@@ -139,6 +139,10 @@ function AuthStackNavigator() {
       ) : (
         <AuthStack.Screen name="AppScreens" component={AppScreens} />
       )}
+      {/* <AuthStack.Screen
+            name="PublicProfileScreen"
+            component={PublicProfileScreen}
+          /> */}
     </AuthStack.Navigator>
   );
 }
@@ -388,6 +392,10 @@ const HomeNavigation = () => {
         component={PreviewProfileScreen}
         options={{ animation: "fade", animationDuration: 250 }}
       />
+      {/* <Stack.Screen
+        name="PublicProfileScreen"
+        component={PublicProfileScreen}
+      /> */}
     </Stack.Navigator>
   );
 };
@@ -405,6 +413,10 @@ const ConnectionsNavigation = () => {
         name="AddConnectionQRScreen"
         component={AddConnectionQRScreen}
       />
+      {/* <Stack.Screen
+        name="PublicProfileScreen"
+        component={PublicProfileScreen}
+      /> */}
     </Stack.Navigator>
   );
 };
@@ -413,6 +425,10 @@ const YeetNavigation = () => {
   return (
     <Stack.Navigator screenOptions={{ animation: "fade", headerShown: false }}>
       <Stack.Screen name="YeetScreen" component={YeetScreen} />
+      {/* <Stack.Screen
+        name="PublicProfileScreen"
+        component={PublicProfileScreen}
+      /> */}
     </Stack.Navigator>
   );
 };
@@ -428,6 +444,10 @@ const NotificationsNavigation = () => {
         name="ViewConnectionScreen"
         component={ViewConnectionScreen}
       />
+      {/* <Stack.Screen
+        name="PublicProfileScreen"
+        component={PublicProfileScreen}
+      /> */}
     </Stack.Navigator>
   );
 };
@@ -478,6 +498,10 @@ const SettingsNavigation = () => {
         name="TermsOfServiceScreen"
         component={TermsOfServiceScreen}
       />
+      {/* <Stack.Screen
+        name="PublicProfileScreen"
+        component={PublicProfileScreen}
+      /> */}
     </Stack.Navigator>
   );
 };
