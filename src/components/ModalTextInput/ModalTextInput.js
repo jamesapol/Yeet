@@ -48,8 +48,8 @@ export default function ModalTextInput({
               style={{
                 flexDirection: "row",
                 justifyContent: "center",
-                // width: '50%',
-                maxWidth: '50%',
+                width: '80%',
+                maxWidth: '80%',
                 // // backgroundColor: '#9c33',
                 // borderBottomWidth: 1,
                 // borderBottomColor: "#948E8E",
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   },
 
   link: {
-    maxWidth: "70%",
+    maxWidth: "50%",
     marginBottom: 5,
     borderBottomWidth: 1,
     borderBottomColor: "#948E8E",

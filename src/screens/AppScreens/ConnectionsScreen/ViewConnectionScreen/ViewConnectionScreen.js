@@ -13,6 +13,7 @@ import {
 import React, { useEffect, useState } from "react";
 
 import { RFPercentage } from "react-native-responsive-fontsize";
+import * as FileSystem from "expo-file-system";
 // import * as Location from "expo-location";
 
 import { useContext } from "react";
@@ -134,6 +135,51 @@ export default function ViewConnectionScreen() {
   const onAddContactPressed = () => {
     addConnection(userConnectionData.usr_uuid);
   };
+
+  const downloadFile = async (url, fileName) => {
+    // const downloadDest = FileSystem.documentDirectory + fileName;
+    // try {
+    //   const { uri } = await FileSystem.downloadAsync(url, downloadDest)
+    //   .then(({uri}) => {
+    //     console.log("Finished downloading to ", uri)
+    //   }).catch(error => {
+    //     console.error(error)
+    //   })
+    // } catch (error) {
+    //   console.log(error)
+    // }
+
+    // FileSystem.downloadAsync(
+    //   'http://192.168.1.15:8000/files/' + fileName,
+    //   FileSystem.documentDirectory + 'file.pdf'
+    // )
+    //   .then(({ uri }) => {
+    //     console.log('Finished downloading to ', uri);
+    //   })
+    //   .catch(error => {
+    //     console.error(error);
+    //   });
+    let remoteURL = `http://192.168.1.15:8000/files/` + fileName;
+    let localPath = `${FileSystem.documentDirectory}test.pdf`;
+    try {
+      const downloadUrl = FileSystem.documentDirectory + fileName;
+      const { uri } = await FileSystem.downloadAsync(remoteURL, localPath);
+      console.log("Finished downloading to ", uri);
+      Linking.openURL(localPath);
+    } catch (e) {
+      console.error(e);
+    }
+    // const { uri } = await FileSystem.createDownloadResumable(
+    //   url,
+    //   FileSystem.documentDirectory + fileName,
+    //   {},
+    //   (downloadProgress) => {
+    //     console.log(`Download progress: ${downloadProgress.totalBytesWritten} / ${downloadProgress.totalBytesExpectedToWrite}`);
+    //   }
+    // ).downloadAsync();
+    // console.log(`File downloaded to: ${uri}`);
+  };
+
   return (
     <View style={GlobalStyles.root}>
       <Modal
@@ -327,8 +373,12 @@ export default function ViewConnectionScreen() {
                     Linking.openURL(
                       `${BASE_URL}api/downloadFile/` + item.uln_file
                     );
-                    console.log(item.uln_file);
-                    console.log(item.uln_original_file_name);
+                    // let url = `${BASE_URL}files/` + item.uln_file;
+                    // let fileName = item.uln_file;
+                    // downloadFile(url, fileName);
+
+                    // console.log(url);
+                    // console.log(item.uln_original_file_name);
                   } else {
                     // if(Linking.canOpenURL(item.uln_url)){
                     //   console.log("ulol")

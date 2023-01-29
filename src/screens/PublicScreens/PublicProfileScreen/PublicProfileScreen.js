@@ -25,7 +25,6 @@ import { AuthContext } from "../../../context/AuthContext";
 import { BASE_URL } from "../../../config";
 
 import { FontAwesome5 } from "@expo/vector-icons";
-import { FontAwesome } from "@expo/vector-icons";
 import { Avatar } from "react-native-paper";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import { Link, useNavigation, useScrollToTop } from "@react-navigation/native";
@@ -95,6 +94,7 @@ export default function PublicProfileScreen({ route }) {
     setPublicProfileLoading,
     addLinkTap,
     addProfileTap,
+
   } = useContext(AuthContext);
 
   const {
@@ -103,10 +103,12 @@ export default function PublicProfileScreen({ route }) {
 
   const [userUUID, setUserUUID] = useState();
   const [directLinkActive, setDirectLinkActive] = useState();
+  const [errorURLModalVisible, setErrorURLModalVisible] = useState(false);
 
   useEffect(() => {
     setPublicProfileLoading(true);
     getUserUUID();
+    
     showPublicProfile(id);
   }, [id]);
 
@@ -116,40 +118,25 @@ export default function PublicProfileScreen({ route }) {
   const [linkID, setLinkID] = useState();
   const [linkImage, setLinkImage] = useState();
 
-  const [optionsModalVisible, setOptionsModalVisible] = useState(false);
   const [paymentImageVisible, setPaymentImageVisible] = useState(false);
   const [paymentImage, setPaymentImage] = useState();
 
-  const [errorURLModalVisible, setErrorURLModalVisible] = useState(false);
-  async function checkDirectLink() {
-    setDirectLinkActive(publicProfileInfo.usr_is_direct_link_active);
-  }
 
+  const navigation = useNavigation();
   async function getUserUUID() {
     setUserUUID(await SecureStore.getItemAsync("userUUID"));
-    if (userUUID) {
-      navigation.navigate("PublicProfileScreen");
-    }
-    //   const userUUID = SecureStore.getItemAsync("userUUID");
-    //   const userToken = SecureStore.getItemAsync("userToken");
   }
 
   const onHomePressed = () => {
     navigation.navigate("AuthStack", { screen: "WelcomeScreen" });
-    console.log("WELCOME");
   };
 
   const onBackPressed = () => {
     navigation.navigate("AuthStack", { screen: "HomeScreen" });
-    console.log("Home");
   };
 
   const onAddContactPressed = () => {
     addConnection(publicProfileInfo.usr_uuid);
-  };
-
-  const onAuthBack = () => {
-    navigation.navigate("AppScreens", { screen: "PublicProfileScreen" });
   };
 
   const closeModal = () => {
@@ -160,7 +147,6 @@ export default function PublicProfileScreen({ route }) {
 
   const onRefresh = () => {};
 
-  const navigation = useNavigation();
 
   return (
     // <View style={{flex: 1, justifyContent:'center', alignItems:'center'}}>
@@ -469,6 +455,7 @@ export default function PublicProfileScreen({ route }) {
       )}
     </View>
   );
+
 }
 
 const styles = StyleSheet.create({

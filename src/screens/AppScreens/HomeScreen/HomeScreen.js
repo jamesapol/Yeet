@@ -523,6 +523,7 @@ export default function HomeScreen() {
                 if (text.includes(" ")) {
                   setLinkURLContent(text.trim());
                 } else {
+                  setError("none")
                   // if (){}
                   // console.log(text);
                   setLinkURLContent(text);

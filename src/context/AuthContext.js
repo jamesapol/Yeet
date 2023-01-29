@@ -424,7 +424,7 @@ export const AuthProvider = ({ children }) => {
           setModalHeader("Cover Photo Upload Error");
           setModalMessage(response.data.coverPhotoError);
         } else {
-          let userInfo = response.data.success;
+          let userInfo = response.data.user;
           setUpdateSuccessModalVisible(true);
           setUserInfo(userInfo);
         }
