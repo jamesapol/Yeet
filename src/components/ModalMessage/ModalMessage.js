@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
 
   modalHeader: {
     fontWeight: "900",
-    fontSize: RFPercentage(2.3),
+    fontSize: RFPercentage(2.5),
   },
 
   modalContent: {
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   },
 
   modalMessage: {
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(1.7),
     textAlign: "center",
   },
 

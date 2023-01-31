@@ -74,6 +74,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: height * 0.013,
+    
   },
 
   icon: {

@@ -12,16 +12,16 @@ export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   //LOGGED IN USER ALL DATA
+  const [validToken, setValidToken] = useState(false);
+
   const [userInfo, setUserInfo] = useState({});
+  const [accountStatus, setAccountStatus] = useState();
   const [userNFCDevices, setUserNFCDevices] = useState({});
   const [userActiveNFCDevice, setUserActiveNFCDevice] = useState({});
   const [notificationCount, setNotificationCount] = useState();
 
   const [nfcDeviceLoading, setNfcDeviceLoading] = useState(false);
   const [userInfoLoading, setUserInfoLoading] = useState(false);
-
-  //LOGIN ATTEMPTS
-  const [attemptCount, setAttemptCount] = useState(0);
 
   //PASSWORD MATCHING
   const [passwordMatched, setPasswordMatched] = useState(false);
@@ -44,7 +44,6 @@ export const AuthProvider = ({ children }) => {
   const [addLinkLoading, setAddLinkLoading] = useState(false);
   const [showAddLinkMessage, setShowAddLinkMessage] = useState(false);
 
-  const [linksUserDoesNotHave, setLinksUserDoesNotHave] = useState({});
   const [userDirectLink, setUserDirectLink] = useState();
   const [userDirectLinkID, setUserDirectLinkID] = useState();
   //GET ALL CONNECTIONS OF USER
@@ -94,12 +93,6 @@ export const AuthProvider = ({ children }) => {
   //MODAL MESSAGE ERROR OR SUCCESS
   const [modalMessage, setModalMessage] = useState("");
 
-  //PREVIEW PROFILE STUFF
-  const [previewName, setPreviewName] = useState();
-  const [previewBio, setPreviewBio] = useState();
-  const [previewProfilePhotoURI, setPreviewProfilePhotoURI] = useState();
-  const [previewCoverPhotoURI, setPreviewCoverPhotoURI] = useState();
-
   const [publicProfileInfo, setPublicProfileInfo] = useState({});
   const [publicProfileLinks, setPublicProfileLinks] = useState({});
   const [publicProfileDirectLink, setPublicProfileDirectLink] = useState();
@@ -109,9 +102,6 @@ export const AuthProvider = ({ children }) => {
   const [userNotifications, setUserNotifications] = useState({});
   const [userNotificationsLoading, setUserNotificationsLoading] =
     useState(false);
-  const [notificationConnection, setNotificationConnection] = useState({});
-  const [notificationConnectionLinks, setNotificationConnectionLinks] =
-    useState({});
 
   //INSIGHTS
   const [userProfileTaps, setUserProfileTaps] = useState();
@@ -123,6 +113,7 @@ export const AuthProvider = ({ children }) => {
   const [userTheme, setUserTheme] = useState({});
 
   //MODAL STATES
+  const [welcomeModalVisible, setWelcomeModalVisible] = useState(false);
   const [loginModalVisible, setLoginModalVisible] = useState(false);
   const [successPasswordModalVisible, setSuccessPasswordModalVisible] =
     useState(false);
@@ -157,6 +148,14 @@ export const AuthProvider = ({ children }) => {
     updatePasswordSuccessModalVisible,
     setUpdatePasswordSuccessModalVisible,
   ] = useState(false);
+  const [invalidPasswordModalVisible, setInvalidPasswordModalVisible] =
+    useState(false);
+  const [deactivateModalVisible, setDeactivateModalVisible] = useState(false);
+  const [reactivateModalVisible, setReactivateModalVisible] = useState(false);
+  const [deleteAccountModalVisible, setDeleteAccountModalVisible] =
+    useState(false);
+  const [finalConfirmationModalVisible, setFinalConfirmationModalVisible] =
+    useState(false);
 
   //LOADING STATES
   const [loginLoading, setLoginLoading] = useState(false);
@@ -165,6 +164,7 @@ export const AuthProvider = ({ children }) => {
 
   const [publicProfileLoading, setPublicProfileLoading] = useState(false);
   const [insightsLoading, setInsightsLoading] = useState(false);
+  const [manageAccountLoading, setManageAccountLoading] = useState(false);
 
   //REGISTRATION STEP 1
   const checkEmailAvailability = (email, password, confirmPassword) => {
@@ -258,7 +258,6 @@ export const AuthProvider = ({ children }) => {
     mobileNumber
   ) => {
     setUserInfoLoading(true);
-    setUserLinksLoading(true);
     if (!fileUri) {
       await axios
         .post(`${BASE_URL}api/register`, {
@@ -273,19 +272,13 @@ export const AuthProvider = ({ children }) => {
 
           let userInfo = response.data;
           setUserInfo(userInfo.user);
-          setUserActiveNFCDevice(userInfo.activeNFCDevice);
-          setUserNFCDevices(userInfo.nfcDevice);
           setUserToken(userInfo.token);
-          setUserDirectLink(userInfo.user.usr_direct_link_active);
-          setUserDirectLinkID(userInfo.user.uln_id);
-          setUserLinks(userInfo.userLinks);
           setUserTheme(userInfo.userTheme);
 
           SecureStore.setItemAsync("userUUID", userInfo.user.usr_uuid);
           SecureStore.setItemAsync("userToken", userInfo.token);
 
           setUserInfoLoading(false);
-          setUserLinksLoading(false);
           console.log(userInfo);
         })
         .catch((e) => {
@@ -323,50 +316,21 @@ export const AuthProvider = ({ children }) => {
 
           let userInfo = response.data;
           setUserInfo(userInfo.user);
-          setUserActiveNFCDevice(userInfo.activeNFCDevice);
-          setUserNFCDevices(userInfo.nfcDevice);
           setUserToken(userInfo.token);
-          setUserDirectLink(userInfo.user.usr_direct_link_active);
-          setUserDirectLinkID(userInfo.user.uln_id);
-          setUserLinks(userInfo.userLinks);
           setUserTheme(userInfo.userTheme);
 
           SecureStore.setItemAsync("userUUID", userInfo.user.usr_uuid);
           SecureStore.setItemAsync("userToken", userInfo.token);
 
           setUserInfoLoading(false);
-          setUserLinksLoading(false);
           console.log(userInfo);
         })
         .catch((error) => {
           console.log(error);
           setUserInfoLoading(false);
-          setUserLinksLoading(false);
+          setRegistered(false);
         });
     }
-    ///////////////THIS IS WORKING/////////////
-    // await fetch(`${BASE_URL}api/register`, {
-    //   method: "POST",
-    //   body: formData,
-    //   headers: {
-    //     Accept: "application/json",
-    //     "Content-Type": "multipart/form-data",
-    //   },
-    // })
-    //   .then((response) => {
-    //     console.log("YAWA");
-    //     console.log(response.data);
-    //     response.json();
-    //     setIsLoading(false);
-    //     setRegistered(true);
-    //   })
-    //   .catch((error) => {
-    //     console.log("ANIMAL");
-    //     console.log(error);
-    //     setIsLoading(false);
-    //     setRegistered(false);
-    //   });
-    //////////////////////////////////////////
   };
 
   const updateProfile = async (
@@ -688,7 +652,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const deactivateAccount = async (password) => {
-    setIsLoading(true);
+    setManageAccountLoading(true);
 
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
@@ -705,34 +669,48 @@ export const AuthProvider = ({ children }) => {
       )
       .then((response) => {
         if (response.data.passwordError) {
-          setShowModal(true);
-          setModalHeader("Error");
+          setInvalidPasswordModalVisible(true);
+          setModalHeader("Invalid Password");
           setModalMessage(response.data.passwordError);
         } else if (response.data.success) {
-          setShowModal(true);
-          setModalHeader("Success");
+          setDeactivateModalVisible(true);
+          setModalHeader("Account Deactivated");
           setModalMessage(response.data.success);
-
-          SecureStore.deleteItemAsync("userInfo");
-          SecureStore.deleteItemAsync("userUUID");
-          SecureStore.deleteItemAsync("userToken");
-          // AsyncStorage.removeItem("userInfo");
-          setUserToken(null);
-          setUserLinks({});
-          setUserInfo({});
-          setUserActiveNFCDevice({});
-          setUserNFCDevices({});
-          setAllLinks({});
-          setUserConnections({});
-          setUserConnectionData({});
-          setUserConnectionLinks({});
         }
         console.log(response.data);
-        setIsLoading(false);
+        setManageAccountLoading(false);
       })
       .catch((error) => {
         console.log(error);
-        setIsLoading(false);
+        setManageAccountLoading(false);
+      });
+  };
+
+  const deleteAccount = async () => {
+    setManageAccountLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .patch(
+        `${BASE_URL}api/deleteAccount/${userUUID}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        setDeleteAccountModalVisible(true);
+        setModalHeader("Account Deleted");
+        setModalMessage(response.data.success);
+
+        console.log(response.data);
+        setManageAccountLoading(false);
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setManageAccountLoading(false);
       });
   };
 
@@ -896,16 +874,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const checkPassword = async (password) => {
-    setIsLoading(true);
-
+    setManageAccountLoading(true);
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
 
     await axios
       .post(
-        `${BASE_URL}api/checkPassword/${userUUID}`,
+        `${BASE_URL}api/checkPassword`,
         {
           password: password,
+          userUUID: userUUID,
         },
         {
           headers: { Authorization: `Bearer ${userToken}` },
@@ -914,15 +892,19 @@ export const AuthProvider = ({ children }) => {
       .then((response) => {
         if (response.data.passwordError) {
           setPasswordMatched(false);
+          setInvalidPasswordModalVisible(true);
+          setModalHeader("Password Error");
+          setModalMessage("You have entered an invalid password.");
         } else if (response.data.success) {
+          console.log(response.data.success);
           setPasswordMatched(true);
         }
         console.log(passwordMatched);
-        setIsLoading(false);
+        setManageAccountLoading(false);
       })
       .catch((e) => {
         console.log(e);
-        setIsLoading(false);
+        setManageAccountLoading(false);
       });
   };
 
@@ -940,8 +922,6 @@ export const AuthProvider = ({ children }) => {
           setLoginModalVisible(true);
           setModalHeader("Error");
           setModalMessage(response.data.emailError);
-          // setAttemptCount(attemptCount + 1);
-          // console.log(attemptCount);
           console.log(response.data);
         } else if (response.data.passwordError) {
           setLoginModalVisible(true);
@@ -961,8 +941,11 @@ export const AuthProvider = ({ children }) => {
           setModalMessage(response.data.blockedAccount);
           console.log(response.data);
         } else {
-          setAttemptCount(0);
-          let userInfo = response.data;
+          let userInfo = response.data.userData;
+          setReactivateModalVisible(true);
+          setModalHeader("Welcome Back");
+          setModalMessage("Welcome back! We are happy to see you again!");
+          setAccountStatus(userInfo.accountStatus);
           setUserInfo(userInfo.user);
           setUserActiveNFCDevice(userInfo.activeNFCDevice);
           setUserNFCDevices(userInfo.nfcDevice);
@@ -1015,8 +998,8 @@ export const AuthProvider = ({ children }) => {
         setSplashLoading(false);
       })
       .catch((e) => {
+        console.log(e.response.status);
         console.log(e.response.data);
-        console.log(userInfo.token);
         setIsLoading(false);
       });
   };
@@ -1049,18 +1032,20 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
-  const getUserData = async (uuid, token) => {
+  const getUserData = async () => {
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
     // setIsLoading(true);
     setUserInfoLoading(true);
     await axios
-      .get(`${BASE_URL}api/getUserData/${uuid}`, {
+      .get(`${BASE_URL}api/getUserData/${userUUID}`, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${userToken}`,
         },
       })
       .then((response) => {
         // console.log(response.data.user);
-        let userInfo = response.data;
+        let userInfo = response.data.userData;
         setUserInfo(userInfo.user);
         setUserActiveNFCDevice(userInfo.activeNFCDevice);
         setUserNFCDevices(userInfo.nfcDevice);
@@ -1085,13 +1070,21 @@ export const AuthProvider = ({ children }) => {
 
         setShowModal(false);
       })
-      .catch((e) => {
-        console.log("User Data Error: " + e.response.data);
-        // console.log(userInfo.uuid)
+      .catch((error) => {
+        if (error.response.status === 401) {
+          console.log("Data Error: " + error.response.status);
+
+          setWelcomeModalVisible(true);
+          setModalHeader("Login Error");
+          setModalMessage(
+            "Oops! It seems your current login has expired. Please sign in again to continue."
+          );
+
+          clearAll();
+        }
+
         setUserInfoLoading(false);
         setSplashLoading(false);
-        setShowModal(true);
-        setErrorMessage("Please check your connection!");
       });
   };
 
@@ -1117,28 +1110,6 @@ export const AuthProvider = ({ children }) => {
       .catch((error) => {
         console.log(error.response.data);
         setRefreshing(false);
-        setIsLoading(false);
-      });
-  };
-
-  const getLinksUserDoesNotHave = async () => {
-    setIsLoading(true);
-
-    let userUUID = await SecureStore.getItemAsync("userUUID");
-    let userToken = await SecureStore.getItemAsync("userToken");
-
-    await axios
-      .get(`${BASE_URL}api/getLinksUserDoesNotHave/${userUUID}`, {
-        headers: { Authorization: `Bearer ${userToken}` },
-      })
-      .then((response) => {
-        let linksUserDoesNotHave = response.data;
-        // console.log(linksUserDoesNotHave);
-        setLinksUserDoesNotHave(linksUserDoesNotHave);
-        setIsLoading(false);
-      })
-      .catch((e) => {
-        console.log(e);
         setIsLoading(false);
       });
   };
@@ -1684,11 +1655,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const removeDirectLink = async () => {
-    // setUserInfoLoading(true);
-
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
-
     await axios
       .patch(
         `${BASE_URL}api/removeDirectLink/${userUUID}`,
@@ -1699,12 +1667,9 @@ export const AuthProvider = ({ children }) => {
       )
       .then((response) => {
         console.log(response.data);
-        // getUserData(userUUID, userToken);
-        // setIsLoading(false);
       })
       .catch((error) => {
         console.log(error.response);
-        setIsLoading(false);
       });
   };
 
@@ -1716,6 +1681,28 @@ export const AuthProvider = ({ children }) => {
 
     await axios
       .get(`${BASE_URL}api/getConnections/${userUUID}`, {
+        headers: { Authorization: `Bearer ${userToken}` },
+      })
+      .then((response) => {
+        let userConnections = response.data.connections;
+        setUserConnections(userConnections);
+        console.log(userConnections);
+        setUserConnectionsLoading(false);
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setUserConnectionsLoading(false);
+      });
+  };
+
+  const searchUserConnections = async (searchKey) => {
+    setUserConnectionsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .get(`${BASE_URL}api/searchConnections/${userUUID}/${searchKey}`, {
         headers: { Authorization: `Bearer ${userToken}` },
       })
       .then((response) => {
@@ -2500,6 +2487,27 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  const checkToken = async () => {
+    let userToken = await SecureStore.getItemAsync("userToken");
+    if (userToken) {
+      await axios
+        .get(`${BASE_URL}api/checkToken`, {
+          headers: { Authorization: `Bearer ${userToken}` },
+        })
+        .then((response) => {
+          if (response.data.error) {
+            setValidToken(false);
+          } else {
+            setValidToken(true);
+          }
+        })
+        .catch((error) => {
+          console.log(error.response.data);
+        });
+    } else {
+    }
+  };
+
   const isLoggedIn = async () => {
     try {
       setSplashLoading(true);
@@ -2523,39 +2531,55 @@ export const AuthProvider = ({ children }) => {
         setUserConnectionsLoading(false);
         setShowModal(false);
         console.log("No userUUID and userToken");
-      } else if (userUUID && userToken) {
+      }
+      // CHECK TOKEN FIRST IF VALID OR NOT
+      else if (userUUID && userToken) {
         await axios
           .get(`${BASE_URL}api/getUserData/${userUUID}`, {
-            headers: {
-              Authorization: `Bearer ${userToken}`,
-            },
+            headers: { Authorization: `Bearer ${userToken}` },
           })
           .then((response) => {
+            if (response.status === 401) {
+              setWelcomeModalVisible(true);
+              setModalHeader("Login Error");
+              setModalMessage(
+                "Oops! It seems your current login has expired. Please sign in again to continue."
+              );
+              clearAll();
+              console.log(response);
+            }
             // console.log(response.data.user);
-            let userInfo = response.data;
-            let userTheme = response.data.userTheme;
+            if (response.data.userNotFound) {
+              console.log(response.data.userNotFound);
+              setWelcomeModalVisible(true);
+              setModalHeader("Login Timeout");
+              setModalMessage(
+                "Oops! It seems your current login has expired. Please sign in again to continue."
+              );
+              clearAll();
+            } else if (response.data.userData) {
+              let userInfo = response.data.userData;
+              console.log(response.data.userData);
 
-            setUserInfo(userInfo.user);
-            setUserActiveNFCDevice(userInfo.activeNFCDevice);
-            setUserNFCDevices(userInfo.nfcDevice);
-            setUserToken(userInfo.token);
-            setUserDirectLink(userInfo.user.usr_direct_link_active);
-            setUserDirectLinkID(userInfo.user.uln_id);
-            setUserLinks(userInfo.userLinks);
-            setUserTheme(userInfo.userTheme);
-            setNotificationCount(userInfo.notificationCount);
-
-            console.log("Logged In as: " + userInfo.user.usr_email);
-            console.log(
-              "Direct Link Active: " + userInfo.user.usr_direct_link_active
-            );
-            console.log("Direct Link ID: " + userInfo.user.uln_id);
-            console.log("Notification Count: " + userInfo.notificationCount);
-            // setRefreshing(false);
-            // setIsLoading(false);
+              setUserInfo(userInfo.user);
+              setUserActiveNFCDevice(userInfo.activeNFCDevice);
+              setUserNFCDevices(userInfo.nfcDevice);
+              setUserToken(userInfo.token);
+              setUserDirectLink(userInfo.user.usr_direct_link_active);
+              setUserDirectLinkID(userInfo.user.uln_id);
+              setUserLinks(userInfo.userLinks);
+              setUserTheme(userInfo.userTheme);
+              setNotificationCount(userInfo.notificationCount);
+              console.log("Logged In as: " + userInfo.user.usr_email);
+              console.log(
+                "Direct Link Active: " + userInfo.user.usr_direct_link_active
+              );
+              console.log("Direct Link ID: " + userInfo.user.uln_id);
+              console.log("Notification Count: " + userInfo.notificationCount);
+            }
+            console.log("YAWA");
             setSplashLoading(false);
             setUserInfoLoading(false);
-            // setIsLoading(false);
             setPublicLoading(false);
             setAddLinkLoading(false);
             setUserLinksLoading(false);
@@ -2563,10 +2587,22 @@ export const AuthProvider = ({ children }) => {
             setUserConnectionsLoading(false);
             setShowModal(false);
           })
-          .catch((e) => {
-            console.log("Logged In User Data Error: " + e.response.data);
+          .catch((error) => {
+            if (error.response.status === 401) {
+              console.log("Data Error: " + error.response.status);
+
+              setWelcomeModalVisible(true);
+              setModalHeader("Login Expired");
+              setModalMessage(
+                "Oops! It seems your current login has expired. Please sign in again to continue."
+              );
+              clearAll();
+            }
+
+            // console.log("Data Error");
             setSplashLoading(false);
-            // console.log(userInfo.uuid)setSplashLoading(false);
+            // console.log(userInfo.uuid)
+            setSplashLoading(false);
             setUserInfoLoading(false);
             // setIsLoading(false);
             setPublicLoading(false);
@@ -2576,25 +2612,50 @@ export const AuthProvider = ({ children }) => {
             setUserConnectionsLoading(false);
             setShowModal(false);
             setShowModal(true);
-            setErrorMessage("Please check your connection!");
           });
       }
     } catch (e) {
       setSplashLoading(false);
-      console.log(e);
+      console.log("Error :" + e);
     }
+  };
+
+  const clearAll = () => {
+    SecureStore.deleteItemAsync("userUUID");
+    SecureStore.deleteItemAsync("userToken");
+
+    setUserInfo({});
+    setUserNFCDevices({});
+    setUserActiveNFCDevice({});
+    setNotificationCount();
+    setUserBlockedConnections({});
+    setUserToken();
+    setUserLinks({});
+    setAllLinks({});
+    setUserDirectLink();
+    setUserDirectLinkID();
+    setUserConnections({});
+    setUserConnectionData({});
+    setUserConnectionLinks({});
+    setUserConnectionStatus();
+    setUserBlockStatus();
+    setUserPrivateStatus();
+    setPublicProfileInfo({});
+    setPublicProfileLinks({});
+    setPublicProfileDirectLink();
+    setPublicConnectionStatus();
+    setUserNotifications({});
+    setUserProfileTaps({});
+    setUserLinksInsights({});
+    setTotalUserLinkTaps();
+    setTotalUserConnections();
+    setTotalProfileViews();
+    setUserTheme({});
   };
 
   useEffect(() => {
     isLoggedIn();
   }, []);
-
-  useEffect(() => {
-    if (attemptCount >= 3) {
-      console.log("PRISO");
-    }
-    console.log(attemptCount);
-  }, [attemptCount]);
 
   return (
     <AuthContext.Provider
@@ -2661,6 +2722,8 @@ export const AuthProvider = ({ children }) => {
         setSuccessMessage,
         successMessage,
         login,
+        accountStatus,
+        setAccountStatus,
         getUserLinks,
         setUserLinks,
         userLinks,
@@ -2700,8 +2763,6 @@ export const AuthProvider = ({ children }) => {
 
         //VIEW LINKS THAT USER DOES NOT HAVE
         //SECOND OPTION
-        linksUserDoesNotHave,
-        getLinksUserDoesNotHave,
 
         //ADD LINKS
         addLink,
@@ -2753,6 +2814,7 @@ export const AuthProvider = ({ children }) => {
         getUserConnections,
         userConnections,
         setUserConnections,
+        searchUserConnections,
         showUserConnection,
         userConnectionStatus,
         setUserConnectionStatus,
@@ -2785,16 +2847,6 @@ export const AuthProvider = ({ children }) => {
         userLinksLoading,
         userConnectionsLoading,
 
-        //PREVIEW STATES
-        previewName,
-        previewBio,
-        previewProfilePhotoURI,
-        previewCoverPhotoURI,
-        setPreviewName,
-        setPreviewBio,
-        setPreviewProfilePhotoURI,
-        setPreviewCoverPhotoURI,
-
         //publicProfile
         showPublicProfile,
         publicProfileInfo,
@@ -2806,6 +2858,7 @@ export const AuthProvider = ({ children }) => {
 
         //DEACTIVATE/DELETE ACCOUNT
         deactivateAccount,
+        deleteAccount,
 
         //DOWNLOAD AS VCF
         downloadVCF,
@@ -2835,6 +2888,10 @@ export const AuthProvider = ({ children }) => {
         addProfileView,
         totalProfileViews,
         setTotalProfileViews,
+        insightsLoading,
+        setInsightsLoading,
+        manageAccountLoading,
+        setManageAccountLoading,
 
         //MODAL SHOW STATES
         loginModalVisible,
@@ -2871,8 +2928,21 @@ export const AuthProvider = ({ children }) => {
         setUpdatePasswordErrorModalVisible,
         updatePasswordSuccessModalVisible,
         setUpdatePasswordSuccessModalVisible,
-        insightsLoading,
-        setInsightsLoading,
+        welcomeModalVisible,
+        setWelcomeModalVisible,
+        deactivateModalVisible,
+        setDeactivateModalVisible,
+        invalidPasswordModalVisible,
+        setInvalidPasswordModalVisible,
+        reactivateModalVisible,
+        setReactivateModalVisible,
+        deleteAccountModalVisible,
+        setDeleteAccountModalVisible,
+        finalConfirmationModalVisible,
+        setFinalConfirmationModalVisible,
+
+        //clear all
+        clearAll,
       }}
     >
       {children}

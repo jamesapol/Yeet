@@ -25,6 +25,8 @@ import { AuthContext } from "../../../context/AuthContext";
 import { BASE_URL } from "../../../config";
 
 import { FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome } from '@expo/vector-icons';
+
 import { Avatar } from "react-native-paper";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import { Link, useNavigation, useScrollToTop } from "@react-navigation/native";

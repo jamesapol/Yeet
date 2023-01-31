@@ -9,13 +9,14 @@ import {
   Vibration,
   Modal,
 } from "react-native";
-import React, { useContext, useRef } from "react";
+import React, { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { RFPercentage } from "react-native-responsive-fontsize";
 
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 
 import PageHeader from "../../../components/PageHeader";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { BASE_URL } from "../../../config";
 import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen";
@@ -31,6 +32,7 @@ import ModalMultilineInput from "../../../components/ModalMultilineInput/ModalMu
 import ModalWithButtons from "../../../components/ModalWithButtons/ModalWithButtons";
 import { Colors, GlobalStyles } from "../../../styles/GlobalStyles";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
+import CustomInput from "../../../components/CustomInput/CustomInput";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -159,6 +161,7 @@ export default function ConnectionsScreen() {
     modalHeader,
     modalMessage,
     addProfileView,
+    searchUserConnections,
   } = useContext(AuthContext);
 
   const [refreshFlatList, setRefreshFlatList] = useState(false);
@@ -251,6 +254,16 @@ export default function ConnectionsScreen() {
     navigation.navigate("AddConnectionQRScreen");
   };
 
+  useEffect(() => {
+    if (searchKey == "") {
+      getUserConnections();
+    }
+    if (!searchKey.trim().length) {
+      return;
+    }
+    searchUserConnections(searchKey);
+  }, [searchKey]);
+
   return (
     <View style={GlobalStyles.root}>
       {userConnectionsLoading == true || isLoading == true ? (
@@ -264,11 +277,11 @@ export default function ConnectionsScreen() {
         visible={showSuccessModal}
         onRequestClose={closeModal}
       >
-          <ModalMessage
-            modalHeader={modalHeader}
-            modalMessage={modalMessage}
-            onOKPressed={closeModal}
-          />
+        <ModalMessage
+          modalHeader={modalHeader}
+          modalMessage={modalMessage}
+          onOKPressed={closeModal}
+        />
       </Modal>
 
       {/* LEAVE NOTE MODAL */}
@@ -377,19 +390,38 @@ export default function ConnectionsScreen() {
         />
       </Modal>
 
-      <View>
-        <PageHeader
-          headerText="Connections"
-          iconColor={Colors.yeetPurple}
-          textColor={Colors.yeetPurple}
-          display="none"
-          iconType="MaterialCommunityIcons"
-          pageActionIcon="qrcode-plus"
-          pageActionColor={Colors.yeetPurple}
-          pageActionVisible="flex"
-          pageAction={onAddConnectionPressed}
-        />
-      </View>
+      <PageHeader
+        headerText="Connections"
+        iconColor={Colors.yeetPurple}
+        textColor={Colors.yeetPurple}
+        display="none"
+        iconType="MaterialCommunityIcons"
+        pageActionIcon="qrcode-plus"
+        pageActionColor={Colors.yeetPurple}
+        pageActionVisible="flex"
+        pageAction={onAddConnectionPressed}
+      />
+
+      {userConnectionsLoading == false ? (
+        <View style={styles.searchBarContainer}>
+          <CustomInput
+            placeholder="Search. . ."
+            style={styles.searchBar}
+            onChangeText={(text) => setSearchKey(text)}
+            autoCapitalize
+            autoFocus
+          />
+          <View style={{ paddingHorizontal: "3%" }}>
+            <MaterialCommunityIcons
+              // onPress={togglePasswordHidden}
+              name="account-search"
+              size={RFPercentage(4)}
+              color="#562C73"
+            />
+          </View>
+        </View>
+      ) : null}
+      {/* <View style={{ backgroundColor: "gray" }}></View> */}
       <FlatList
         onRefresh={onRefresh}
         refreshing={refreshing}
@@ -411,7 +443,7 @@ export default function ConnectionsScreen() {
               onPress={() => {
                 showUserConnection(item.usr_uuid);
                 onConnectionPressed();
-                console.log(item.con_id)
+                console.log(item.con_id);
               }}
               onOptionsPressed={() => {
                 setConnectionConnUUID(item.con_uuid);
@@ -432,7 +464,7 @@ export default function ConnectionsScreen() {
                 setConnectionBio(item.usr_bio);
                 setConnectionNotes(item.con_notes);
                 refRBSheet.current.open();
-                console.log(item.con_id)
+                console.log(item.con_id);
               }}
             />
           );
@@ -662,5 +694,24 @@ const styles = StyleSheet.create({
     fontSize: RFPercentage(1.5),
     fontWeight: "bold",
     color: Colors.yeetPink,
+  },
+
+  searchBarContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    // backgroundColor: "#000",
+    backgroundColor: "#DEE0E2",
+    borderRadius: 30,
+
+    paddingLeft: width * 0.03,
+    paddingVertical: height * 0.001,
+    marginVertical: height * 0.008,
+    marginHorizontal: width * 0.05,
+  },
+
+  searchBar: {
+    fontSize: RFPercentage(3),
+    paddingHorizontal: width * 0.03,
   },
 });

@@ -39,18 +39,10 @@ var { height } = Dimensions.get("window");
 
 export default function ViewConnectionScreen() {
   const {
-    userInfo,
-    userToken,
-    refreshing,
-    setRefreshing,
     isLoading,
-    getUserData,
-    userLinks,
-    getUserLinks,
     userConnectionData,
     userConnectionLinks,
     userConnectionStatus,
-    publicConnectionStatus,
     downloadVCF,
     addConnection,
     publicLoading,
@@ -233,8 +225,21 @@ export default function ViewConnectionScreen() {
           onOKPressed={closeModal}
         />
       </Modal>
-
-      {userBlockStatus == 0 || !userBlockStatus ? (
+      <PageHeader
+        headerText="View Profile"
+        onPress={onBackPressed}
+        pageActionVisible={isLoading == true ? "none" : "flex"}
+        iconType="FontAwesome5"
+        pageActionIcon="address-card"
+        pageAction={() => {
+          Linking.openURL(
+            `${BASE_URL}api/saveContact/${userConnectionData.usr_uuid}`
+          );
+          // setOptionsModalVisible(true);
+          // onDownloadVCFPressed();
+        }}
+      />
+      {!userBlockStatus ? (
         <FlatList
           ref={ref}
           overScrollMode="never"
@@ -243,20 +248,6 @@ export default function ViewConnectionScreen() {
           style={{ backgroundColor: "#fff" }}
           ListHeaderComponent={() => (
             <>
-              <PageHeader
-                headerText="View Profile"
-                onPress={onBackPressed}
-                pageActionVisible={isLoading == true ? "none" : "flex"}
-                iconType="FontAwesome5"
-                pageActionIcon="address-card"
-                pageAction={() => {
-                  Linking.openURL(
-                    `${BASE_URL}api/saveContact/${userConnectionData.usr_uuid}`
-                  );
-                  // setOptionsModalVisible(true);
-                  // onDownloadVCFPressed();
-                }}
-              />
               <View style={styles.mainContainer}>
                 {/* COVER PHOTO */}
                 <View style={GlobalStyles.coverPhotoContainer}>
@@ -360,6 +351,7 @@ export default function ViewConnectionScreen() {
                 // }}
                 onPress={() => {
                   addLinkTap(item.uln_id);
+                  console.log(item.uln_url)
                   if (
                     item.lnk_id == 23 ||
                     item.lnk_id == 24 ||
@@ -380,6 +372,7 @@ export default function ViewConnectionScreen() {
                     // console.log(url);
                     // console.log(item.uln_original_file_name);
                   } else {
+                    console.log(item.lnk_id);
                     // if(Linking.canOpenURL(item.uln_url)){
                     //   console.log("ulol")
                     // }
@@ -435,11 +428,6 @@ export default function ViewConnectionScreen() {
         />
       ) : (
         <View style={{ flex: 1 }}>
-          <PageHeader
-            onPress={onBackPressed}
-            pageActionVisible="none"
-            iconType="FontAwesome5"
-          />
           <View
             style={{ justifyContent: "center", alignItems: "center", flex: 1 }}
           >

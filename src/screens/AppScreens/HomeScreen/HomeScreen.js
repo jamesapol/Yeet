@@ -92,11 +92,10 @@ export default function HomeScreen() {
     setModalMessage,
     setModalHeader,
     editYouTubeLink,
+    accountStatus,
+    reactivateModalVisible,
+    setReactivateModalVisible,
 
-    setPreviewName,
-    setPreviewBio,
-    setPreviewProfilePhotoURI,
-    setPreviewCoverPhotoURI,
     editPaymentPhoto,
     editFile,
 
@@ -166,7 +165,7 @@ export default function HomeScreen() {
   useScrollToTop(ref);
 
   const onRefresh = () => {
-    getUserData(userInfo.usr_uuid, userToken);
+    getUserData();
     // getUserLinks(userInfo.usr_uuid, userToken);
     // setRefreshing(true);
   };
@@ -285,10 +284,6 @@ export default function HomeScreen() {
   };
   const onEditProfilePressed = () => {
     navigation.navigate("EditProfileScreen");
-    setPreviewName();
-    setPreviewBio();
-    setPreviewProfilePhotoURI();
-    setPreviewCoverPhotoURI();
   };
   const onManageLinksPressed = () => {
     navigation.navigate("ManageLinksScreen");
@@ -323,6 +318,7 @@ export default function HomeScreen() {
     setEmbedVideoURLErrorMessage();
     setEmbedVideoThumbnail();
     setOldLink();
+    setReactivateModalVisible(false);
   };
 
   const onCloseErrorPressed = () => {
@@ -380,7 +376,7 @@ export default function HomeScreen() {
 
   const onEmbedVideoSaved = () => {
     console.log(oldLink);
-    if(oldLink == embedVideoURL){
+    if (oldLink == embedVideoURL) {
       setEmbedVideoURLErrorVisible("flex");
       setEmbedVideoURLErrorMessage("THIS IS ALREADY AN EXISTING LINK!");
     }
@@ -454,6 +450,7 @@ export default function HomeScreen() {
     <View style={styles.root}>
       {/* {userInfoLoading == true ? <LoadingScreen /> : null} */}
       {userLinksLoading == true ? <LoadingScreen /> : null}
+
       <View>
         {/* FOR FIRST TIME REGISTRATION */}
         {registered ? (
@@ -473,6 +470,22 @@ export default function HomeScreen() {
         ) : (
           ""
         )}
+        
+        {accountStatus == 0 ? (
+          <Modal
+            transparent
+            animationType="fade"
+            hardwareAccelerated
+            visible={reactivateModalVisible}
+            onRequestClose={onCancelPressed}
+          >
+            <ModalMessage
+              modalHeader={modalHeader}
+              modalMessage={modalMessage}
+              onOKPressed={onCancelPressed}
+            />
+          </Modal>
+        ) : null}
 
         {/* SUCCESS MESSAGE MODAL */}
         <Modal
@@ -488,7 +501,6 @@ export default function HomeScreen() {
             onOKPressed={onCancelPressed}
           />
         </Modal>
-
         {/* ERROR MESSAGE MODAL */}
         <Modal
           transparent
@@ -503,7 +515,6 @@ export default function HomeScreen() {
             onOKPressed={onCloseErrorPressed}
           />
         </Modal>
-
         {/* EDIT LINK MODAL */}
         <Modal
           transparent
@@ -523,7 +534,7 @@ export default function HomeScreen() {
                 if (text.includes(" ")) {
                   setLinkURLContent(text.trim());
                 } else {
-                  setError("none")
+                  setError("none");
                   // if (){}
                   // console.log(text);
                   setLinkURLContent(text);
@@ -538,7 +549,6 @@ export default function HomeScreen() {
             onSavePressed={onSavePressed}
           />
         </Modal>
-
         {/* EDIT CUSTOM LINK MODAL */}
         <Modal
           transparent
@@ -582,7 +592,6 @@ export default function HomeScreen() {
             warningVisible={error}
           />
         </Modal>
-
         {/* EDIT EMBED VIDEO MODAL */}
         <Modal
           transparent
@@ -626,7 +635,6 @@ export default function HomeScreen() {
             onSavePressed={onEmbedVideoSaved}
           />
         </Modal>
-
         {/* SHOW PAYMENT MODAL */}
         <Modal
           transparent
@@ -653,7 +661,6 @@ export default function HomeScreen() {
             }
           />
         </Modal>
-
         {/* SHOW PDF MODAL */}
         <Modal
           transparent
@@ -673,7 +680,6 @@ export default function HomeScreen() {
             onUploadFilePressed={pickPDF}
           />
         </Modal>
-
         <FlatList
           onRefresh={onRefresh}
           refreshing={refreshing}
@@ -871,7 +877,7 @@ export default function HomeScreen() {
                       setEmbedVideoTitle(item.uln_custom_link_name);
                       setEmbedVideoURL(item.uln_url);
                       setLinkIndex(item.uln_id);
-                      setOldLink(item.uln_url)
+                      setOldLink(item.uln_url);
                     } else if (item.lnk_id == 31) {
                       setFileTitle(item.uln_file_title);
                       setFileName(item.uln_original_file_name);
@@ -916,7 +922,7 @@ export default function HomeScreen() {
                     style={{
                       borderRadius: item.lnk_id == 30 ? 20 : null,
                       width: width * 0.13,
-                      height:  width * 0.13,
+                      height: width * 0.13,
                       opacity:
                         userDirectLink == 1
                           ? userDirectLinkID == item.uln_id

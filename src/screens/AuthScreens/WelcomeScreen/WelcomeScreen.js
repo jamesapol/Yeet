@@ -38,8 +38,14 @@ var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
 
 export default function WelcomeScreen() {
-  const { isLoading, showModal, setShowModal, errorMessage } =
-    useContext(AuthContext);
+  const {
+    welcomeModalVisible,
+    setWelcomeModalVisible,
+    errorMessage,
+
+    modalHeader,
+    modalMessage,
+  } = useContext(AuthContext);
 
   //hide bottom drawer
   useFocusEffect(
@@ -59,7 +65,7 @@ export default function WelcomeScreen() {
 
   const navigation = useNavigation();
   const closeModal = () => {
-    setShowModal(false);
+    setWelcomeModalVisible(false);
   };
 
   const onCreateAccountPressed = () => {
@@ -95,12 +101,12 @@ export default function WelcomeScreen() {
           transparent
           animationType="fade"
           hardwareAccelerated
-          visible={showModal}
+          visible={welcomeModalVisible}
           onRequestClose={closeModal}
         >
           <ModalMessage
-            modalHeader="Error"
-            modalMessage={errorMessage}
+            modalHeader={modalHeader}
+            modalMessage={modalMessage}
             onOKPressed={closeModal}
           />
         </Modal>

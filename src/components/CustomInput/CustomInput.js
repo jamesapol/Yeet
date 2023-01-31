@@ -49,7 +49,6 @@ export default function CustomInput({
 const styles = StyleSheet.create({
   root: {
     // backgroundColor: "#DEE0E2",
-
     borderRadius: 30,
     paddingHorizontal: width * 0.01,
     paddingVertical: height * 0.01,
@@ -62,6 +61,8 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    fontSize: RFPercentage(1.6),
+    // paddingVertical: height * 0.01,
+    // backgroundColor: 'red',
+    fontSize: RFPercentage(2),
   },
 });

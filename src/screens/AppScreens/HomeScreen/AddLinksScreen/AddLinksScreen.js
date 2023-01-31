@@ -597,20 +597,15 @@ export default function AddLinksScreen() {
           disabled={file ? false : true}
         />
       </Modal>
-
-      <SectionList
-        overScrollMode="never"
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={() => (
-          <>
-            <PageHeader
+      <PageHeader
               headerText="Add Links"
               iconColor="#562C73"
               textColor="#562C73"
               onPress={onBackPressed}
             />
-          </>
-        )}
+      <SectionList
+        overScrollMode="never"
+        showsVerticalScrollIndicator={false}
         sections={isLoading == false ? allLinks : ""}
         keyExtractor={(item, index) => item + index}
         renderItem={({ item }) => (

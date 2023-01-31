@@ -10,6 +10,7 @@ import React, { useState } from "react";
 import { RFPercentage } from "react-native-responsive-fontsize";
 
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Colors } from "../../styles/GlobalStyles";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -70,21 +71,21 @@ export default function ModalPassword({
           </View>
           <View style={styles.buttonContainer}>
             <TouchableOpacity
+              onPress={onSavePressed}
+              style={styles.saveButtonContainer}
+              activeOpacity={0.4}
+            >
+              <Text style={[styles.buttonText, { color: "#562C73" }]}>
+                Continue
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={onCancelPressed}
               style={styles.cancelButtonContainer}
               activeOpacity={0.4}
             >
               <Text style={[styles.buttonText, { color: "#D81D4C" }]}>
                 Cancel
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={onSavePressed}
-              style={styles.saveButtonContainer}
-              activeOpacity={0.4}
-            >
-              <Text style={[styles.buttonText, { color: "#562C73" }]}>
-                Save
               </Text>
             </TouchableOpacity>
           </View>
@@ -99,7 +100,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#1E1E1E99",
+    // backgroundColor: 'red',
+    backgroundColor: Colors.yeetBackgroundGray,
   },
 
   modal: {
@@ -144,6 +146,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 2,
     borderRadius: 15,
+    borderColor: Colors.yeetPurple,
     paddingHorizontal: width * 0.03,
   },
 
@@ -164,8 +167,8 @@ const styles = StyleSheet.create({
   cancelButtonContainer: {
     height: "100%",
     width: "50%",
-    borderRightColor: "#948E8E",
-    borderRightWidth: 0.5,
+    borderLeftColor: "#948E8E",
+    borderLeftWidth: 0.5,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -178,8 +181,8 @@ const styles = StyleSheet.create({
   saveButtonContainer: {
     height: "100%",
     width: "50%",
-    borderLeftColor: "#948E8E",
-    borderLeftWidth: 0.5,
+    borderRightColor: "#948E8E",
+    borderRightWidth: 0.5,
     justifyContent: "center",
     alignItems: "center",
   },

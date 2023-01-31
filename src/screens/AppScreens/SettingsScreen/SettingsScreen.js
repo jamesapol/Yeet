@@ -77,6 +77,8 @@ export default function SettingsScreen() {
       contentContainerStyle={{ flexGrow: 1 }}
       showsVerticalScrollIndicator={false}
     >
+
+      
       {isLoading == true ? <LoadingScreen /> : null}
       <PageHeader
         headerText="Settings"

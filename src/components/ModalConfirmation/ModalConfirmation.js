@@ -26,19 +26,10 @@ export default function ModalConfirmation({
       <View style={styles.modal}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeaderContainer}>
-            <Text style={styles.modalHeaderText}>{modalHeaderText}</Text>
+              <Text style={styles.modalHeaderText}>{modalHeaderText}</Text>
             <Text style={styles.modalMessage}>{modalMessage}</Text>
           </View>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={onCancelPressed}
-              style={styles.cancelButtonContainer}
-              activeOpacity={0.4}
-            >
-              <Text style={[styles.buttonText, { color: "#562C73" }]}>
-                {cancelText}
-              </Text>
-            </TouchableOpacity>
             <TouchableOpacity
               onPress={onRemovePressed}
               style={styles.removeButtonContainer}
@@ -46,6 +37,15 @@ export default function ModalConfirmation({
             >
               <Text style={[styles.buttonText, { color: "#D81D4C" }]}>
                 {saveText}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={onCancelPressed}
+              style={styles.cancelButtonContainer}
+              activeOpacity={0.4}
+            >
+              <Text style={[styles.buttonText, { color: "#562C73" }]}>
+                {cancelText}
               </Text>
             </TouchableOpacity>
           </View>
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
 
   modal: {
     width: "70%",
-    height: height * 0.15,
+    height: height * 0.2,
     borderRadius: 25,
     backgroundColor: "#ECECEC",
   },
@@ -76,10 +76,10 @@ const styles = StyleSheet.create({
   },
 
   modalHeaderContainer: {
-    width: "100%",
-    height: "70%",
+    width: "80%",
+    height: "80%",
     alignItems: "center",
-    justifyContent: "space-evenly",
+    justifyContent: "space-around",
   },
 
   modalImage: {
@@ -93,19 +93,16 @@ const styles = StyleSheet.create({
 
   modalHeaderText: {
     color: "#562C73",
+    textAlign: "center",
     fontWeight: "bold",
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2.5),
   },
 
   modalMessage: {
+    textAlign: "center",
     color: "#D81D4C",
     fontWeight: "300",
-    fontSize: RFPercentage(1.3),
-  },
-
-  modalHeader: {
-    fontWeight: "bold",
-    fontSize: RFPercentage(2),
+    fontSize: RFPercentage(1.8),
   },
 
   inputContainer: {
@@ -128,7 +125,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     width: "100%",
-    height: "30%",
+    height: "20%",
     borderTopWidth: 1,
     borderTopColor: "#948E8E",
   },
@@ -136,8 +133,8 @@ const styles = StyleSheet.create({
   cancelButtonContainer: {
     height: "100%",
     width: "50%",
-    borderRightColor: "#948E8E",
-    borderRightWidth: 0.5,
+    borderLeftColor: "#948E8E",
+    borderLeftWidth: 0.5,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -150,8 +147,8 @@ const styles = StyleSheet.create({
   removeButtonContainer: {
     height: "100%",
     width: "50%",
-    borderLeftColor: "#948E8E",
-    borderLeftWidth: 0.5,
+    borderRightColor: "#948E8E",
+    borderRightWidth: 0.5,
     justifyContent: "center",
     alignItems: "center",
   },

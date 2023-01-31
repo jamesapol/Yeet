@@ -58,11 +58,6 @@ export default function HomeScreen() {
     modalHeader,
     modalMessage,
 
-    setPreviewName,
-    setPreviewBio,
-    setPreviewProfilePhotoURI,
-    setPreviewCoverPhotoURI,
-
     updateSuccessModalVisible,
     setUpdateSuccessModalVisible,
     updateErrorModalVisible,
@@ -75,6 +70,8 @@ export default function HomeScreen() {
   // const [showModal, setShowModal] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
+  const [previewBio, setPreviewBio] = useState();
+  const [previewName, setPreviewName] = useState();
 
   const [userName, setUserName] = useState(userInfo.usr_name);
   const [userBio, setUserBio] = useState(userInfo.usr_bio);
@@ -109,17 +106,13 @@ export default function HomeScreen() {
   const navigation = useNavigation();
 
   const onPreviewProfilePressed = () => {
-    if (profilePhoto) {
-      setPreviewProfilePhotoURI(profilePhoto);
-    }
-    if (coverPhoto) {
-      setPreviewCoverPhotoURI(coverPhoto);
-    }
-    setPreviewName(userName);
-    setPreviewBio(userBio);
-
     console.log(userName);
-    navigation.navigate("PreviewProfileScreen");
+    navigation.navigate("PreviewProfileScreen", {
+      previewCoverPhotoURI: coverPhoto,
+      previewProfilePhotoURI: profilePhoto,
+      previewName: previewName,
+      previewBio: previewBio
+    });
   };
 
   const onSelectProfilePhotoPressed = () => {

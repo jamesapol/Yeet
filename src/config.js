@@ -1,5 +1,5 @@
 export const BASE_URL = "https://yeetapp.io/";
-// export const BASE_URL = "http://192.168.1.15:8000/";
+// export const BASE_URL = "http://192.168.1.15:8000/"; 
 // export const BASE_URL = "http://192.168.227.17:8000/";
 // export const BASE_URL = "http://192.168.254.102:8000/"; 
 // export const BASE_URL = "http://192.168.110.126:8000/";
