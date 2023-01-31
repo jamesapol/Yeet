@@ -470,8 +470,8 @@ export default function HomeScreen() {
         ) : (
           ""
         )}
-        
-        {accountStatus == 0 ? (
+
+        {accountStatus == -1 ? (
           <Modal
             transparent
             animationType="fade"
