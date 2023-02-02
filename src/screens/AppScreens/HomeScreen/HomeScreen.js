@@ -19,6 +19,8 @@ import * as DocumentPicker from "expo-document-picker";
 
 import aboutIcon from "../../../../assets/UXMaterials/icons/flatIcons/purpleIcons/about.png";
 import plusIcon from "../../../../assets/UXMaterials/icons/flatIcons/purpleIcons/plus.png";
+import * as Notifications from "expo-notifications";
+import * as Device from "expo-device";
 
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
@@ -101,6 +103,8 @@ export default function HomeScreen() {
 
     editLinkMessageModalVisible,
     setEditLinkMessageModalVisible,
+
+    saveNotificationPushToken,
   } = useContext(AuthContext);
 
   // const [socialMediaIcons, setSocialMediaIcons] = useState([
@@ -166,8 +170,6 @@ export default function HomeScreen() {
 
   const onRefresh = () => {
     getUserData();
-    // getUserLinks(userInfo.usr_uuid, userToken);
-    // setRefreshing(true);
   };
 
   const closeRegistrationModal = () => {
@@ -214,20 +216,29 @@ export default function HomeScreen() {
   const [customLinkName, setCustomLinkName] = useState();
   const [customLinkURL, setCustomLinkURL] = useState();
 
+  const [expoPushToken, setExpoPushToken] = useState("")
+
   const [errorMessageModalVisible, setErrorMessageModalVisible] =
     useState(false);
 
   const [image, setImage] = useState(null);
   useEffect(() => {
-    (async () => {
-      if (Platform.OS !== "web") {
-        const { status } =
-          await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const registerForPushNotifications = async () => {
+      const { status } = await Notifications.getPermissionsAsync();
+      console.log(status);
+      if (status !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
         if (status !== "granted") {
-          alert("Sorry, we need camera roll permissions to make this work!");
+          return;
         }
       }
-    })();
+
+      const token = await Notifications.getExpoPushTokenAsync();
+      console.log(token)
+      setExpoPushToken(token);
+    };
+    registerForPushNotifications();
+    
   }, []);
 
   const getMimeType = (ext) => {
@@ -801,6 +812,59 @@ export default function HomeScreen() {
                       />
                     </TouchableOpacity>
                   </View>
+
+                  {userLinks.length == 0 ? (
+                    <View
+                      style={{
+                        width: "100%",
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                    >
+                      {/* <Text
+                      style={{
+                        fontSize: RFPercentage(3),
+                        marginVertical: "5%",
+                      }}
+                    >
+                      You have no links yet.
+                    </Text> */}
+                      <Image
+                        source={noLinks}
+                        resizeMode="center"
+                        style={{
+                          marginVertical: "5%",
+                          height: RFPercentage(20),
+                          width: RFPercentage(30),
+                          // backgroundColor: "red",
+                        }}
+                      />
+                      {/* <Text
+                        style={{
+                          marginVertical: "3%",
+                          fontSize: RFPercentage(2),
+                        }}
+                      >
+                        You have no links yet.
+                      </Text> */}
+                      <View
+                        style={{
+                          justifyContent: "center",
+                          alignItems: "center",
+                          width: "50%",
+                        }}
+                      >
+                        <CustomButton
+                          bgColor="transparent"
+                          fgColor="#562C73"
+                          btnText="Add Link"
+                          borderColor={Colors.yeetPurple}
+                          borderWidth="2"
+                          onPress={onAddLinksPressed}
+                        />
+                      </View>
+                    </View>
+                  ) : null}
                 </View>
               ) : null}
             </View>
@@ -822,7 +886,9 @@ export default function HomeScreen() {
                           index % 3 == 0 ? width * 0.15 : width * 0.025,
                         marginRight:
                           index % 3 == 2 ? width * 0.15 : width * 0.025,
+                        display: userLinks.length == 0 ? "none" : "flex",
                       },
+
                       ButtonStyles.socialMediaButtons,
                     ]}
                     onPress={onAddLinksPressed}

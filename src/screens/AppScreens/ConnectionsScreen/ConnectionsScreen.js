@@ -33,6 +33,7 @@ import ModalWithButtons from "../../../components/ModalWithButtons/ModalWithButt
 import { Colors, GlobalStyles } from "../../../styles/GlobalStyles";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 import CustomInput from "../../../components/CustomInput/CustomInput";
+import LoadingResource from "../../../components/LoadingResource/LoadingResource";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -162,6 +163,8 @@ export default function ConnectionsScreen() {
     modalMessage,
     addProfileView,
     searchUserConnections,
+
+    setUserNotFound,
   } = useContext(AuthContext);
 
   const [refreshFlatList, setRefreshFlatList] = useState(false);
@@ -214,10 +217,6 @@ export default function ConnectionsScreen() {
     setShowInputModal(false);
   };
 
-  const onSearchPressed = () => {
-    console.log(searchKey);
-  };
-
   const closeModal = () => {
     setShowSuccessModal(false);
   };
@@ -251,18 +250,27 @@ export default function ConnectionsScreen() {
   };
 
   const onAddConnectionPressed = () => {
+    setUserNotFound(false);
     navigation.navigate("AddConnectionQRScreen");
   };
 
-  useEffect(() => {
-    if (searchKey == "") {
+  // useEffect(() => {
+  //   if (searchKey == "") {
+  //     getUserConnections();
+  //   }
+  //   if (!searchKey.trim().length) {
+  //     return;
+  //   }
+  //   searchUserConnections(searchKey);
+  // }, [searchKey]);
+
+  const onSearchPressed = () => {
+    if (searchKey.trim().length > 0) {
+      searchUserConnections(searchKey);
+    } else {
       getUserConnections();
     }
-    if (!searchKey.trim().length) {
-      return;
-    }
-    searchUserConnections(searchKey);
-  }, [searchKey]);
+  };
 
   return (
     <View style={GlobalStyles.root}>
@@ -402,25 +410,40 @@ export default function ConnectionsScreen() {
         pageAction={onAddConnectionPressed}
       />
 
-      {userConnectionsLoading == false ? (
-        <View style={styles.searchBarContainer}>
-          <CustomInput
-            placeholder="Search. . ."
-            style={styles.searchBar}
-            onChangeText={(text) => setSearchKey(text)}
-            autoCapitalize
-            autoFocus
+      <View style={styles.searchBarContainer}>
+        <CustomInput
+          placeholder="Search. . ."
+          style={styles.searchBar}
+          onChangeText={(text) => setSearchKey(text)}
+          autoCapitalize
+          autoFocus
+        />
+        <TouchableOpacity
+          disabled={isLoading ? true : false}
+          onPress={onSearchPressed}
+          style={{
+            width: "15%",
+            height: "100%",
+            backgroundColor: Colors.yeetPurple,
+            // backgroundColor: "red",
+            borderTopRightRadius: 25,
+            borderBottomRightRadius: 25,
+            // borderBottomEndRadius: 25,
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            // flex: 1
+          }}
+        >
+          {/* <Text>Search </Text> */}
+          <MaterialCommunityIcons
+            // onPress={togglePasswordHidden}
+            name="account-search"
+            size={RFPercentage(3.4)}
+            color={Colors.yeetGray}
           />
-          <View style={{ paddingHorizontal: "3%" }}>
-            <MaterialCommunityIcons
-              // onPress={togglePasswordHidden}
-              name="account-search"
-              size={RFPercentage(4)}
-              color="#562C73"
-            />
-          </View>
-        </View>
-      ) : null}
+        </TouchableOpacity>
+      </View>
       {/* <View style={{ backgroundColor: "gray" }}></View> */}
       <FlatList
         onRefresh={onRefresh}
@@ -428,6 +451,7 @@ export default function ConnectionsScreen() {
         ref={ref}
         overScrollMode="never"
         showsVerticalScrollIndicator={false}
+        ListHeaderComponent={isLoading ? <LoadingScreen /> : null}
         style={{ backgroundColor: "#fff" }}
         extraData={refreshFlatList}
         keyExtractor={(item) => item.con_id}
@@ -705,13 +729,16 @@ const styles = StyleSheet.create({
     borderRadius: 30,
 
     paddingLeft: width * 0.03,
-    paddingVertical: height * 0.001,
+    // paddingVertical: height * 0.001,
     marginVertical: height * 0.008,
     marginHorizontal: width * 0.05,
+    borderColor: Colors.yeetPurple,
+    borderWidth: 2,
   },
 
   searchBar: {
     fontSize: RFPercentage(3),
     paddingHorizontal: width * 0.03,
+    // backgroundColor: 'green',
   },
 });

@@ -15,6 +15,7 @@ import { useNavigation } from "@react-navigation/native";
 import { AuthContext } from "../../../../context/AuthContext";
 
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import noLinks from "../../../../../assets/UXMaterials/placeholders/no-links.png";
 import CustomButton from "../../../../components/CustomButton/CustomButton";
 
 import upIcon from "../../../../../assets/UXMaterials/icons/flatIcons/redIcons/up.png";
@@ -79,99 +80,115 @@ export default function InsightsScreen() {
             paddingHorizontal: width * 0.05,
           }}
           ListHeaderComponent={() => (
-            <View style={styles.mainContainer}>
-              <View style={styles.headerButtons}>
-                <View style={styles.row}>
-                  <TouchableOpacity style={styles.squareButtons}>
-                    <Text style={styles.buttonText}>Profile Taps</Text>
-                    <Text style={styles.squareButtonText}>
-                      {userProfileTaps}
-                    </Text>
-                    {/* <Image style={styles.squareButtonImage} source={upIcon} /> */}
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.squareButtons}>
-                    <Text style={styles.buttonText}>Link Taps</Text>
-                    <Text style={styles.squareButtonText}>
-                      {totalUserLinkTaps}
-                    </Text>
-                    {/* <Image style={styles.squareButtonImage} source={downIcon} /> */}
-                  </TouchableOpacity>
-                </View>
-
-                <View style={styles.row}>
-                  <TouchableOpacity style={styles.squareButtons}>
-                    <Text style={styles.buttonText}>Profile Views</Text>
-                    <Text style={styles.squareButtonText}>
-                      {totalProfileViews}
-                    </Text>
-                    {/* <Image style={styles.squareButtonImage} source={upIcon} /> */}
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.squareButtons}>
-                    <Text style={styles.buttonText}>Connections</Text>
-                    <Text style={styles.squareButtonText}>
-                      {totalUserConnections}
-                    </Text>
-                    {/* <Image style={styles.squareButtonImage} source={downIcon} /> */}
-                  </TouchableOpacity>
-                </View>
+            <View style={styles.headerButtons}>
+              <View style={styles.row}>
+                <TouchableOpacity
+                  style={styles.squareButtons}
+                  onPress={() => console.log(userLinksInsights)}
+                >
+                  <Text style={styles.buttonText}>Profile Taps</Text>
+                  <Text style={styles.squareButtonText}>{userProfileTaps}</Text>
+                  {/* <Image style={styles.squareButtonImage} source={upIcon} /> */}
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.squareButtons}>
+                  <Text style={styles.buttonText}>Link Taps</Text>
+                  <Text style={styles.squareButtonText}>
+                    {totalUserLinkTaps}
+                  </Text>
+                  {/* <Image style={styles.squareButtonImage} source={downIcon} /> */}
+                </TouchableOpacity>
               </View>
+
+              <View style={styles.row}>
+                <TouchableOpacity style={styles.squareButtons}>
+                  <Text style={styles.buttonText}>Profile Views</Text>
+                  <Text style={styles.squareButtonText}>
+                    {totalProfileViews}
+                  </Text>
+                  {/* <Image style={styles.squareButtonImage} source={upIcon} /> */}
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.squareButtons}>
+                  <Text style={styles.buttonText}>Connections</Text>
+                  <Text style={styles.squareButtonText}>
+                    {totalUserConnections}
+                  </Text>
+                  {/* <Image style={styles.squareButtonImage} source={downIcon} /> */}
+                </TouchableOpacity>
+              </View>
+              {userLinksInsights.length == 0 ? (
+                <View
+                  style={{
+                    width: "100%",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ fontSize: RFPercentage(3), marginVertical: '5%', }}>
+                    You have no links yet.
+                  </Text>
+                  <Image
+                    source={noLinks}
+                    resizeMode="center"
+                    style={{ height: RFPercentage(35), width: RFPercentage(35) }}
+                  />
+                </View>
+              ) : null}
             </View>
           )}
           // keyExtractor={(item) => item.lnk_id}
           // keyExtractor={(item, index) => index.toString()}
           data={insightsLoading == false ? userLinksInsights : null}
           renderItem={({ item, index }) => {
-            if (insightsLoading == false) {
-              return (
-                <TouchableOpacity style={styles.buttons}>
-                  <View style={styles.socialMediaContainer}>
-                    <Image
+            return (
+              <TouchableOpacity style={styles.buttons}>
+                <View style={styles.socialMediaContainer}>
+                  <Image
                     resizeMode="contain"
-                      style={{
-                        ...styles.socialMediaImage,
-                        height: RFPercentage(5),
-                        width: item.lnk_id == 30 ? RFPercentage(6) : RFPercentage(5),
-                        // width: item.lnk_id == 
-                        borderRadius: item.lnk_id == 30 ? 15 : 0,
-                      }}
-                      source={
-                        item.lnk_image
-                          ? item.lnk_id == 30
-                            ? { uri: item.uln_youtube_thumbnail }
-                            : {
-                                uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
-                              }
-                          : null
-                      }
-                    />
-                    <View style={styles.socialMediaTextContainer}>
-                      <Text style={styles.socialMediaText}>
-                        {item.lnk_id == 30
-                          ? item.uln_custom_link_name
-                          : item.lnk_id == 31
-                          ? item.uln_file_title
-                          : item.lnk_id == 32
-                          ? item.uln_custom_link_name
-                          : item.lnk_name}
-                      </Text>
-                      <Text style={styles.socialMediaLinkText}>
-                        {item.lnk_id == 31
-                          ? item.uln_original_file_name
-                          : item.uln_url}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={{ width: "10%", alignItems: "center" }}>
-                    <Text style={styles.socialMediaTapsText}>
-                      {!item.ltp_count ? 0 : item.ltp_count}
+                    style={{
+                      ...styles.socialMediaImage,
+                      height: RFPercentage(5),
+                      width:
+                        item.lnk_id == 30 ? RFPercentage(6) : RFPercentage(5),
+                      // width: item.lnk_id ==
+                      borderRadius: item.lnk_id == 30 ? 15 : 0,
+                    }}
+                    source={
+                      item.lnk_image
+                        ? item.lnk_id == 30
+                          ? { uri: item.uln_youtube_thumbnail }
+                          : {
+                              uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
+                            }
+                        : null
+                    }
+                  />
+                  <View style={styles.socialMediaTextContainer}>
+                    <Text style={styles.socialMediaText}>
+                      {item.lnk_id == 30
+                        ? item.uln_custom_link_name
+                        : item.lnk_id == 31
+                        ? item.uln_file_title
+                        : item.lnk_id == 32
+                        ? item.uln_custom_link_name
+                        : item.lnk_name}
                     </Text>
-                    <Text style={styles.buttonText}>
-                      {item.ltp_count > 1 || !item.ltp_count ? "Taps" : "Tap"}
+                    <Text style={styles.socialMediaLinkText}>
+                      {item.lnk_id == 31
+                        ? item.uln_original_file_name
+                        : item.uln_url}
                     </Text>
                   </View>
-                </TouchableOpacity>
-              );
-            }
+                </View>
+                <View style={{ width: "10%", alignItems: "center" }}>
+                  <Text style={styles.socialMediaTapsText}>
+                    {!item.ltp_count ? 0 : item.ltp_count}
+                  </Text>
+                  <Text style={styles.buttonText}>
+                    {item.ltp_count > 1 || !item.ltp_count ? "Taps" : "Tap"}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
           }}
         />
       )}

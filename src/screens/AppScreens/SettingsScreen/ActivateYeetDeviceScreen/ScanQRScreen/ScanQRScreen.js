@@ -43,7 +43,7 @@ import {
   
     const handleBarCodeScanned = ({ type, data }) => {
       if (type == "256") {
-        if (data.includes("https://yeetapp.io/profile")) {
+        if (data.includes("https://yeetapp.io/profile" || "https://www.yeetapp.io/profile")) {
           let code = getCode(data);
           console.log(code);
           setScanned(true);
@@ -76,6 +76,7 @@ import {
     }
     return (
       <View style={styles.root}>
+        
         <View resizeMode="stretch" style={styles.mainContainer}>
           <BarCodeScanner
             barCodeTypes={BarCodeScanner.Constants.BarCodeType.qr}

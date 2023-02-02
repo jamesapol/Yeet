@@ -97,11 +97,13 @@ export const AuthProvider = ({ children }) => {
   const [publicProfileLinks, setPublicProfileLinks] = useState({});
   const [publicProfileDirectLink, setPublicProfileDirectLink] = useState();
   const [publicConnectionStatus, setPublicConnectionStatus] = useState();
+  const [userNotFound, setUserNotFound] = useState(false);
   const [publicLoading, setPublicLoading] = useState(false);
 
   const [userNotifications, setUserNotifications] = useState({});
   const [userNotificationsLoading, setUserNotificationsLoading] =
     useState(false);
+  const [notificationPushToken, setNotificationPushToken] = useState();
 
   //INSIGHTS
   const [userProfileTaps, setUserProfileTaps] = useState();
@@ -965,6 +967,8 @@ export const AuthProvider = ({ children }) => {
       })
       .catch((error) => {
         setUserInfoLoading(false);
+        console.warn(error)
+        console.log(error.response.status)
         console.log(error.response);
       });
   };
@@ -1684,6 +1688,7 @@ export const AuthProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${userToken}` },
       })
       .then((response) => {
+        setUserNotFound(false);
         let userConnections = response.data.connections;
         setUserConnections(userConnections);
         console.log(userConnections);
@@ -1763,19 +1768,24 @@ export const AuthProvider = ({ children }) => {
     await axios
       .get(`${BASE_URL}api/showProfileFromQR/${code}/${userUUID}`, {})
       .then((response) => {
-        let blockStatus = response.data.blockStatus;
-        setUserBlockStatus(blockStatus);
-
-        let userConnectionData = response.data.userProfileData;
-        setUserConnectionData(userConnectionData);
-
-        let userConnectionLinks = response.data.userProfileLinks;
-        setUserConnectionLinks(userConnectionLinks);
-
-        let userConnectionStatus = response.data.connectionStatus;
-        setUserConnectionStatus(userConnectionStatus);
-        // console.log(userConnectionLinks);
         console.log(response.data);
+        if (response.data.userNotFound) {
+          setUserNotFound(true);
+        } else {
+          let blockStatus = response.data.blockStatus;
+          setUserBlockStatus(blockStatus);
+
+          let userConnectionData = response.data.userProfileData;
+          setUserConnectionData(userConnectionData);
+
+          let userConnectionLinks = response.data.userProfileLinks;
+          setUserConnectionLinks(userConnectionLinks);
+
+          let userConnectionStatus = response.data.connectionStatus;
+          setUserConnectionStatus(userConnectionStatus);
+          // console.log(userConnectionLinks);
+          // console.log(response.data);
+        }
         setIsLoading(false);
       })
       .catch((error) => {
@@ -2019,14 +2029,17 @@ export const AuthProvider = ({ children }) => {
     await axios
       .get(`${BASE_URL}api/publicProfile/${code}/${userUUID}`, {})
       .then((response) => {
-        let privateStatus = response.data.privateStatus;
-        let blockStatus = response.data.blockStatus;
-        let publicProfileData = response.data.publicProfileInfo;
-        let publicProfileLinks = response.data.publicProfileLinks;
-        let publicProfileDirectLink = response.data.publicProfileDirectLink;
-        let connectionStatus = response.data.connectionStatus;
+        if (response.data.userNotFound) {
+          setUserNotFound(true);
+        } else {
+          let privateStatus = response.data.privateStatus;
+          let blockStatus = response.data.blockStatus;
+          let publicProfileData = response.data.publicProfileInfo;
+          let publicProfileLinks = response.data.publicProfileLinks;
+          let publicProfileDirectLink = response.data.publicProfileDirectLink;
+          let connectionStatus = response.data.connectionStatus;
 
-        if (publicProfileData) {
+          // if (publicProfileData) {
           addProfileTap(response.data.publicProfileInfo.usr_uuid);
           addProfileView(response.data.publicProfileInfo.usr_uuid);
 
@@ -2036,11 +2049,12 @@ export const AuthProvider = ({ children }) => {
           setPublicProfileLinks(publicProfileLinks);
           setPublicProfileDirectLink(publicProfileDirectLink);
           setPublicConnectionStatus(connectionStatus);
-        } else if (publicProfileData == undefined) {
-          setPublicProfileInfo(null);
+          // console.log("DATA: " + response.data.publicProfileInfo);
         }
+        // } else if (publicProfileData == undefined) {
+        //   setPublicProfileInfo(null);
+        // }
         console.log(response.data);
-        console.log("DATA: " + response.data.publicProfileInfo);
         // console.log(publicProfileLinks);
         setPublicProfileLoading(false);
       })
@@ -2229,6 +2243,51 @@ export const AuthProvider = ({ children }) => {
       .catch((error) => {
         console.log(error.response);
         setNfcDeviceLoading(false);
+      });
+  };
+
+  const saveNotificationPushToken = async (pushToken) => {
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .post(
+        `${BASE_URL}api/saveNotificationPushToken/`,
+        {
+          userUUID: userUUID,
+          pushToken: pushToken,
+          deviceName: Device.modelName,
+        },
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.log(error.response);
+      });
+  };
+
+  const getNotificationPushToken = async () => {
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+    let deviceName = Device.modelName;
+    await axios
+      .get(
+        `${BASE_URL}api/saveNotificationPushToken/${userUUID}/${deviceName}`,
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        console.log(response.data);
+        let pushToken = response.data.pushToken;
+        setNotificationPushToken(pushToken);
+      })
+      .catch((error) => {
+        console.log(error.response);
       });
   };
 
@@ -2855,6 +2914,8 @@ export const AuthProvider = ({ children }) => {
         publicConnectionStatus,
         addConnection,
         publicLoading,
+        userNotFound,
+        setUserNotFound,
 
         //DEACTIVATE/DELETE ACCOUNT
         deactivateAccount,
@@ -2872,6 +2933,8 @@ export const AuthProvider = ({ children }) => {
         userNotificationsLoading,
         setUserNotificationsLoading,
         removeNotification,
+        saveNotificationPushToken,
+        getNotificationPushToken,
 
         //INSIGHTS
         getInsights,

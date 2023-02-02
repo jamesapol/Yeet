@@ -24,6 +24,8 @@ import { Avatar } from "react-native-paper";
 import CustomButton from "../../../../components/CustomButton/CustomButton";
 import { useNavigation } from "@react-navigation/native";
 
+import noLinks from "../../../../../assets/UXMaterials/placeholders/no-links.png";
+
 import ModalWithButtons from "../../../../components/ModalWithButtons/ModalWithButtons";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import { useCallback } from "react";
@@ -159,11 +161,11 @@ export default function ManageLinksScreen() {
         visible={deleteSuccess}
         onRequestClose={closeDeleteSuccessModal}
       >
-          <ModalMessage
-            modalHeader="Success"
-            modalMessage="Link successfully removed!"
-            onOKPressed={closeDeleteSuccessModal}
-          />
+        <ModalMessage
+          modalHeader="Success"
+          modalMessage="Link successfully removed!"
+          onOKPressed={closeDeleteSuccessModal}
+        />
       </Modal>
       <FlatList
         numColumns={3}
@@ -215,35 +217,56 @@ export default function ManageLinksScreen() {
                 <Text style={GlobalStyles.userBioText}>{userInfo.usr_bio}</Text>
               </View>
             </View>
-          </View>
-        )}
-        ListFooterComponent={() => (
-          <View
-            style={{
-              alignItems: "center",
-              marginHorizontal: width * 0.15,
-              marginVertical: height * 0.05,
-            }}
-          >
-            {userLinks.length != 0 ? null : (
-              <Text
+            <View
+              style={{
+                width: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
+            >
+              {/* <Text
+                      style={{
+                        fontSize: RFPercentage(3),
+                        marginVertical: "5%",
+                      }}
+                    >
+                      You have no links yet.
+                    </Text> */}
+              <Image
+                source={noLinks}
+                resizeMode="center"
                 style={{
-                  fontSize: RFPercentage(2.5),
-                  color: Colors.yeetPurple,
-                  marginVertical: height * 0.025,
+                  marginVertical: "5%",
+                  height: RFPercentage(20),
+                  width: RFPercentage(30),
+                  // backgroundColor: "red",
+                }}
+              />
+              {/* <Text
+                        style={{
+                          marginVertical: "3%",
+                          fontSize: RFPercentage(2),
+                        }}
+                      >
+                        You have no links yet.
+                      </Text> */}
+              <View
+                style={{
+                  justifyContent: "center",
+                  alignItems: "center",
+                  width: "50%",
                 }}
               >
-                You have no links yet.
-              </Text>
-            )}
-            <CustomButton
-              bgColor="transparent"
-              fgColor="#562C73"
-              btnText="Back"
-              borderColor="#562C73"
-              borderWidth="2"
-              onPress={onBackPressed}
-            />
+                <CustomButton
+                  bgColor="transparent"
+                  fgColor="#562C73"
+                  btnText="Back"
+                  borderColor="#562C73"
+                  borderWidth="2"
+                  onPress={onBackPressed}
+                />
+              </View>
+            </View>
           </View>
         )}
         // keyExtractor={(item, index) => index.toString()}
@@ -331,7 +354,11 @@ export default function ManageLinksScreen() {
                     fontSize: RFPercentage(1.3),
                   }}
                 >
-                  {item.lnk_id == 31 ? item.uln_file_title : item.lnk_id == 32 ? item.uln_custom_link_name : item.lnk_name}
+                  {item.lnk_id == 31
+                    ? item.uln_file_title
+                    : item.lnk_id == 32
+                    ? item.uln_custom_link_name
+                    : item.lnk_name}
                   {/* {item.lnk_name} */}
                 </Text>
               </TouchableOpacity>

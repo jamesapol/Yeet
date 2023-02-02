@@ -25,7 +25,7 @@ import { AuthContext } from "../../../context/AuthContext";
 import { BASE_URL } from "../../../config";
 
 import { FontAwesome5 } from "@expo/vector-icons";
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome } from "@expo/vector-icons";
 
 import { Avatar } from "react-native-paper";
 import CustomButton from "../../../components/CustomButton/CustomButton";
@@ -97,6 +97,8 @@ export default function PublicProfileScreen({ route }) {
     addLinkTap,
     addProfileTap,
 
+    userNotFound,
+    setUserNotFound,
   } = useContext(AuthContext);
 
   const {
@@ -108,9 +110,11 @@ export default function PublicProfileScreen({ route }) {
   const [errorURLModalVisible, setErrorURLModalVisible] = useState(false);
 
   useEffect(() => {
+    setUserNotFound(false);
     setPublicProfileLoading(true);
+    // let userUUID = SecureStore.getItemAsync("userUUID");
     getUserUUID();
-    
+
     showPublicProfile(id);
   }, [id]);
 
@@ -122,7 +126,6 @@ export default function PublicProfileScreen({ route }) {
 
   const [paymentImageVisible, setPaymentImageVisible] = useState(false);
   const [paymentImage, setPaymentImage] = useState();
-
 
   const navigation = useNavigation();
   async function getUserUUID() {
@@ -148,7 +151,6 @@ export default function PublicProfileScreen({ route }) {
   };
 
   const onRefresh = () => {};
-
 
   return (
     // <View style={{flex: 1, justifyContent:'center', alignItems:'center'}}>
@@ -180,11 +182,13 @@ export default function PublicProfileScreen({ route }) {
         <Text style={[styles.headerText, { color: Colors.yeetPurple }]}>
           View Profile
         </Text>
+
         <TouchableOpacity
           disabled={publicProfileLoading ? true : false}
           style={{
             ...styles.pageActionIcon,
             display:
+              userNotFound ||
               userPrivateStatus == 1 ||
               userBlockStatus == 1 ||
               !publicProfileInfo
@@ -205,7 +209,7 @@ export default function PublicProfileScreen({ route }) {
           />
         </TouchableOpacity>
       </View>
-      {!publicProfileInfo || userPrivateStatus == 1 || userBlockStatus == 1 ? (
+      {userNotFound || userPrivateStatus == 1 || userBlockStatus == 1 ? (
         <View style={{ flex: 1 }}>
           <View
             style={{
@@ -457,7 +461,6 @@ export default function PublicProfileScreen({ route }) {
       )}
     </View>
   );
-
 }
 
 const styles = StyleSheet.create({

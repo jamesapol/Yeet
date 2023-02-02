@@ -386,7 +386,7 @@ export default function AddLinksScreen() {
 
       let thumbnailURI = `https://img.youtube.com/vi/${videoID}/hqdefault.jpg`;
       // addYouTubeLink(linkID, embedVideoTitle, embedVideoURL, thumbnailURI);
-      console.log(linkID)
+      console.log(linkID);
 
       setEmbedVideoModalVisible(false);
       setEmbedVideoTitleErrorVisible("none");
@@ -598,11 +598,11 @@ export default function AddLinksScreen() {
         />
       </Modal>
       <PageHeader
-              headerText="Add Links"
-              iconColor="#562C73"
-              textColor="#562C73"
-              onPress={onBackPressed}
-            />
+        headerText="Add Links"
+        iconColor="#562C73"
+        textColor="#562C73"
+        onPress={onBackPressed}
+      />
       <SectionList
         overScrollMode="never"
         showsVerticalScrollIndicator={false}

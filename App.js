@@ -11,6 +11,8 @@ import Navigation from "./src/navigation";
 import * as Linking from "expo-linking";
 // import * as Location from "expo-location";
 import * as ImagePicker from "expo-image-picker";
+import * as Notifications from "expo-notifications";
+import * as Device from "expo-device";
 // import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { BarCodeScanner } from "expo-barcode-scanner";
@@ -18,6 +20,7 @@ import { BarCodeScanner } from "expo-barcode-scanner";
 import { useFonts } from "expo-font";
 
 import { useCallback, useEffect, useState } from "react";
+import axios from "axios";
 // import useFonts from "./hooks/useFonts";
 
 const Stack = createNativeStackNavigator();
@@ -41,7 +44,6 @@ export default function App() {
   //   'Montserrat-Regular': require('./assets/fonts/Montserrat-Regular.ttf'),
   // });
 
-
   const linking = {
     prefixes: [prefix],
     config: {
@@ -51,7 +53,6 @@ export default function App() {
           parse: {
             id: (id) => `${id}`,
           },
-          
         },
         // WelcomeScreen: {
         //   path: "welcome",
@@ -89,6 +90,35 @@ export default function App() {
   const [location, setLocation] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
   const [hasPermission, setHasPermission] = useState(null);
+  const [expoPushToken, setExpoPushToken] = useState("");
+
+  const getNotificationPushToken = async (userLinkID) => {
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .post(
+        `${BASE_URL}api/removeLinkFromUser`,
+        {
+          userUUID: userUUID,
+          userLinkID: userLinkID,
+        },
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        console.log(response.data);
+
+        // getUserLinks(userUUID, userToken);
+        // setIsLoading(false);
+      })
+      .catch((error) => {
+        console(error.response);
+        setUserLinksLoading(false);
+      });
+  };
 
   useEffect(() => {
     // (async () => {
@@ -112,6 +142,22 @@ export default function App() {
       }
     })();
 
+    const registerForPushNotifications = async () => {
+      const { status } = await Notifications.getPermissionsAsync();
+      console.log(status)
+      if (status !== "granted") {
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status !== "granted") {
+          return;
+        }
+      }
+
+      const token = await Notifications.getExpoPushTokenAsync();
+      setExpoPushToken(token);
+    };
+
+    registerForPushNotifications();
+
     const getBarCodeScannerPermissions = async () => {
       const { status } = await BarCodeScanner.requestPermissionsAsync();
       setHasPermission(status === "granted");
@@ -119,8 +165,6 @@ export default function App() {
 
     getBarCodeScannerPermissions();
   }, []);
-
-  
 
   return (
     <AuthProvider>

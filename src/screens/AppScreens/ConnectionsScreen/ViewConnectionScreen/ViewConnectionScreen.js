@@ -58,6 +58,9 @@ export default function ViewConnectionScreen() {
     modalMessage,
 
     addLinkTap,
+
+    userNotFound,
+    setUserNotFound,
   } = useContext(AuthContext);
 
   const ref = React.useRef(null);
@@ -87,7 +90,8 @@ export default function ViewConnectionScreen() {
 
   useEffect(() => {
     const backAction = () => {
-      navigation.pop(2);
+      // navigation.pop(2);
+      navigation.navigate("ConnectionsScreen");
     };
 
     const backHandler = BackHandler.addEventListener(
@@ -228,7 +232,8 @@ export default function ViewConnectionScreen() {
       <PageHeader
         headerText="View Profile"
         onPress={onBackPressed}
-        pageActionVisible={isLoading == true ? "none" : "flex"}
+        pageActionDisabled={isLoading ? true : false}
+        pageActionVisible={userNotFound ? "none" : "flex"}
         iconType="FontAwesome5"
         pageActionIcon="address-card"
         pageAction={() => {
@@ -239,7 +244,23 @@ export default function ViewConnectionScreen() {
           // onDownloadVCFPressed();
         }}
       />
-      {!userBlockStatus ? (
+      {userNotFound || userBlockStatus ? (
+        <View style={{ flex: 1 }}>
+          <View
+            style={{ justifyContent: "center", alignItems: "center", flex: 1 }}
+          >
+            <FontAwesome
+              name="user-times"
+              size={RFPercentage(4)}
+              color={Colors.yeetPurple}
+              style={{ margin: 10 }}
+            />
+            <Text style={{ fontSize: RFPercentage(2), fontWeight: "bold" }}>
+              User not found.
+            </Text>
+          </View>
+        </View>
+      ) : (
         <FlatList
           ref={ref}
           overScrollMode="never"
@@ -351,7 +372,7 @@ export default function ViewConnectionScreen() {
                 // }}
                 onPress={() => {
                   addLinkTap(item.uln_id);
-                  console.log(item.uln_url)
+                  console.log(item.uln_url);
                   if (
                     item.lnk_id == 23 ||
                     item.lnk_id == 24 ||
@@ -407,7 +428,7 @@ export default function ViewConnectionScreen() {
                   resizeMode="stretch"
                 />
                 {/* <Text>{item.uln_id}</Text>
-                      <Text>{item.lnk_id}</Text> */}
+                    <Text>{item.lnk_id}</Text> */}
                 <Text
                   style={{
                     fontSize: RFPercentage(1.5),
@@ -426,22 +447,6 @@ export default function ViewConnectionScreen() {
             );
           }}
         />
-      ) : (
-        <View style={{ flex: 1 }}>
-          <View
-            style={{ justifyContent: "center", alignItems: "center", flex: 1 }}
-          >
-            <FontAwesome
-              name="user-times"
-              size={RFPercentage(4)}
-              color={Colors.yeetPurple}
-              style={{ margin: 10 }}
-            />
-            <Text style={{ fontSize: RFPercentage(2), fontWeight: "bold" }}>
-              User not found.
-            </Text>
-          </View>
-        </View>
       )}
     </View>
   );
