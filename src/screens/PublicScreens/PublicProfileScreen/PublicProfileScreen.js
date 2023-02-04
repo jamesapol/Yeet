@@ -392,6 +392,7 @@ export default function PublicProfileScreen({ route }) {
                     // }}
                     onPress={() => {
                       addLinkTap(item.uln_id);
+                      console.log(item.uln_url);
                       if (
                         item.lnk_id == 23 ||
                         item.lnk_id == 24 ||
@@ -403,7 +404,7 @@ export default function PublicProfileScreen({ route }) {
                         setPaymentImageVisible(true);
                       } else if (item.lnk_id == 31) {
                         Linking.openURL(
-                          `${BASE_URL}/api/downloadFile/` + item.uln_file
+                          `${BASE_URL}api/downloadFile/` + item.uln_file
                         );
                         console.log(item.uln_file);
                         console.log(item.uln_original_file_name);

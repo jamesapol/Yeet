@@ -217,6 +217,8 @@ export default function ManageLinksScreen() {
                 <Text style={GlobalStyles.userBioText}>{userInfo.usr_bio}</Text>
               </View>
             </View>
+
+            {userLinks.length == 0 ? 
             <View
               style={{
                 width: "100%",
@@ -267,6 +269,7 @@ export default function ManageLinksScreen() {
                 />
               </View>
             </View>
+            : null }
           </View>
         )}
         // keyExtractor={(item, index) => index.toString()}
