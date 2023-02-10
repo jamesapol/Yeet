@@ -116,7 +116,7 @@ export default function HomeScreen({ route }) {
             </View>
           </View>
         )}
-        keyExtractor={(item) => item.lnk_id}
+        keyExtractor={(item) => item.uln_id}
         data={[...userLinks, { addLinks: true }]}
         renderItem={({ item, index }) => {
           return (

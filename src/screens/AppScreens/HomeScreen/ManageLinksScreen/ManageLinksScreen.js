@@ -50,6 +50,13 @@ export default function ManageLinksScreen() {
     showModal,
     setShowModal,
     userDirectLinkID,
+
+    userName,
+    userBio,
+    userCoverPhoto,
+    userProfilePhoto,
+    tempCoverPhoto,
+    tempProfilePhoto,
   } = useContext(AuthContext);
 
   // useEffect(() => {
@@ -175,58 +182,76 @@ export default function ManageLinksScreen() {
         ListHeaderComponent={() => (
           <View style={styles.mainContainer}>
             <View style={GlobalStyles.coverPhotoContainer}>
-              <Image
-                source={
-                  userInfo.usr_cover_photo_storage
-                    ? {
-                        uri: `${BASE_URL}images/mobile/cover/${userInfo.usr_cover_photo_storage}`,
-                      }
-                    : null
-                }
-                resizeMode="stretch"
-                style={GlobalStyles.coverPhoto}
-              />
+              {tempCoverPhoto ? (
+                <Image
+                  source={{
+                    uri: tempCoverPhoto,
+                  }}
+                  resizeMode="stretch"
+                  style={GlobalStyles.coverPhoto}
+                />
+              ) : userCoverPhoto ? (
+                <Image
+                  source={
+                    userCoverPhoto
+                      ? {
+                          uri: `${BASE_URL}images/mobile/cover/${userCoverPhoto}`,
+                        }
+                      : null
+                  }
+                  resizeMode="stretch"
+                  style={GlobalStyles.coverPhoto}
+                />
+              ) : null}
             </View>
             {/* PROFILE PHOTO */}
             <View style={GlobalStyles.profilePhotoContainer}>
               <View style={GlobalStyles.profilePhoto}>
-                <Avatar.Image
-                  backgroundColor="#DEDEDE"
-                  size={RFPercentage(15)}
-                  source={
-                    userInfo.usr_profile_photo_storage
-                      ? {
-                          uri: `${BASE_URL}images/mobile/photos/${userInfo.usr_profile_photo_storage}`,
-                        }
-                      : {
-                          uri: `${BASE_URL}images/profile/photos/default.png`,
-                        }
-                  }
-                />
+                {tempProfilePhoto ? (
+                  <Avatar.Image
+                    backgroundColor="#DEDEDE"
+                    size={RFPercentage(15)}
+                    source={{
+                      uri: tempProfilePhoto,
+                    }}
+                  />
+                ) : userProfilePhoto ? (
+                  <Avatar.Image
+                    backgroundColor="#DEDEDE"
+                    size={RFPercentage(15)}
+                    source={
+                      userProfilePhoto
+                        ? {
+                            uri: `${BASE_URL}images/mobile/photos/${userProfilePhoto}`,
+                          }
+                        : {
+                            uri: `${BASE_URL}images/profile/photos/default.png`,
+                          }
+                    }
+                  />
+                ) : null}
               </View>
             </View>
 
             <View style={GlobalStyles.userNameAndBioContainer}>
               <View style={GlobalStyles.userNameContainer}>
-                <Text style={GlobalStyles.userNameText}>
-                  {userInfo.usr_name}
-                </Text>
+                <Text style={GlobalStyles.userNameText}>{userName}</Text>
               </View>
 
               <View style={GlobalStyles.userBioContainer}>
-                <Text style={GlobalStyles.userBioText}>{userInfo.usr_bio}</Text>
+                <Text style={GlobalStyles.userBioText}>{userBio}</Text>
               </View>
             </View>
 
-            {userLinks.length == 0 ? 
-            <View
-              style={{
-                width: "100%",
-                justifyContent: "center",
-                alignItems: "center",
-              }}
-            >
-              {/* <Text
+            {userLinks.length == 0 ? (
+              <View
+                style={{
+                  width: "100%",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                {/* <Text
                       style={{
                         fontSize: RFPercentage(3),
                         marginVertical: "5%",
@@ -234,17 +259,17 @@ export default function ManageLinksScreen() {
                     >
                       You have no links yet.
                     </Text> */}
-              <Image
-                source={noLinks}
-                resizeMode="center"
-                style={{
-                  marginVertical: "5%",
-                  height: RFPercentage(20),
-                  width: RFPercentage(30),
-                  // backgroundColor: "red",
-                }}
-              />
-              {/* <Text
+                <Image
+                  source={noLinks}
+                  resizeMode="center"
+                  style={{
+                    marginVertical: "5%",
+                    height: RFPercentage(20),
+                    width: RFPercentage(30),
+                    // backgroundColor: "red",
+                  }}
+                />
+                {/* <Text
                         style={{
                           marginVertical: "3%",
                           fontSize: RFPercentage(2),
@@ -252,24 +277,24 @@ export default function ManageLinksScreen() {
                       >
                         You have no links yet.
                       </Text> */}
-              <View
-                style={{
-                  justifyContent: "center",
-                  alignItems: "center",
-                  width: "50%",
-                }}
-              >
-                <CustomButton
-                  bgColor="transparent"
-                  fgColor="#562C73"
-                  btnText="Back"
-                  borderColor="#562C73"
-                  borderWidth="2"
-                  onPress={onBackPressed}
-                />
+                <View
+                  style={{
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "50%",
+                  }}
+                >
+                  <CustomButton
+                    bgColor="transparent"
+                    fgColor="#562C73"
+                    btnText="Back"
+                    borderColor="#562C73"
+                    borderWidth="2"
+                    onPress={onBackPressed}
+                  />
+                </View>
               </View>
-            </View>
-            : null }
+            ) : null}
           </View>
         )}
         // keyExtractor={(item, index) => index.toString()}

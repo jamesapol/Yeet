@@ -20,6 +20,7 @@ import { RFPercentage } from "react-native-responsive-fontsize";
 
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
+import * as SecureStore from "expo-secure-store";
 
 import { AuthContext } from "../../../../context/AuthContext";
 import { BASE_URL } from "../../../../config";
@@ -62,6 +63,11 @@ export default function HomeScreen() {
     setUpdateSuccessModalVisible,
     updateErrorModalVisible,
     setUpdateErrorModalVisible,
+
+    setUserProfilePhoto,
+    setUserCoverPhoto,
+    setTempCoverPhoto,
+    setTempProfilePhoto,
   } = useContext(AuthContext);
 
   const ref = React.useRef(null);
@@ -101,6 +107,7 @@ export default function HomeScreen() {
         }
       }
     })();
+    console.log(coverPhoto)
   }, []);
 
   const navigation = useNavigation();
@@ -288,6 +295,13 @@ export default function HomeScreen() {
       filteredUserName,
       userBio
     );
+    if(coverPhoto){
+      setTempCoverPhoto(coverPhoto);
+    }
+    if(profilePhoto){
+      setTempProfilePhoto(profilePhoto)
+    }
+    setUpdateSuccessModalVisible(true);
   };
 
   const getMimeType = (ext) => {

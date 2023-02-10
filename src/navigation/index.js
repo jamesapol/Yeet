@@ -158,6 +158,8 @@ export default function Navigation() {
     getActiveYeetDevice,
   } = useContext(AuthContext);
 
+  
+
   if (splashLoading) {
     return <SplashScreen />;
   }

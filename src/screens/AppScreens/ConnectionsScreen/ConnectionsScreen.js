@@ -8,6 +8,7 @@ import {
   Image,
   Vibration,
   Modal,
+  Linking,
 } from "react-native";
 import React, { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../../../context/AuthContext";
@@ -165,6 +166,10 @@ export default function ConnectionsScreen() {
     searchUserConnections,
 
     setUserNotFound,
+    connectionsScreenModalVisible,
+    setConnectionsScreenModalVisible,
+    setModalHeader,
+    setModalMessage,
   } = useContext(AuthContext);
 
   const [refreshFlatList, setRefreshFlatList] = useState(false);
@@ -218,7 +223,7 @@ export default function ConnectionsScreen() {
   };
 
   const closeModal = () => {
-    setShowSuccessModal(false);
+    setConnectionsScreenModalVisible(false);
   };
 
   const onLeaveNotePressed = () => {
@@ -282,7 +287,7 @@ export default function ConnectionsScreen() {
         transparent
         animationType="fade"
         hardwareAccelerated
-        visible={showSuccessModal}
+        visible={connectionsScreenModalVisible}
         onRequestClose={closeModal}
       >
         <ModalMessage
@@ -465,9 +470,29 @@ export default function ConnectionsScreen() {
               // connectionBio={item.usr_bio}
               connectionBio={item.usr_bio}
               onPress={() => {
-                showUserConnection(item.usr_uuid);
-                onConnectionPressed();
-                console.log(item.con_id);
+                if (item.usr_direct_link_active == 1) {
+                  if (item.lnk_id == 31) {
+                    Linking.openURL(
+                      `${BASE_URL}api/downloadFile/` + item.uln_file
+                    );
+                  } else {
+                    Linking.canOpenURL(item.uln_url).then((supported) => {
+                      if (supported) {
+                        Linking.openURL(item.uln_url);
+                      } else {
+                        setConnectionsScreenModalVisible(true);
+                        setModalHeader("Error");
+                        setModalMessage(
+                          "This link cannot be opened and may be broken."
+                        );
+                      }
+                    });
+                  }
+                } else {
+                  showUserConnection(item.usr_uuid);
+                  onConnectionPressed();
+                  console.log(item.con_id);
+                }
               }}
               onOptionsPressed={() => {
                 setConnectionConnUUID(item.con_uuid);

@@ -17,7 +17,7 @@
     "axios": "^1.2.2",
     "expo": "~46.0.19",
     "expo-barcode-scanner": "~11.4.0",
-    "expo-camera": "~12.4.0",
+    "expo-camera": "~12.5.0",
     "expo-clipboard": "~3.1.0",
     "expo-device": "~4.3.0",
     "expo-document-picker": "~10.3.0",

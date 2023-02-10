@@ -384,7 +384,8 @@ export default function ViewConnectionScreen() {
                     setPaymentImageVisible(true);
                   } else if (item.lnk_id == 31) {
                     Linking.openURL(
-                      `${BASE_URL}api/downloadFile/` + item.uln_file
+                      // `${BASE_URL}api/downloadFile/` + item.uln_file
+                      `http://192.168.254.117:8000/download/` + item.uln_file
                     );
                     // let url = `${BASE_URL}files/` + item.uln_file;
                     // let fileName = item.uln_file;

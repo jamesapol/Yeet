@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
-
+import * as SecureStore from "expo-secure-store";
 // import { Switch } from 'react-native-paper';
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
@@ -53,6 +53,7 @@ import ModalCustomLink from "../../../components/ModalCustomLink/ModalCustomLink
 
 import { themes } from "../../../../themes/themes";
 import ModalEmbedVideo from "../../../components/ModalEmbedVideo/ModalEmbedVideo";
+import LinksLoadingScreen from "../../../components/LinksLoadingScreen/LinksLoadingScreen";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -75,6 +76,10 @@ export default function HomeScreen() {
     editCustomLink,
     removeDirectLink,
     userTheme,
+    userName,
+    userBio,
+    userCoverPhoto,
+    userProfilePhoto,
 
     userLinksLoading,
 
@@ -94,7 +99,6 @@ export default function HomeScreen() {
     setModalMessage,
     setModalHeader,
     editYouTubeLink,
-    accountStatus,
     reactivateModalVisible,
     setReactivateModalVisible,
 
@@ -105,6 +109,10 @@ export default function HomeScreen() {
     setEditLinkMessageModalVisible,
 
     saveNotificationPushToken,
+    tempCoverPhoto,
+    setTempCoverPhoto,
+    tempProfilePhoto,
+    setTempProfilePhoto,
   } = useContext(AuthContext);
 
   // const [socialMediaIcons, setSocialMediaIcons] = useState([
@@ -216,31 +224,29 @@ export default function HomeScreen() {
   const [customLinkName, setCustomLinkName] = useState();
   const [customLinkURL, setCustomLinkURL] = useState();
 
-  const [expoPushToken, setExpoPushToken] = useState("")
+  const [expoPushToken, setExpoPushToken] = useState("");
 
   const [errorMessageModalVisible, setErrorMessageModalVisible] =
     useState(false);
 
   const [image, setImage] = useState(null);
-  useEffect(() => {
-    const registerForPushNotifications = async () => {
-      const { status } = await Notifications.getPermissionsAsync();
-      console.log(status);
-      if (status !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        if (status !== "granted") {
-          return;
-        }
-      }
+  // useEffect(() => {
+  //   const registerForPushNotifications = async () => {
+  //     const { status } = await Notifications.getPermissionsAsync();
+  //     console.log(status);
+  //     if (status !== "granted") {
+  //       const { status } = await Notifications.requestPermissionsAsync();
+  //       if (status !== "granted") {
+  //         return;
+  //       }
+  //     }
 
-      const token = await Notifications.getExpoPushTokenAsync();
-      console.log(token)
-      setExpoPushToken(token);
-    };
-    registerForPushNotifications();
-    
-  }, []);
-
+  //     const token = await Notifications.getExpoPushTokenAsync();
+  //     console.log(token);
+  //     setExpoPushToken(token);
+  //   };
+  //   registerForPushNotifications();
+  // }, []);
   const getMimeType = (ext) => {
     // mime type mapping for few of the sample file types
     switch (ext) {
@@ -293,9 +299,11 @@ export default function HomeScreen() {
     }
     navigation.navigate("AddLinksScreen");
   };
+
   const onEditProfilePressed = () => {
     navigation.navigate("EditProfileScreen");
   };
+
   const onManageLinksPressed = () => {
     navigation.navigate("ManageLinksScreen");
   };
@@ -303,8 +311,6 @@ export default function HomeScreen() {
   const onDirectLinkPressed = () => {
     navigation.navigate("DirectLinkScreen");
   };
-
-  const onPaymentLinksPressed = () => {};
 
   const onCancelPressed = () => {
     setShowModal(false);
@@ -460,7 +466,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.root}>
       {/* {userInfoLoading == true ? <LoadingScreen /> : null} */}
-      {userLinksLoading == true ? <LoadingScreen /> : null}
+      {/* {userLinksLoading == true ? <LinksLoadingScreen /> : null} */}
 
       <View>
         {/* FOR FIRST TIME REGISTRATION */}
@@ -481,23 +487,19 @@ export default function HomeScreen() {
         ) : (
           ""
         )}
-
-        {accountStatus == -1 ? (
-          <Modal
-            transparent
-            animationType="fade"
-            hardwareAccelerated
-            visible={reactivateModalVisible}
-            onRequestClose={onCancelPressed}
-          >
-            <ModalMessage
-              modalHeader={modalHeader}
-              modalMessage={modalMessage}
-              onOKPressed={onCancelPressed}
-            />
-          </Modal>
-        ) : null}
-
+        <Modal
+          transparent
+          animationType="fade"
+          hardwareAccelerated
+          visible={reactivateModalVisible}
+          onRequestClose={onCancelPressed}
+        >
+          <ModalMessage
+            modalHeader={modalHeader}
+            modalMessage={modalMessage}
+            onOKPressed={onCancelPressed}
+          />
+        </Modal>
         {/* SUCCESS MESSAGE MODAL */}
         <Modal
           transparent
@@ -703,47 +705,48 @@ export default function HomeScreen() {
             <View style={styles.mainContainer}>
               {/* COVER PHOTO */}
               <View style={GlobalStyles.coverPhotoContainer}>
-                {userInfoLoading == true ? (
-                  <LoadingResource />
-                ) : (
+                {tempCoverPhoto ? (
                   <Image
-                    source={
-                      userInfoLoading == false
-                        ? userInfo.usr_cover_photo_storage
-                          ? {
-                              uri: `${BASE_URL}images/mobile/cover/${userInfo.usr_cover_photo_storage}`,
-                            }
-                          : null
-                        : null
-                    }
+                    source={{
+                      uri: tempCoverPhoto,
+                    }}
                     resizeMode="stretch"
                     style={GlobalStyles.coverPhoto}
                   />
-                )}
+                ) : userCoverPhoto ? (
+                  <Image
+                    source={{
+                      uri: `${BASE_URL}images/mobile/cover/${userCoverPhoto}`,
+                    }}
+                    resizeMode="stretch"
+                    style={GlobalStyles.coverPhoto}
+                  />
+                ) : userInfoLoading ? (
+                  <LoadingResource />
+                ) : null}
               </View>
               {/* PROFILE PHOTO */}
               <View style={GlobalStyles.profilePhotoContainer}>
                 <View style={GlobalStyles.profilePhoto}>
-                  {userInfoLoading == true ? (
-                    <LoadingResource visible={true} />
-                  ) : (
+                  {tempProfilePhoto ? (
                     <Avatar.Image
                       backgroundColor="#DEDEDE"
                       size={RFPercentage(15)}
-                      source={
-                        userInfoLoading == false
-                          ? userInfo.usr_profile_photo_storage
-                            ? {
-                                uri: `${BASE_URL}images/mobile/photos/${userInfo.usr_profile_photo_storage}`,
-                                // cache: "reload",
-                              }
-                            : {
-                                uri: `${BASE_URL}images/profile/photos/default.png`,
-                              }
-                          : null
-                      }
+                      source={{
+                        uri: tempProfilePhoto,
+                      }}
                     />
-                  )}
+                  ) : userProfilePhoto ? (
+                    <Avatar.Image
+                      backgroundColor="#DEDEDE"
+                      size={RFPercentage(15)}
+                      source={{
+                        uri: `${BASE_URL}images/mobile/photos/${userProfilePhoto}`,
+                      }}
+                    />
+                  ) : userInfoLoading == true ? (
+                    <LoadingResource />
+                  ) : null}
                 </View>
               </View>
 
@@ -751,14 +754,24 @@ export default function HomeScreen() {
                 <View style={GlobalStyles.userNameContainer}>
                   {/* <Text style={GlobalStyles.userNameText}> */}
                   <Text style={GlobalStyles.userNameText}>
-                    {userInfoLoading == false ? userInfo.usr_name : ""}
+                    {userName ? userName : null}
+                    {/* {userInfoLoading == false
+                      ? userName
+                        ? userName
+                        : userInfo.usr_name
+                      : ""} */}
                     {/* {Object.keys(userLinks).length} */}
                   </Text>
                 </View>
 
                 <View style={GlobalStyles.userBioContainer}>
                   <Text style={GlobalStyles.userBioText}>
-                    {userInfoLoading == false ? userInfo.usr_bio : ""}
+                    {userBio ? userBio : null}
+                    {/* {userInfoLoading == false
+                      ? userBio
+                        ? userBio
+                        : userInfo.usr_bio
+                      : ""} */}
                   </Text>
                 </View>
               </View>
@@ -869,7 +882,14 @@ export default function HomeScreen() {
               ) : null}
             </View>
           )}
-          keyExtractor={(item) => item.lnk_id}
+          ListFooterComponent={() =>
+            userLinksLoading || userInfoLoading ? (
+              <View>
+                <LoadingResource />
+              </View>
+            ) : null
+          }
+          keyExtractor={(item) => item.uln_id}
           // keyExtractor={(item, index) => index.toString()}
           data={
             userInfoLoading == false ? [...userLinks, { addLinks: true }] : null

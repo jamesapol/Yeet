@@ -7,6 +7,7 @@ import { BASE_URL } from "../config";
 import * as Device from "expo-device";
 import { useState } from "react";
 import { useEffect } from "react";
+import { Linking } from "react-native";
 
 export const AuthContext = createContext();
 
@@ -15,10 +16,17 @@ export const AuthProvider = ({ children }) => {
   const [validToken, setValidToken] = useState(false);
 
   const [userInfo, setUserInfo] = useState({});
-  const [accountStatus, setAccountStatus] = useState();
   const [userNFCDevices, setUserNFCDevices] = useState({});
   const [userActiveNFCDevice, setUserActiveNFCDevice] = useState({});
   const [notificationCount, setNotificationCount] = useState();
+
+  //CACHED DATA
+  const [userName, setUserName] = useState();
+  const [userBio, setUserBio] = useState();
+  const [userCoverPhoto, setUserCoverPhoto] = useState();
+  const [userProfilePhoto, setUserProfilePhoto] = useState();
+  const [tempCoverPhoto, setTempCoverPhoto] = useState();
+  const [tempProfilePhoto, setTempProfilePhoto] = useState();
 
   const [nfcDeviceLoading, setNfcDeviceLoading] = useState(false);
   const [userInfoLoading, setUserInfoLoading] = useState(false);
@@ -140,6 +148,8 @@ export const AuthProvider = ({ children }) => {
     useState(false);
   const [homeModalVisible, setHomeModalVisible] = useState(false);
   const [viewConnectionModalVisible, setViewConnectionModalVisible] =
+    useState(false);
+  const [connectionsScreenModalVisible, setConnectionsScreenModalVisible] =
     useState(false);
 
   const [updateAccountModalVisible, setUpdateAccountModalVisible] =
@@ -345,7 +355,7 @@ export const AuthProvider = ({ children }) => {
     userName,
     userBio
   ) => {
-    setUserInfoLoading(true);
+    // setUserInfoLoading(true);
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
 
@@ -391,15 +401,36 @@ export const AuthProvider = ({ children }) => {
           setModalMessage(response.data.coverPhotoError);
         } else {
           let userInfo = response.data.user;
-          setUpdateSuccessModalVisible(true);
-          setUserInfo(userInfo);
+          setTempProfilePhoto(null);
+          setTempCoverPhoto(null);
+          setUserInfo(userInfo)
+          console.log(userInfo.usr_name);
+
+          setUserName(userInfo.usr_name);
+          setUserBio(userInfo.usr_bio);
+          setUserCoverPhoto(userInfo.usr_cover_photo_storage);
+          setUserProfilePhoto(userInfo.usr_profile_photo_storage);
+
+          SecureStore.setItemAsync("userName", userInfo.usr_name);
+          SecureStore.setItemAsync("userBio", userInfo.usr_bio);
+          // SecureStore.setItemAsync("userEmail", userInfo.usr_email);
+          // SecureStore.setItemAsync("userMobile", userInfo.usr_mobile);
+          SecureStore.setItemAsync(
+            "userCoverPhoto",
+            userInfo.usr_cover_photo_storage
+          );
+          SecureStore.setItemAsync(
+            "userProfilePhoto",
+            userInfo.usr_profile_photo_storage
+          );
+
         }
 
-        setUserInfoLoading(false);
+        // setUserInfoLoading(false);
       })
       .catch((error) => {
         console.log(error.response);
-        setUserInfoLoading(false);
+        // setUserInfoLoading(false);
       });
   };
 
@@ -943,11 +974,12 @@ export const AuthProvider = ({ children }) => {
           setModalMessage(response.data.blockedAccount);
           console.log(response.data);
         } else {
+          if (response.data.accountStatus == -1) {
+            setReactivateModalVisible(true);
+            setModalHeader("Welcome Back");
+            setModalMessage("Welcome back! We are happy to see you again!");
+          }
           let userInfo = response.data.userData;
-          setReactivateModalVisible(true);
-          setModalHeader("Welcome Back");
-          setModalMessage("Welcome back! We are happy to see you again!");
-          setAccountStatus(userInfo.accountStatus);
           setUserInfo(userInfo.user);
           setUserActiveNFCDevice(userInfo.activeNFCDevice);
           setUserNFCDevices(userInfo.nfcDevice);
@@ -958,17 +990,46 @@ export const AuthProvider = ({ children }) => {
           setUserTheme(userInfo.userTheme);
           console.log(userInfo);
 
+          let cachedUserInfo = {
+            userName: userInfo.user.usr_name,
+            userBio: userInfo.user.usr_bio,
+            userEmail: userInfo.user.usr_email,
+            userMobile: userInfo.user.usr_mobile,
+            userCoverPhoto: userInfo.user.usr_cover_photo_storage,
+            userProfilePhoto: userInfo.user.usr_profile_photo_storage,
+          };
+
+          // console.log(cachedUserInfo);
+          // SecureStore.setItemAsync(
+          //   "cachedUserInfo",
+          //   JSON.stringify(cachedUserInfo)
+          // );
+          SecureStore.setItemAsync("userName", userInfo.user.usr_name);
+          SecureStore.setItemAsync("userBio", userInfo.user.usr_bio);
+          // SecureStore.setItemAsync("userEmail", userInfo.user.usr_email);
+          // SecureStore.setItemAsync("userMobile", userInfo.user.usr_mobile);
+          SecureStore.setItemAsync(
+            "userCoverPhoto",
+            userInfo.user.usr_cover_photo_storage
+          );
+          SecureStore.setItemAsync(
+            "userProfilePhoto",
+            userInfo.user.usr_profile_photo_storage
+          );
+          // // SecureStore.setItemAsync("userLinks", JSON.stringify(userInfo.userLinks))
+          // SecureStore.setItemAsync("userInfoName", userInfo.usr_name);
+          // SecureStore.setItemAsync("userInfoName", userInfo.usr_name);
+          // SecureStore.setItemAsync("userInfoName", userInfo.usr_name);
+
           SecureStore.setItemAsync("userUUID", userInfo.user.usr_uuid);
           SecureStore.setItemAsync("userToken", userInfo.token);
-
-          console.log("EXECUTED");
         }
         setUserInfoLoading(false);
       })
       .catch((error) => {
         setUserInfoLoading(false);
-        console.warn(error)
-        console.log(error.response.status)
+        console.warn(error);
+        console.log(error.response.status);
         console.log(error.response);
       });
   };
@@ -985,9 +1046,18 @@ export const AuthProvider = ({ children }) => {
       )
       .then((res) => {
         console.log(res.data);
+
         SecureStore.deleteItemAsync("userInfo");
         SecureStore.deleteItemAsync("userUUID");
         SecureStore.deleteItemAsync("userToken");
+        SecureStore.deleteItemAsync("userName");
+        SecureStore.deleteItemAsync("userEmail");
+        SecureStore.deleteItemAsync("userBio");
+        SecureStore.deleteItemAsync("userMobile");
+        SecureStore.deleteItemAsync("userCoverPhoto");
+        SecureStore.deleteItemAsync("userProfilePhoto");
+        SecureStore.deleteItemAsync("userLinks");
+        SecureStore.deleteItemAsync("cachedUserInfo");
         // AsyncStorage.removeItem("userInfo");
         setUserToken(null);
         setUserLinks({});
@@ -1059,6 +1129,24 @@ export const AuthProvider = ({ children }) => {
         setUserLinks(userInfo.userLinks);
         setUserTheme(userInfo.userTheme);
         setNotificationCount(userInfo.notificationCount);
+
+        setUserName(userInfo.user.usr_name);
+        setUserBio(userInfo.user.usr_bio);
+        setUserCoverPhoto(userInfo.user.usr_cover_photo_storage);
+        setUserProfilePhoto(userInfo.user.usr_profile_photo_storage);
+
+        SecureStore.setItemAsync("userName", userInfo.user.usr_name);
+        SecureStore.setItemAsync("userBio", userInfo.user.usr_bio);
+        // SecureStore.setItemAsync("userEmail", userInfo.user.usr_email);
+        // SecureStore.setItemAsync("userMobile", userInfo.user.usr_mobile);
+        SecureStore.setItemAsync(
+          "userCoverPhoto",
+          userInfo.user.usr_cover_photo_storage
+        );
+        SecureStore.setItemAsync(
+          "userProfilePhoto",
+          userInfo.user.usr_profile_photo_storage
+        );
         // console.log(response.data);
         console.log("Logged In as: " + userInfo.user.usr_email);
         console.log(
@@ -1733,6 +1821,8 @@ export const AuthProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${userToken}` },
       })
       .then((response) => {
+        // let directLinkURL = response.data.directLinkURL;
+        // console.log(directLinkURL)
         let blockStatus = response.data.blockStatus;
         setUserBlockStatus(blockStatus);
 
@@ -1745,6 +1835,17 @@ export const AuthProvider = ({ children }) => {
         let userConnectionStatus = response.data.userConnectionStatus;
         setUserConnectionStatus(userConnectionStatus);
 
+        // if (userConnectionData.usr_direct_link_active == 1) {
+        //   Linking.canOpenURL(directLinkURL).then((supported) => {
+        //     if (supported) {
+        //       Linking.openURL(directLinkURL);
+        //     } else {
+        //       setConnectionsScreenModalVisible(true);
+        //       setModalHeader("Error");
+        //       setModalMessage("This link cannot be opened and may be broken.");
+        //     }
+        //   });
+        // }
         addProfileView(connectionUUID);
         // console.log(userConnectionLinks);
         console.log(response.data);
@@ -1815,7 +1916,7 @@ export const AuthProvider = ({ children }) => {
           let successMessage = response.data.success;
           console.log(successMessage);
 
-          setShowSuccessModal(true);
+          setConnectionsScreenModalVisible(true);
           setModalHeader("Success");
           setModalMessage(successMessage);
         }
@@ -1848,7 +1949,7 @@ export const AuthProvider = ({ children }) => {
           let successMessage = response.data.success;
           console.log(successMessage);
 
-          setShowSuccessModal(true);
+          setConnectionsScreenModalVisible(true);
           setModalHeader("Success");
           setModalMessage(successMessage);
         }
@@ -1884,7 +1985,7 @@ export const AuthProvider = ({ children }) => {
           setUserConnections(userConnections);
           console.log(successMessage);
 
-          setShowSuccessModal(true);
+          setConnectionsScreenModalVisible(true);
           setModalHeader("Success");
           setModalMessage(successMessage);
         }
@@ -1920,7 +2021,7 @@ export const AuthProvider = ({ children }) => {
           setUserConnections(userConnections);
           console.log(successMessage);
 
-          setShowSuccessModal(true);
+          setConnectionsScreenModalVisible(true);
           setModalHeader("Success");
           setModalMessage(successMessage);
         }
@@ -2576,6 +2677,15 @@ export const AuthProvider = ({ children }) => {
 
       let userUUID = await SecureStore.getItemAsync("userUUID");
       let userToken = await SecureStore.getItemAsync("userToken");
+      let cachedUserInfo = await SecureStore.getItemAsync("cachedUserInfo");
+      let userInfo = JSON.parse(cachedUserInfo);
+
+      let userName = await SecureStore.getItemAsync("userName");
+      let userBio = await SecureStore.getItemAsync("userBio");
+      let userEmail = await SecureStore.getItemAsync("userEmail");
+      let userMobile = await SecureStore.getItemAsync("userMobile");
+      let userCoverPhoto = await SecureStore.getItemAsync("userCoverPhoto");
+      let userProfilePhoto = await SecureStore.getItemAsync("userProfilePhoto");
 
       console.log("UserToken: " + userToken);
       console.log("UserUUID: " + userUUID);
@@ -2593,6 +2703,29 @@ export const AuthProvider = ({ children }) => {
       }
       // CHECK TOKEN FIRST IF VALID OR NOT
       else if (userUUID && userToken) {
+        if (userName) {
+          setUserToken(userToken);
+          setSplashLoading(false);
+          setUserLinksLoading(true);
+
+          setUserName(userName);
+          setUserBio(userBio);
+          setUserCoverPhoto(userCoverPhoto);
+          setUserProfilePhoto(userProfilePhoto);
+          // await axios
+          //   .get(`${BASE_URL}api/getUserLinks/${userUUID}`, {
+          //     headers: { Authorization: `Bearer ${userToken}` },
+          //   })
+          //   .then((response) => {
+          //     let userLinks = response.data;
+          //     setUserLinks(userLinks);
+          //     setUserLinksLoading(false);
+          //   })
+          //   .catch((error) => {
+          //     setUserLinksLoading(false);
+          //     console.log(error.response.data);
+          //   });
+        }
         await axios
           .get(`${BASE_URL}api/getUserData/${userUUID}`, {
             headers: { Authorization: `Bearer ${userToken}` },
@@ -2635,6 +2768,24 @@ export const AuthProvider = ({ children }) => {
               );
               console.log("Direct Link ID: " + userInfo.user.uln_id);
               console.log("Notification Count: " + userInfo.notificationCount);
+
+              setUserName(userInfo.user.usr_name);
+              setUserBio(userInfo.user.usr_bio);
+              setUserCoverPhoto(userInfo.user.usr_cover_photo_storage);
+              setUserProfilePhoto(userInfo.user.usr_profile_photo_storage);
+
+              SecureStore.setItemAsync("userName", userInfo.user.usr_name);
+              SecureStore.setItemAsync("userBio", userInfo.user.usr_bio);
+              // SecureStore.setItemAsync("userEmail", userInfo.user.usr_email);
+              // SecureStore.setItemAsync("userMobile", userInfo.user.usr_mobile);
+              SecureStore.setItemAsync(
+                "userCoverPhoto",
+                userInfo.user.usr_cover_photo_storage
+              );
+              SecureStore.setItemAsync(
+                "userProfilePhoto",
+                userInfo.user.usr_profile_photo_storage
+              );
             }
             console.log("YAWA");
             setSplashLoading(false);
@@ -2781,8 +2932,6 @@ export const AuthProvider = ({ children }) => {
         setSuccessMessage,
         successMessage,
         login,
-        accountStatus,
-        setAccountStatus,
         getUserLinks,
         setUserLinks,
         userLinks,
@@ -2890,6 +3039,8 @@ export const AuthProvider = ({ children }) => {
         userBlockedConnections,
         userPrivateStatus,
         setUserPrivateStatus,
+        connectionsScreenModalVisible,
+        setConnectionsScreenModalVisible,
 
         //GET CONNECTION FROM QR
         showProfileFromQR,
@@ -3003,6 +3154,20 @@ export const AuthProvider = ({ children }) => {
         setDeleteAccountModalVisible,
         finalConfirmationModalVisible,
         setFinalConfirmationModalVisible,
+
+        //CACHED DATA
+        userName,
+        setUserName,
+        userBio,
+        setUserBio,
+        userCoverPhoto,
+        setUserCoverPhoto,
+        userProfilePhoto,
+        setUserProfilePhoto,
+        tempCoverPhoto,
+        setTempCoverPhoto,
+        tempProfilePhoto,
+        setTempProfilePhoto,
 
         //clear all
         clearAll,

@@ -94,11 +94,11 @@ export default function DirectLinkScreen() {
         visible={showModal}
         // onRequestClose={onCancelPressed}
       >
-          <ModalMessage
-            modalHeader="Success"
-            modalMessage="Direct Link saved successfully!"
-            onOKPressed={onCancelPressed}
-          />
+        <ModalMessage
+          modalHeader="Success"
+          modalMessage="Direct Link saved successfully!"
+          onOKPressed={onCancelPressed}
+        />
       </Modal>
 
       {/* NEW LINK MODAL */}
@@ -174,7 +174,7 @@ export default function DirectLinkScreen() {
           )
         }
         extraData={refreshFlatList}
-        keyExtractor={(item) => item.lnk_id}
+        keyExtractor={(item) => item.uln_id}
         data={userLinks}
         renderItem={({ item, index }) => {
           return (
@@ -228,7 +228,11 @@ export default function DirectLinkScreen() {
                   fontSize: RFPercentage(1.3),
                 }}
               >
-              {item.lnk_id == 31 ? item.uln_file_title : item.lnk_id == 32 ? item.uln_custom_link_name : item.lnk_name}
+                {item.lnk_id == 31
+                  ? item.uln_file_title
+                  : item.lnk_id == 32
+                  ? item.uln_custom_link_name
+                  : item.lnk_name}
               </Text>
             </TouchableOpacity>
           );
