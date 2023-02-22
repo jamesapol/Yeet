@@ -7,6 +7,7 @@ import { BASE_URL } from "../config";
 import * as Device from "expo-device";
 import { useState } from "react";
 import { useEffect } from "react";
+import { Linking } from "react-native";
 
 export const AuthContext = createContext();
 
@@ -17,6 +18,7 @@ export const AuthProvider = ({ children }) => {
   const [userInfo, setUserInfo] = useState({});
   const [userNFCDevices, setUserNFCDevices] = useState({});
   const [userActiveYeetDevice, setUserActiveYeetDevice] = useState({});
+  const [notificationCount, setNotificationCount] = useState();
 
   //CACHED DATA
   const [userName, setUserName] = useState();
@@ -48,6 +50,7 @@ export const AuthProvider = ({ children }) => {
   //AUTH TOKEN
   const [userToken, setUserToken] = useState();
   //GET ALL LINKS FROM DATABASE
+  const [allLinks, setAllLinks] = useState({});
   const [addLinkLoading, setAddLinkLoading] = useState(false);
   const [showAddLinkMessage, setShowAddLinkMessage] = useState(false);
 
@@ -107,6 +110,11 @@ export const AuthProvider = ({ children }) => {
   const [userNotFound, setUserNotFound] = useState(false);
   const [publicLoading, setPublicLoading] = useState(false);
 
+  const [userNotifications, setUserNotifications] = useState({});
+  const [userNotificationsLoading, setUserNotificationsLoading] =
+    useState(false);
+  const [notificationPushToken, setNotificationPushToken] = useState();
+
   //INSIGHTS
   const [userProfileTaps, setUserProfileTaps] = useState();
   const [userLinksInsights, setUserLinksInsights] = useState({});
@@ -163,9 +171,46 @@ export const AuthProvider = ({ children }) => {
   const [finalConfirmationModalVisible, setFinalConfirmationModalVisible] =
     useState(false);
 
+  //LOADING STATES
+  const [loginLoading, setLoginLoading] = useState(false);
+  const [forgotPasswordEmailLoading, setForgotPasswordEmailLoading] =
+    useState(false);
+
   const [publicProfileLoading, setPublicProfileLoading] = useState(false);
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [manageAccountLoading, setManageAccountLoading] = useState(false);
+
+  //REGISTRATION STEP 1
+  
+
+  const checkConfirmationCode = async (code, email) => {
+    setIsLoading(true);
+    axios
+      .post(`${BASE_URL}api/checkConfirmationCode`, {
+        code: code,
+        email: email,
+      })
+      .then((response) => {
+        if (response.data.code == 200) {
+          setValid(true);
+        } else if (response.data.code == 401) {
+          setValid(false);
+          setConfirmEmailModalVisible(true);
+          setModalHeader("Error");
+          setModalMessage(response.data.error);
+        }
+        console.log(response.data);
+        setIsLoading(false);
+      })
+      .catch((e) => {
+        setConfirmEmailModalVisible(true);
+        setModalHeader("Error");
+        setModalMessage(e.response.data.errors);
+        console.log(e.response.data);
+        setIsLoading(false);
+      });
+    // console.log(code)
+  };
 
   const register = async (
     fileUri,
@@ -177,74 +222,79 @@ export const AuthProvider = ({ children }) => {
     mobileNumber
   ) => {
     setUserInfoLoading(true);
-    let formData = new FormData();
-    // console.log(fileUri + fileName + fileType);
-    formData.append("fullName", fullName);
-    formData.append("email", email);
-    formData.append("password", password);
-    formData.append("deviceName", Device.modelName);
-    formData.append("mobileNumber", mobileNumber);
+    if (!fileUri) {
+      await axios
+        .post(`${BASE_URL}api/register`, {
+          fullName: fullName,
+          email: email,
+          password: password,
+          deviceName: Device.modelName,
+          mobileNumber: mobileNumber,
+        })
+        .then((response) => {
+          setRegistered(true);
 
-    if (fileUri) {
+          let userInfo = response.data;
+          setUserInfo(userInfo.user);
+          setUserToken(userInfo.token);
+          setUserTheme(userInfo.userTheme);
+
+          SecureStore.setItemAsync("userUUID", userInfo.user.usr_uuid);
+          SecureStore.setItemAsync("userToken", userInfo.token);
+
+          setUserInfoLoading(false);
+          console.log(userInfo);
+        })
+        .catch((e) => {
+          console.log(e.response.data);
+          setIsLoading(false);
+          setRegistered(false);
+        });
+    } else {
+      let formData = new FormData();
+
       formData.append("profileImage", {
         uri: fileUri,
         name: fileName,
         type: fileType,
       });
-    }
+      console.log(fileUri + fileName + fileType);
+      formData.append("fullName", fullName);
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("deviceName", Device.modelName);
+      formData.append("mobileNumber", mobileNumber);
 
-    // await axios({
-    //   method: "POST",
-    //   url: `${BASE_URL}api/register`,
-    //   data: formData,
-    //   headers: {
-    //     Accept: "application/json",
-    //     "Content-Type": "multipart/form-data",
-    //   },
-    // })
-    await axios
-      .post(`${BASE_URL}api/register`, formData, {
+      await axios({
+        method: "POST",
+        url: `${BASE_URL}api/register`,
+        data: formData,
+        // body: formData,
         headers: {
           Accept: "application/json",
           "Content-Type": "multipart/form-data",
         },
       })
-      .then((response) => {
-        setRegistered(true);
+        .then((response) => {
+          setRegistered(true);
 
-        let userInfo = response.data.data;
-        console.log(userInfo);
-        console.log(userInfo.user.usr_uuid);
-        console.log(userInfo.token);
-        console.log(userInfo.user.usr_name);
+          let userInfo = response.data;
+          setUserInfo(userInfo.user);
+          setUserToken(userInfo.token);
+          setUserTheme(userInfo.userTheme);
 
-        setUserInfo(userInfo.user);
-        setUserToken(userInfo.token);
-        setUserTheme(userInfo.user.thm_id);
-        setUserName(userInfo.user.usr_name);
-        setUserLinks([]);
-        setUserProfilePhoto(userInfo.user_profile_photo);
-        setUserCoverPhoto(null);
+          SecureStore.setItemAsync("userUUID", userInfo.user.usr_uuid);
+          SecureStore.setItemAsync("userToken", userInfo.token);
 
-        SecureStore.setItemAsync("userUUID", userInfo.user.usr_uuid);
-        SecureStore.setItemAsync("userToken", userInfo.token);
-        SecureStore.setItemAsync("userName", userInfo.user.usr_name);
-        if (userInfo.user_profile_photo) {
-          SecureStore.setItemAsync(
-            "userProfilePhoto",
-            userInfo.user_profile_photo
-          );
-        }
-
-        setUserInfoLoading(false);
-        // console.log(userInfo);
-      })
-      .catch((error) => {
-        console.log(error);
-        setUserInfoLoading(false);
-        setRegistered(false);
-      });
-    // }
+          setUserInfoLoading(false);
+          console.log(userInfo);
+        })
+        .catch((error) => {
+          console.log(error);
+          setUserInfoLoading(false);
+          setRegistered(false);
+        });
+    }
   };
 
   const updateProfile = async (
@@ -257,6 +307,7 @@ export const AuthProvider = ({ children }) => {
     userName,
     userBio
   ) => {
+    // setUserInfoLoading(true);
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
 
@@ -306,36 +357,77 @@ export const AuthProvider = ({ children }) => {
           setTempCoverPhoto(null);
           setUserInfo(userInfo);
           console.log(userInfo.usr_name);
-          
+
           setUserName(userInfo.usr_name);
+          setUserBio(userInfo.usr_bio);
           setUserCoverPhoto(userInfo.usr_cover_photo_storage);
           setUserProfilePhoto(userInfo.usr_profile_photo_storage);
-          
+
           SecureStore.setItemAsync("userName", userInfo.usr_name);
-          if (userInfo.usr_bio) {
-            setUserBio(userInfo.usr_bio);
-            SecureStore.setItemAsync("userBio", userInfo.usr_bio);
-          } else {
-            setUserBio(null);
-            SecureStore.deleteItemAsync("userBio");
-          }
-          if (userInfo.usr_cover_photo_storage) {
-            SecureStore.setItemAsync(
-              "userCoverPhoto",
-              userInfo.usr_cover_photo_storage
-            );
-          }
-          if (userInfo.usr_profile_photo_storage) {
-            SecureStore.setItemAsync(
-              "userProfilePhoto",
-              userInfo.usr_profile_photo_storage
-            );
-          }
+          SecureStore.setItemAsync("userBio", userInfo.usr_bio);
+          SecureStore.setItemAsync(
+            "userCoverPhoto",
+            userInfo.usr_cover_photo_storage
+          );
+          SecureStore.setItemAsync(
+            "userProfilePhoto",
+            userInfo.usr_profile_photo_storage
+          );
         }
+
+        // setUserInfoLoading(false);
       })
       .catch((error) => {
         console.log(error.response);
         // setUserInfoLoading(false);
+      });
+  };
+
+  const updateEmail = async (newEmail, password) => {
+    setIsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    axios
+      .patch(
+        `${BASE_URL}api/updateUserEmail/${userUUID}`,
+        {
+          newEmail: newEmail,
+          password: password,
+        },
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${userToken}`,
+          },
+        }
+      )
+      .then((response) => {
+        // console.log(response.errors.newEmail)
+        if (response.data.passwordError) {
+          console.log(response.data.passwordError);
+          setShowModal(true);
+          setErrorMessage(response.data.passwordError);
+        } else if (response.data.emailError) {
+          console.log(response.data.emailError);
+          setShowModal(true);
+          setErrorMessage(response.data.emailError);
+        } else {
+          let userInfo = response.data.user;
+          console.log(userInfo);
+          setUserInfo(userInfo);
+          setShowModal(true);
+          setSuccessMessage(response.data.success);
+        }
+        // console.log(response)
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.log(error.response.data.errors.newEmail);
+        setShowModal(true);
+        setErrorMessage(error.response.data.errors.newEmail);
+        setIsLoading(false);
       });
   };
 
@@ -750,7 +842,7 @@ export const AuthProvider = ({ children }) => {
           setUserName(userInfo.user.usr_name);
           setUserBio(userInfo.user.usr_bio);
           setUserProfilePhoto(userInfo.user.usr_profile_photo_storage);
-          setUserCoverPhoto(userInfo.user.usr_cover_photo_storage);
+          setUserCoverPhoto(userInfo.user.usr_cover_photo_storage)
 
           if (userInfo.user.nfc_device) {
             SecureStore.setItemAsync(
@@ -799,8 +891,28 @@ export const AuthProvider = ({ children }) => {
       )
       .then((res) => {
         console.log(res.data);
-        clearAll();
 
+        SecureStore.deleteItemAsync("userInfo");
+        SecureStore.deleteItemAsync("userUUID");
+        SecureStore.deleteItemAsync("userToken");
+        SecureStore.deleteItemAsync("userName");
+        SecureStore.deleteItemAsync("userEmail");
+        SecureStore.deleteItemAsync("userBio");
+        SecureStore.deleteItemAsync("userMobile");
+        SecureStore.deleteItemAsync("userCoverPhoto");
+        SecureStore.deleteItemAsync("userProfilePhoto");
+        SecureStore.deleteItemAsync("userLinks");
+        SecureStore.deleteItemAsync("cachedUserInfo");
+        // AsyncStorage.removeItem("userInfo");
+        setUserToken(null);
+        setUserLinks({});
+        setUserInfo({});
+        setUserActiveYeetDevice({});
+        setUserNFCDevices({});
+        setAllLinks({});
+        setUserConnections({});
+        setUserConnectionData({});
+        setUserConnectionLinks({});
         setIsLoading(false);
         setSplashLoading(false);
       })
@@ -840,164 +952,103 @@ export const AuthProvider = ({ children }) => {
   };
 
   const getUserData = async () => {
-    try {
-      setUserInfoLoading(true);
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+    // setIsLoading(true);
+    setUserInfoLoading(true);
+    await axios
+      .get(`${BASE_URL}api/getUserData/${userUUID}`, {
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      })
+      .then((response) => {
+        // console.log(response.data.user);
+        let userInfo = response.data.userData;
+        setUserInfo(userInfo.user);
+        setUserActiveYeetDevice(userInfo.activeNFCDevice);
+        setUserNFCDevices(userInfo.nfcDevice);
+        setUserToken(userInfo.token);
+        setUserDirectLink(userInfo.user.usr_direct_link_active);
+        setUserDirectLinkID(userInfo.user.uln_id);
+        setUserLinks(userInfo.userLinks);
+        setUserTheme(userInfo.userTheme);
+        setNotificationCount(userInfo.notificationCount);
 
-      let userUUID = await SecureStore.getItemAsync("userUUID");
-      let userToken = await SecureStore.getItemAsync("userToken");
+        setUserName(userInfo.user.usr_name);
+        setUserBio(userInfo.user.usr_bio);
+        setUserCoverPhoto(userInfo.user.usr_cover_photo_storage);
+        setUserProfilePhoto(userInfo.user.usr_profile_photo_storage);
 
-      let userName = await SecureStore.getItemAsync("userName");
-      let userBio = await SecureStore.getItemAsync("userBio");
-      let userCoverPhoto = await SecureStore.getItemAsync("userCoverPhoto");
-      let userProfilePhoto = await SecureStore.getItemAsync("userProfilePhoto");
-      let userActiveYeetDevice = await SecureStore.getItemAsync(
-        "userActiveYeetDevice"
-      );
-
-      console.log("UserToken: " + userToken);
-      console.log("UserUUID: " + userUUID);
-      if (!userToken || !userUUID) {
-        setSplashLoading(false);
-        setUserInfoLoading(false);
+        SecureStore.setItemAsync("userName", userInfo.user.usr_name);
+        SecureStore.setItemAsync("userBio", userInfo.user.usr_bio);
+        // SecureStore.setItemAsync("userEmail", userInfo.user.usr_email);
+        // SecureStore.setItemAsync("userMobile", userInfo.user.usr_mobile);
+        SecureStore.setItemAsync(
+          "userCoverPhoto",
+          userInfo.user.usr_cover_photo_storage
+        );
+        SecureStore.setItemAsync(
+          "userProfilePhoto",
+          userInfo.user.usr_profile_photo_storage
+        );
+        // console.log(response.data);
+        console.log("Logged In as: " + userInfo.user.usr_email);
+        console.log(
+          "Direct Link Active: " + userInfo.user.usr_direct_link_active
+        );
+        console.log("Direct Link ID: " + userInfo.user.uln_id);
+        // console.log(userInfo.notificationCount);
+        console.log(userInfo.userLinks);
+        // setRefreshing(false);
+        // setSplashLoading(false);
         // setIsLoading(false);
-        setPublicLoading(false);
-        setAddLinkLoading(false);
-        setUserLinksLoading(false);
-        setNfcDeviceLoading(false);
-        setUserConnectionsLoading(false);
+        setUserInfoLoading(false);
+
         setShowModal(false);
-        console.log("No userUUID and userToken");
-      }
-      // CHECK TOKEN FIRST IF VALID OR NOT
-      else if (userUUID && userToken) {
-        if (userName) {
-          setUserToken(userToken);
-          setSplashLoading(false);
-          setUserLinksLoading(true);
+      })
+      .catch((error) => {
+        if (error.response.status === 401) {
+          console.log("Data Error: " + error.response.status);
 
-          setUserName(userName);
-          setUserBio(userBio);
-          setUserCoverPhoto(userCoverPhoto);
-          setUserProfilePhoto(userProfilePhoto);
-          setUserActiveYeetDevice(userActiveYeetDevice);
+          setWelcomeModalVisible(true);
+          setModalHeader("Login Error");
+          setModalMessage(
+            "Oops! It seems your current login has expired. Please sign in again to continue."
+          );
+
+          clearAll();
         }
-        await axios
-          .get(`${BASE_URL}api/getUserData/${userUUID}`, {
-            headers: { Authorization: `Bearer ${userToken}` },
-          })
-          .then((response) => {
-            if (response.status === 401) {
-              setWelcomeModalVisible(true);
-              setModalHeader("Login Error");
-              setModalMessage(
-                "Oops! It seems your current login has expired. Please sign in again to continue."
-              );
-              clearAll();
-              console.log(response);
-            }
-            if (response.data.userNotFound) {
-              console.log(response.data.userNotFound);
-              setWelcomeModalVisible(true);
-              setModalHeader("Login Timeout");
-              setModalMessage(
-                "Oops! It seems your current login has expired. Please sign in again to continue."
-              );
-              clearAll();
-            } else if (response.data.userData) {
-              let userInfo = response.data.userData;
-              console.log(response.data.userData);
 
-              setUserInfo(userInfo.user);
-              setUserActiveYeetDevice(userInfo.activeNFCDevice);
-              setUserNFCDevices(userInfo.nfcDevice);
-              setUserToken(userInfo.token);
-              setUserDirectLink(userInfo.user.usr_direct_link_active);
-              setUserDirectLinkID(userInfo.user.uln_id);
-              setUserLinks(userInfo.userLinks);
-              setUserTheme(userInfo.userTheme);
+        setUserInfoLoading(false);
+        setSplashLoading(false);
+      });
+  };
 
-              console.log("Logged In as: " + userInfo.user.usr_email);
-              console.log("NFC Active: " + userInfo.user.nfc_device);
-              console.log("Bio: " + userInfo.user.usr_bio);
+  const getAllLinks = async () => {
+    setIsLoading(true);
+    setRefreshing(true);
 
-              setUserName(userInfo.user.usr_name);
-              setUserCoverPhoto(userInfo.user.usr_cover_photo_storage);
-              setUserProfilePhoto(userInfo.user.usr_profile_photo_storage);
-              
-              SecureStore.setItemAsync("userName", userInfo.user.usr_name);
-              
-              if (userInfo.user.usr_bio) {
-                setUserBio(userInfo.user.usr_bio);
-                SecureStore.setItemAsync("userBio", userInfo.user.usr_bio);
-              } else {
-                setUserBio(null);
-                SecureStore.deleteItemAsync("userBio");
-              }
-              if (userInfo.user.usr_cover_photo_storage) {
-                SecureStore.setItemAsync(
-                  "userCoverPhoto",
-                  userInfo.user.usr_cover_photo_storage
-                );
-              }
-              if (userInfo.user.usr_profile_photo_storage) {
-                SecureStore.setItemAsync(
-                  "userProfilePhoto",
-                  userInfo.user.usr_profile_photo_storage
-                );
-              }
-              if (userInfo.activeNFCDevice) {
-                SecureStore.setItemAsync(
-                  "userActiveYeetDevice",
-                  userInfo.activeNFCDevice
-                );
-              }
-            }
-            setSplashLoading(false);
-            setUserInfoLoading(false);
-            setPublicLoading(false);
-            setAddLinkLoading(false);
-            setUserLinksLoading(false);
-            setNfcDeviceLoading(false);
-            setUserConnectionsLoading(false);
-            setShowModal(false);
-          })
-          .catch((error) => {
-            if (error.response.status === 401) {
-              console.log("Data Error: " + error.response.status);
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
 
-              setWelcomeModalVisible(true);
-              setModalHeader("Login Expired");
-              setModalMessage(
-                "Oops! It seems your current login has expired. Please sign in again to continue."
-              );
-              clearAll();
-            }
-
-            setSplashLoading(false);
-            setUserInfoLoading(false);
-            setPublicLoading(false);
-            setAddLinkLoading(false);
-            setUserLinksLoading(false);
-            setNfcDeviceLoading(false);
-            setUserConnectionsLoading(false);
-            setShowModal(false);
-          });
-      }
-    } catch (e) {
-      clearAll();
-      setSplashLoading(false);
-
-      setUserInfoLoading(false);
-      setPublicLoading(false);
-      setAddLinkLoading(false);
-      setUserLinksLoading(false);
-      setNfcDeviceLoading(false);
-      setUserConnectionsLoading(false);
-      setShowModal(false);
-
-      // clearAll();
-      console.log("Error :" + e);
-    }
+    await axios
+      .get(`${BASE_URL}api/getAllLinks`, {
+        headers: { Authorization: `Bearer ${userToken}` },
+      })
+      .then((response) => {
+        let allLinks = response.data;
+        setAllLinks(allLinks);
+        // console.log("Links: ", allLinks.socialMedia);
+        setRefreshing(false);
+        setIsLoading(false);
+        // console.log(response.data);
+      })
+      .catch((error) => {
+        console.log(error.response.data);
+        setRefreshing(false);
+        setIsLoading(false);
+      });
   };
 
   const removeLinkFromUser = async (userLinkID) => {
@@ -1026,6 +1077,150 @@ export const AuthProvider = ({ children }) => {
       .catch((error) => {
         console(error.response);
         setUserLinksLoading(false);
+      });
+  };
+
+  const addLink = async (userLinkID, userLinkURLHeader, userLinkURL) => {
+    setAddLinkLoading(true);
+    // setIsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .post(
+        `${BASE_URL}api/addUserLink`,
+        {
+          userUUID: userUUID,
+          userLinkID: userLinkID,
+          userLinkURLHeader: userLinkURLHeader,
+          userLinkURL: userLinkURL,
+        },
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        if (response.data.duplicateLink) {
+          setAddLinkLoading(false);
+          setAddLinksModalVisible(true);
+          setModalHeader("Error");
+          setModalMessage(response.data.duplicateLink);
+        } else {
+          let userLinks = response.data;
+
+          console.log(userLinks);
+          setUserLinks(userLinks);
+          setAddLinksModalVisible(true);
+          setModalHeader("Success");
+          setModalMessage("Link saved successfully!");
+          // getUserLinks(userUUID, userToken);
+          // setIsLoading(false);1
+          setAddLinkLoading(false);
+          console.log(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setIsLoading(false);
+      });
+  };
+
+  const addCustomLink = async (userLinkID, userLinkName, userLinkURL) => {
+    setAddLinkLoading(true);
+    // setIsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .post(
+        `${BASE_URL}api/addCustomLink`,
+        {
+          userUUID: userUUID,
+          userLinkID: userLinkID,
+          userLinkName: userLinkName,
+          userLinkURL: userLinkURL,
+        },
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        if (response.data.duplicateLink) {
+          setAddLinkLoading(false);
+          setAddLinksModalVisible(true);
+          setModalHeader("Error");
+          setModalMessage(response.data.duplicateLink);
+        } else {
+          let userLinks = response.data;
+
+          console.log(userLinks);
+          setUserLinks(userLinks);
+          setAddLinksModalVisible(true);
+          setModalHeader("Success");
+          setModalMessage("Link saved successfully!");
+          // getUserLinks(userUUID, userToken);
+          // setIsLoading(false);1
+          setAddLinkLoading(false);
+          console.log(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setIsLoading(false);
+      });
+  };
+
+  const addYouTubeLink = async (
+    userLinkID,
+    youtubeLinkName,
+    youtubeURL,
+    youtubeThumbnailURI
+  ) => {
+    setAddLinkLoading(true);
+    // setIsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .post(
+        `${BASE_URL}api/addYouTubeLink`,
+        {
+          userUUID: userUUID,
+          userLinkID: userLinkID,
+          youtubeLinkName: youtubeLinkName,
+          youtubeURL: youtubeURL,
+          youtubeThumbnailURI: youtubeThumbnailURI,
+        },
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        if (response.data.duplicateLink) {
+          setAddLinkLoading(false);
+          setAddLinksModalVisible(true);
+          setModalHeader("Error");
+          setModalMessage(response.data.duplicateLink);
+        } else {
+          let userLinks = response.data;
+
+          console.log(userLinks);
+          setUserLinks(userLinks);
+          setAddLinksModalVisible(true);
+          setModalHeader("Success");
+          setModalMessage("Link saved successfully!");
+          // getUserLinks(userUUID, userToken);
+          // setIsLoading(false);1
+          setAddLinkLoading(false);
+          console.log(response.data);
+        }
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setIsLoading(false);
       });
   };
 
@@ -1081,6 +1276,93 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  const uploadPaymentPhoto = async (
+    userLinkID,
+    paymentPhotoURI,
+    paymentPhotoFileName,
+    paymentPhotoFileType
+  ) => {
+    setAddLinkLoading(true);
+    // setIsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    let formData = new FormData();
+    formData.append("paymentPhoto", {
+      uri: paymentPhotoURI,
+      name: paymentPhotoFileName,
+      type: paymentPhotoFileType,
+    });
+
+    formData.append("userUUID", userUUID);
+    formData.append("userLinkID", userLinkID);
+    await axios({
+      method: "POST",
+      url: `${BASE_URL}api/uploadPaymentPhoto`,
+      data: formData,
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${userToken}`,
+        "Content-Type": "multipart/form-data",
+      },
+    })
+      .then((response) => {
+        let userLinks = response.data;
+        setUserLinks(userLinks);
+        setAddLinksModalVisible(true);
+        setModalHeader("Success");
+        setModalMessage("Image successfully uploaded.");
+        setAddLinkLoading(false);
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setAddLinkLoading(false);
+      });
+  };
+
+  const uploadFile = async (fileURI, fileName, fileType, fileTitle) => {
+    setAddLinkLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    let formData = new FormData();
+    formData.append("file", {
+      uri: fileURI,
+      name: fileName,
+      type: fileType,
+    });
+    formData.append("originalFileName", fileName);
+    formData.append("fileTitle", fileTitle);
+    formData.append("userUUID", userUUID);
+
+    await axios({
+      method: "POST",
+      url: `${BASE_URL}api/uploadFile`,
+      data: formData,
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${userToken}`,
+        "Content-Type": "multipart/form-data",
+      },
+    })
+      .then((response) => {
+        console.log(response.data);
+        let userLinks = response.data;
+        setUserLinks(userLinks);
+        setAddLinksModalVisible(true);
+        setModalHeader("Success");
+        setModalMessage("File successfully uploaded.");
+        setAddLinkLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        setAddLinkLoading(false);
+      });
+  };
+
   const editFile = async (
     fileURI,
     fileName,
@@ -1088,7 +1370,7 @@ export const AuthProvider = ({ children }) => {
     fileTitle,
     linkIndex
   ) => {
-    // setUserLinksLoading(true);
+    setUserLinksLoading(true);
 
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
@@ -1112,11 +1394,11 @@ export const AuthProvider = ({ children }) => {
           setUserLinks(userLinks);
           setShowSuccessModal(true);
           setModalMessage("File successfully renamed.");
-          // setUserLinksLoading(false);
+          setUserLinksLoading(false);
         })
         .catch((error) => {
           console.log(error.response.data);
-          // setUserLinksLoading(false);
+          setUserLinksLoading(false);
         });
     } else {
       let formData = new FormData();
@@ -1146,11 +1428,11 @@ export const AuthProvider = ({ children }) => {
           setUserLinks(userLinks);
           setShowSuccessModal(true);
           setModalMessage("File successfully uploaded.");
-          // setUserLinksLoading(false);
+          setUserLinksLoading(false);
         })
         .catch((error) => {
           console.log(error);
-          // setUserLinksLoading(false);
+          setUserLinksLoading(false);
         });
     }
   };
@@ -1224,10 +1506,11 @@ export const AuthProvider = ({ children }) => {
         } else {
           let userLinks = response.data.userLinks;
           setUserLinks(userLinks);
-          setEditLinkMessageModalVisible(true);
+          setShowModal(true);
           setModalHeader("Success");
-          setModalMessage("Link successfully updated");
+          setSuccessMessage("Link successfully updated");
         }
+        // setIsLoading(false);
       })
       .catch((error) => {
         console.log(error.response);
@@ -1269,10 +1552,11 @@ export const AuthProvider = ({ children }) => {
         console.log(response.data);
         let userLinks = response.data;
         setUserLinks(userLinks);
-        setEditLinkMessageModalVisible(true);
-        setModalHeader("Success");
-        setModalMessage("Link successfully updated");
         setUserLinksLoading(false);
+        if (userLinksLoading == false) {
+          setShowSuccessModal(true);
+          setSuccessMessage("Payment Image successfully updated.");
+        }
       })
       .catch((error) => {
         console.log(error.response);
@@ -1300,6 +1584,9 @@ export const AuthProvider = ({ children }) => {
         console.log(response.data);
         setUserDirectLink(1);
         setUserDirectLinkID(linkID);
+        // getUserData(userUUID, userToken);
+        // getUserLinks(userUUID, userToken);
+        // setIsLoading(false);
       })
       .catch((error) => {
         console.log(error.response);
@@ -1834,10 +2121,8 @@ export const AuthProvider = ({ children }) => {
         let nfcDevice = response.data.nfcDevice;
         console.log("NFC Active Device: " + nfcDevice);
 
-        if (response.data.nfcDevice) {
-          setUserActiveYeetDevice(nfcDevice);
-          SecureStore.setItemAsync("userActiveYeetDevice", nfcDevice);
-        }
+        setUserActiveYeetDevice(nfcDevice);
+        SecureStore.setItemAsync("userActiveYeetDevice", nfcDevice);
         // setNfcDeviceLoading(false);
       })
       .catch((error) => {
@@ -1909,6 +2194,154 @@ export const AuthProvider = ({ children }) => {
       .catch((error) => {
         console.log(error.response);
         setNfcDeviceLoading(false);
+      });
+  };
+
+  const saveNotificationPushToken = async (pushToken) => {
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .post(
+        `${BASE_URL}api/saveNotificationPushToken/`,
+        {
+          userUUID: userUUID,
+          pushToken: pushToken,
+          deviceName: Device.modelName,
+        },
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.log(error.response);
+      });
+  };
+
+  const getNotificationPushToken = async () => {
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+    let deviceName = Device.modelName;
+    await axios
+      .get(
+        `${BASE_URL}api/saveNotificationPushToken/${userUUID}/${deviceName}`,
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        console.log(response.data);
+        let pushToken = response.data.pushToken;
+        setNotificationPushToken(pushToken);
+      })
+      .catch((error) => {
+        console.log(error.response);
+      });
+  };
+
+  const getUserNotifications = async () => {
+    setUserNotificationsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .get(`${BASE_URL}api/getNotifications/${userUUID}`, {
+        headers: { Authorization: `Bearer ${userToken}` },
+      })
+      .then((response) => {
+        let userNotifications = response.data.userNotifications;
+        setUserNotifications(userNotifications);
+        setUserNotificationsLoading(false);
+        console.log(userNotifications);
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setUserNotificationsLoading(false);
+      });
+  };
+
+  const readNotification = async () => {
+    setUserNotificationsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .patch(
+        `${BASE_URL}api/readNotification/${userUUID}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        let userNotifications = response.data.userNotifications;
+        setUserNotifications(userNotifications);
+        // setNotificationCount(0);
+        setUserNotificationsLoading(false);
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setUserNotificationsLoading(false);
+      });
+  };
+
+  const openNotification = async (connectionUUID) => {
+    setIsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .get(`${BASE_URL}api/openNotification/${connectionUUID}/${userUUID}`, {
+        headers: { Authorization: `Bearer ${userToken}` },
+      })
+      .then((response) => {
+        let userConnectionData = response.data.connectionData;
+        setUserConnectionData(userConnectionData);
+
+        let userConnectionLinks = response.data.connectionLinks;
+        setUserConnectionLinks(userConnectionLinks);
+
+        let publicConnectionStatus = response.data.connectionStatus;
+        setPublicConnectionStatus(publicConnectionStatus);
+        // console.log(userConnectionLinks);
+        console.log(response.data);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        setIsLoading(false);
+      });
+  };
+
+  const removeNotification = async (notificationID) => {
+    // setUserNotificationsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .patch(
+        `${BASE_URL}api/removeNotification/${notificationID}/${userUUID}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        console.log(response.data);
+        let userNotifications = response.data.userNotifications;
+        setUserNotifications(userNotifications);
+        // setUserNotificationsLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        // setUserNotificationsLoading(false);
       });
   };
 
@@ -2064,26 +2497,197 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  const checkToken = async () => {
+    let userToken = await SecureStore.getItemAsync("userToken");
+    if (userToken) {
+      await axios
+        .get(`${BASE_URL}api/checkToken`, {
+          headers: { Authorization: `Bearer ${userToken}` },
+        })
+        .then((response) => {
+          if (response.data.error) {
+            setValidToken(false);
+          } else {
+            setValidToken(true);
+          }
+        })
+        .catch((error) => {
+          console.log(error.response.data);
+        });
+    } else {
+    }
+  };
+
   const isLoggedIn = async () => {
-    setSplashLoading(true);
-    getUserData();
+    try {
+      setSplashLoading(true);
+      setUserInfoLoading(true);
+
+      let userUUID = await SecureStore.getItemAsync("userUUID");
+      let userToken = await SecureStore.getItemAsync("userToken");
+
+      let userName = await SecureStore.getItemAsync("userName");
+      let userBio = await SecureStore.getItemAsync("userBio");
+      let userCoverPhoto = await SecureStore.getItemAsync("userCoverPhoto");
+      let userProfilePhoto = await SecureStore.getItemAsync("userProfilePhoto");
+      let userActiveYeetDevice = await SecureStore.getItemAsync(
+        "userActiveYeetDevice"
+      );
+
+      console.log("UserToken: " + userToken);
+      console.log("UserUUID: " + userUUID);
+      if (!userToken || !userUUID) {
+        setSplashLoading(false);
+        setUserInfoLoading(false);
+        // setIsLoading(false);
+        setPublicLoading(false);
+        setAddLinkLoading(false);
+        setUserLinksLoading(false);
+        setNfcDeviceLoading(false);
+        setUserConnectionsLoading(false);
+        setShowModal(false);
+        console.log("No userUUID and userToken");
+      }
+      // CHECK TOKEN FIRST IF VALID OR NOT
+      else if (userUUID && userToken) {
+        if (userName) {
+          setUserToken(userToken);
+          setSplashLoading(false);
+          setUserLinksLoading(true);
+
+          setUserName(userName);
+          setUserBio(userBio);
+          setUserCoverPhoto(userCoverPhoto);
+          setUserProfilePhoto(userProfilePhoto);
+          setUserActiveYeetDevice(userActiveYeetDevice);
+        }
+        await axios
+          .get(`${BASE_URL}api/getUserData/${userUUID}`, {
+            headers: { Authorization: `Bearer ${userToken}` },
+          })
+          .then((response) => {
+            if (response.status === 401) {
+              setWelcomeModalVisible(true);
+              setModalHeader("Login Error");
+              setModalMessage(
+                "Oops! It seems your current login has expired. Please sign in again to continue."
+              );
+              clearAll();
+              console.log(response);
+            }
+            if (response.data.userNotFound) {
+              console.log(response.data.userNotFound);
+              setWelcomeModalVisible(true);
+              setModalHeader("Login Timeout");
+              setModalMessage(
+                "Oops! It seems your current login has expired. Please sign in again to continue."
+              );
+              clearAll();
+            } else if (response.data.userData) {
+              let userInfo = response.data.userData;
+              console.log(response.data.userData);
+
+              setUserInfo(userInfo.user);
+              setUserActiveYeetDevice(userInfo.activeNFCDevice);
+              setUserNFCDevices(userInfo.nfcDevice);
+              setUserToken(userInfo.token);
+              setUserDirectLink(userInfo.user.usr_direct_link_active);
+              setUserDirectLinkID(userInfo.user.uln_id);
+              setUserLinks(userInfo.userLinks);
+              setUserTheme(userInfo.userTheme);
+              setNotificationCount(userInfo.notificationCount);
+
+              console.log("Logged In as: " + userInfo.user.usr_email);
+              console.log("NFC Active: " + userInfo.user.nfc_device);
+              console.log("Notification Count: " + userInfo.notificationCount);
+
+              setUserName(userInfo.user.usr_name);
+              setUserBio(userInfo.user.usr_bio);
+              setUserCoverPhoto(userInfo.user.usr_cover_photo_storage);
+              setUserProfilePhoto(userInfo.user.usr_profile_photo_storage);
+
+              SecureStore.setItemAsync("userName", userInfo.user.usr_name);
+              SecureStore.setItemAsync("userBio", userInfo.user.usr_bio);
+              SecureStore.setItemAsync(
+                "userCoverPhoto",
+                userInfo.user.usr_cover_photo_storage
+              );
+              SecureStore.setItemAsync(
+                "userProfilePhoto",
+                userInfo.user.usr_profile_photo_storage
+              );
+              if (userInfo.activeNFCDevice) {
+                SecureStore.setItemAsync(
+                  "userActiveYeetDevice",
+                  userInfo.activeNFCDevice
+                );
+              }
+            }
+            setSplashLoading(false);
+            setUserInfoLoading(false);
+            setPublicLoading(false);
+            setAddLinkLoading(false);
+            setUserLinksLoading(false);
+            setNfcDeviceLoading(false);
+            setUserConnectionsLoading(false);
+            setShowModal(false);
+          })
+          .catch((error) => {
+            if (error.response.status === 401) {
+              console.log("Data Error: " + error.response.status);
+
+              setWelcomeModalVisible(true);
+              setModalHeader("Login Expired");
+              setModalMessage(
+                "Oops! It seems your current login has expired. Please sign in again to continue."
+              );
+              clearAll();
+            }
+
+            setSplashLoading(false);
+            setUserInfoLoading(false);
+            setPublicLoading(false);
+            setAddLinkLoading(false);
+            setUserLinksLoading(false);
+            setNfcDeviceLoading(false);
+            setUserConnectionsLoading(false);
+            setShowModal(false);
+          });
+      }
+    } catch (e) {
+      clearAll();
+      setSplashLoading(false);
+
+      setUserInfoLoading(false);
+      setPublicLoading(false);
+      setAddLinkLoading(false);
+      setUserLinksLoading(false);
+      setNfcDeviceLoading(false);
+      setUserConnectionsLoading(false);
+      setShowModal(false);
+
+      // clearAll();
+      console.log("Error :" + e);
+    }
   };
 
   const clearAll = () => {
     SecureStore.deleteItemAsync("userUUID");
     SecureStore.deleteItemAsync("userToken");
-    SecureStore.deleteItemAsync("userName");
-    SecureStore.deleteItemAsync("userBio");
-    SecureStore.deleteItemAsync("userProfilePhoto");
-    SecureStore.deleteItemAsync("userCoverPhoto");
+    SecureStore.deleteItemAsync("userName"); 
+    SecureStore.deleteItemAsync("userBio");  
+    SecureStore.deleteItemAsync("userProfilePhoto");  
+    SecureStore.deleteItemAsync("userCoverPhoto"); 
     SecureStore.deleteItemAsync("userActiveYeetDevice");
 
     setUserInfo({});
     setUserNFCDevices({});
     setUserActiveYeetDevice({});
+    setNotificationCount();
     setUserBlockedConnections({});
     setUserToken();
     setUserLinks({});
+    setAllLinks({});
     setUserDirectLink();
     setUserDirectLinkID();
     setUserConnections({});
@@ -2096,20 +2700,13 @@ export const AuthProvider = ({ children }) => {
     setPublicProfileLinks({});
     setPublicProfileDirectLink();
     setPublicConnectionStatus();
+    setUserNotifications({});
     setUserProfileTaps({});
     setUserLinksInsights({});
     setTotalUserLinkTaps();
     setTotalUserConnections();
     setTotalProfileViews();
     setUserTheme({});
-    setUserName();
-    setUserBio();
-    setUserCoverPhoto();
-    setUserProfilePhoto();
-    setTempCoverPhoto();
-    setTempProfilePhoto();
-    setTempUserBio();
-    setTempUserName();
   };
 
   useEffect(() => {
@@ -2145,6 +2742,12 @@ export const AuthProvider = ({ children }) => {
         setModalMessage,
         setPublicProfileLoading,
         publicProfileLoading,
+
+        //FOR EMAIL CHECKING (REGISTRATION STEP 1)
+        checkEmailAvailability,
+
+        //FOR CODE CONFIRMATION
+        checkConfirmationCode,
 
         //FOR REGISTER
         valid,
@@ -2182,6 +2785,8 @@ export const AuthProvider = ({ children }) => {
         getUserTheme,
         userTheme,
         setUserTheme,
+        notificationCount,
+        setNotificationCount,
 
         //NFC STUFF
 
@@ -2206,20 +2811,28 @@ export const AuthProvider = ({ children }) => {
         toggleNotifications,
         toggleAccountPrivacy,
 
+        //VIEW ALL LINKS
+        allLinks,
+        getAllLinks,
+
+        //VIEW LINKS THAT USER DOES NOT HAVE
         //SECOND OPTION
 
         //ADD LINKS
+        addLink,
+        addCustomLink,
+        addYouTubeLink,
+        editYouTubeLink,
         addLinkLoading,
         setAddLinkLoading,
         showAddLinkMessage,
         setShowAddLinkMessage,
-        
+        uploadPaymentPhoto,
+
         //EDIT LINKS
         editLink,
         editCustomLink,
         editPaymentPhoto,
-        editFile,
-        editYouTubeLink,
 
         //REMOVE LINKS
         removeLinkFromUser,
@@ -2244,6 +2857,7 @@ export const AuthProvider = ({ children }) => {
         updateErrorModalVisible,
         setUpdateErrorModalVisible,
 
+        updateEmail,
         updatePassword,
         updateMobileNumber,
 
@@ -2277,6 +2891,9 @@ export const AuthProvider = ({ children }) => {
         //FOR LOGOUT
         logout,
 
+        //FOR UPLOADING FILE
+        uploadFile,
+        editFile,
 
         //FETCHING DATA LOADING STATES
         userInfoLoading,
@@ -2300,6 +2917,18 @@ export const AuthProvider = ({ children }) => {
 
         //DOWNLOAD AS VCF
         downloadVCF,
+
+        //USER NOTIFICATIONS
+        getUserNotifications,
+        readNotification,
+        openNotification,
+        userNotifications,
+        setUserNotifications,
+        userNotificationsLoading,
+        setUserNotificationsLoading,
+        removeNotification,
+        saveNotificationPushToken,
+        getNotificationPushToken,
 
         //INSIGHTS
         getInsights,

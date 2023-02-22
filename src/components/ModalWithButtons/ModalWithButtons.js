@@ -34,7 +34,8 @@ export default function ModalWithButtons({
           <View style={styles.modalHeaderContainer}>
             {modalImage && (
               <Image
-                source={modalImage}
+                // source={{uri : modalImage}} 
+                source={modalImage} 
                 resizeMode="stretch"
                 style={styles.modalImage}
               />
@@ -104,6 +105,7 @@ const styles = StyleSheet.create({
     marginTop: "3%",
     width: height * 0.075,
     height: height * 0.075,
+    borderRadius: 20,
     //   borderRadius: 1000,
     //   borderWidth: 0.1,
     borderColor: "#111111",

@@ -158,6 +158,7 @@ export default function SelectPhotoScreen({ route }) {
       email: email,
       password: password,
       fullName: fullName,
+      mobileNumber: mobileNumber
     });
   };
 

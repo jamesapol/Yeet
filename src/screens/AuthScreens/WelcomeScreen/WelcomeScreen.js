@@ -57,7 +57,7 @@ export default function WelcomeScreen() {
   const window = useWindowDimensions();
   const screenHeight = Dimensions.get("screen").height;
   const windowHeight = Dimensions.get("window").height;
-  const navbarHeight = screenHeight - windowHeight;
+  const navbarHeight = screenHeight - windowHeight; 
 
   const navbar = screenHeight - windowHeight;
 

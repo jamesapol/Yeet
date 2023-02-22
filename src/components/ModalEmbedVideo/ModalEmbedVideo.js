@@ -26,11 +26,10 @@ export default function ModalEmbedVideo({
   placeholder,
   onLinkNameChangeText,
   onLinkURLChangeText,
-  textInputVisible = "flex",
 
-  embedVideoTitleErrorVisible = "none",
+  embedVideoTitleError = false,
   linkNameErrorMessage,
-  embedVideoURLErrorVisible = "none",
+  embedVideoURLError = false,
   embedVideoURLErrorMessage,
 
   embedVideoTitle,
@@ -49,7 +48,7 @@ export default function ModalEmbedVideo({
             <Image
               source={
                 linkImage
-                  ? linkImage
+                  ? {uri: linkImage }
                   : { uri: `${BASE_URL}images/social-logo/video.png` }
               }
               resizeMode="stretch"
@@ -62,20 +61,21 @@ export default function ModalEmbedVideo({
             <TextInput
               style={{
                 ...styles.linkName,
-                borderBottomWidth: 1,
-                borderBottomColor: "#948E8E",
+                // borderBottomWidth: 1,
+                // borderBottomColor: "#948E8E",
               }}
               placeholder="YouTube Link Name"
               onChangeText={onLinkNameChangeText}
               value={embedVideoTitle}
               multiline={false}
               numberOfLines={1}
+              autoFocus
             />
             <Text
               style={{
                 fontSize: RFPercentage(1),
                 color: "#D81D4C",
-                display: embedVideoTitleErrorVisible,
+                display: embedVideoTitleError ? "flex" : "none",
               }}
             >
               PLEASE ENTER A LINK NAME!
@@ -89,25 +89,6 @@ export default function ModalEmbedVideo({
                 // backgroundColor: "red",
               }}
             >
-              {/* <View
-                style={{
-                  justifyContent: "center",
-                  alignItems: "center",
-                //   backgroundColor: "#f563",
-                }}
-              >
-                <TouchableOpacity
-                  style={{
-                    paddingVertical: "15%",
-                    paddingHorizontal: '5%',
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                >
-                  <FontAwesome5 name="paste" size={24} color="black" />
-                  <Text>PASTE</Text>
-                </TouchableOpacity>
-              </View> */}
               <TextInput
                 placeholder={placeholder}
                 value={embedVideoURL}
@@ -115,7 +96,7 @@ export default function ModalEmbedVideo({
                 style={styles.link}
                 multiline={false}
                 numberOfLines={1}
-                autoFocus
+                // autoFocus
                 keyboardType="url"
                 autoCapitalize="none"
                 // defaultValue={defaultValue}
@@ -125,7 +106,7 @@ export default function ModalEmbedVideo({
               style={{
                 fontSize: RFPercentage(1.5),
                 color: "#D81D4C",
-                display: embedVideoURLErrorVisible,
+                display: embedVideoURLError ? "flex" : "none",
               }}
             >
               {embedVideoURLErrorMessage}

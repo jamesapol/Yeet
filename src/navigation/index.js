@@ -38,7 +38,8 @@ import SelectPhotoScreen from "../screens/AuthScreens/SelectPhotoScreen/SelectPh
 import ConfirmationScreen from "../screens/AuthScreens/ConfirmationScreen/ConfirmationScreen";
 import HomeScreen from "../screens/AppScreens/HomeScreen/HomeScreen";
 import PublicProfileScreen from "../screens/PublicScreens/PublicProfileScreen/PublicProfileScreen";
-import AddLinksScreen from "../screens/AppScreens/HomeScreen/AddLinksScreen/AddLinksScreen";
+// import AddLinksScreen from "../screens/AppScreens/HomeScreen/AddLinksScreen/AddLinksScreen";
+import AddLinksScreen from "../screens/AppScreens/HomeScreen/_AddLinksScreen/AddLinksScreen";
 import ManageLinksScreen from "../screens/AppScreens/HomeScreen/ManageLinksScreen/ManageLinksScreen";
 import DirectLinkScreen from "../screens/AppScreens/HomeScreen/DirectLinkScreen/DirectLinkScreen";
 import EditProfileScreen from "../screens/AppScreens/HomeScreen/EditProfileScreen/EditProfileScreen";
@@ -185,14 +186,7 @@ const AppScreens = () => {
     getUserConnections,
     userConnections,
     getActiveYeetDevice,
-    getUserNotifications,
     setUserBlockStatus,
-    userBlockStatus,
-    userNotifications,
-    logout,
-    notificationCount,
-    readNotification,
-    setNotificationCount,
   } = useContext(AuthContext);
 
   return (
@@ -313,8 +307,6 @@ const AppScreens = () => {
         options={{
           unmountOnBlur: "true",
 
-          tabBarBadge: notificationCount == 0 ? null : notificationCount,
-
           title: "NOTIFICATIONS",
           tabBarIcon: ({ focused, color, size }) => {
             return focused ? (
@@ -328,16 +320,6 @@ const AppScreens = () => {
                 style={{ height: RFPercentage(2), width: RFPercentage(2) }}
               />
             );
-          },
-        }}
-        listeners={{
-          tabPress: (e) => {
-            // if (Object.keys(userNotifications).length == 0) {
-            getUserNotifications();
-            // readNotification();
-            setNotificationCount(0);
-            // console.log(notificationCount)
-            // }
           },
         }}
       />
@@ -394,6 +376,7 @@ const HomeNavigation = () => {
         component={PreviewProfileScreen}
         options={{ animation: "fade", animationDuration: 250 }}
       />
+      {/* <Stack.Screen name="AddLinksScreen" component={A} */}
       {/* <Stack.Screen
         name="PublicProfileScreen"
         component={PublicProfileScreen}

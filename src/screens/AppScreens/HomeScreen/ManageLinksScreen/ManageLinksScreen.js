@@ -6,9 +6,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  Alert,
-  Linking,
-  Animated,
   Modal,
 } from "react-native";
 import React, { useEffect, useState } from "react";
@@ -59,50 +56,6 @@ export default function ManageLinksScreen() {
     tempProfilePhoto,
   } = useContext(AuthContext);
 
-  // useEffect(() => {
-  //   shake();
-  // }, []);
-  const anim = useRef(new Animated.Value(0));
-  const animX = useRef(new Animated.Value(0));
-
-  const shake = useCallback(() => {
-    // makes the sequence loop
-    Animated.loop(
-      // runs the animation array in sequence
-      Animated.sequence([
-        // shift element to the left by 2 units
-        Animated.timing(anim.current, {
-          toValue: -2,
-          duration: 15,
-          useNativeDriver: true,
-        }),
-        Animated.timing(animX.current, {
-          toValue: -2,
-          duration: 15,
-          useNativeDriver: true,
-        }),
-        // shift element to the right by 2 units
-        Animated.timing(anim.current, {
-          toValue: 2,
-          duration: 15,
-          useNativeDriver: true,
-        }),
-        Animated.timing(animX.current, {
-          toValue: 2,
-          duration: 15,
-          useNativeDriver: true,
-        }),
-        // bring the element back to its original position
-        Animated.timing(anim.current, {
-          toValue: 0,
-          duration: 60,
-          useNativeDriver: true,
-        }),
-      ]),
-      // loops the above animation config 2 times
-      { iterations: 2 }
-    ).start();
-  }, []);
 
   const [_userLinks, _setUserLinks] = useState(userLinks);
   const [refreshFlatList, setRefreshFlatList] = useState(false);
@@ -124,7 +77,6 @@ export default function ManageLinksScreen() {
   };
 
   const onDeletePressed = () => {
-    // shake();
     removeLinkFromUser(linkID);
     let linkArray = userLinks;
     linkArray.splice(linkIndex, 1);
@@ -315,14 +267,6 @@ export default function ManageLinksScreen() {
                   ButtonStyles.socialMediaButtons,
                 ]}
               >
-                <Animated.View
-                  style={{
-                    transform: [
-                      { translateY: anim.current },
-                      { translateX: animX.current },
-                    ],
-                  }}
-                >
                   <View
                     style={{
                       paddingHorizontal: width * 0.005,
@@ -374,7 +318,6 @@ export default function ManageLinksScreen() {
                       resizeMode="stretch"
                     />
                   </View>
-                </Animated.View>
                 {/* <Text>{item.uln_id}</Text>
                   <Text>{index}</Text> */}
                 <Text

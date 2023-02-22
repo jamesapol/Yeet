@@ -33,7 +33,13 @@ export default function YeetScreen() {
     isLoading,
     userNfcDevice,
     nfcDeviceLoading,
-    userActiveNFCDevice,
+    userActiveYeetDevice,
+    getActiveYeetDevice,
+
+    userName,
+    tempUserName,
+    tempUserProfilePhoto,
+    userProfilePhoto,
   } = useContext(AuthContext);
 
   const [showModal, setShowModal] = useState(false);
@@ -45,7 +51,7 @@ export default function YeetScreen() {
 
   const copyToClipboard = async () => {
     await Clipboard.setStringAsync(
-      `https://yeetapp.io/profile/${userActiveNFCDevice.nfc_code}`
+      `https://yeetapp.io/profile/${userActiveYeetDevice}`
     );
     setShowModal(true);
   };
@@ -90,88 +96,95 @@ export default function YeetScreen() {
             <Text style={styles.welcomeText}> profile</Text>
           </View>
         </View>
-        {nfcDeviceLoading == false ? (
-          userActiveNFCDevice ? (
-            <>
-              <QRCode
-                value={
-                  userActiveNFCDevice
-                    ? `https://yeetapp.io/profile/${userActiveNFCDevice.nfc_code}`
-                    : "z"
-                }
-                enableLinearGradient
-                linearGradient={[Colors.yeetPurple, Colors.yeetPink]}
-                color={Colors.yeetPurple}
-                size={width * 0.6}
-                logoSize={width * 0.15}
-                logoBorderRadius={1000}
-                logoBackgroundColor="#FFF"
-                logoMargin={2}
-                logo={{
-                  uri: `${BASE_URL}images/mobile/photos/${userInfo.usr_profile_photo_storage}`,
-                }}
-              />
-              <View
-                style={{
-                  marginTop: "5%",
-                  width: "100%",
-                  // backgroundColor:'green',
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: RFPercentage(4),
-                    fontWeight: "bold",
-                    textAlign: "center",
-                  }}
-                >
-                  {userInfo.usr_name}
-                </Text>
-              </View>
-
+        {userActiveYeetDevice ? (
+          <>
+            <QRCode
+              value={
+                userActiveYeetDevice
+                  ? `https://yeetapp.io/profile/${userActiveYeetDevice}`
+                  : "z"
+              }
+              enableLinearGradient
+              linearGradient={[Colors.yeetPurple, Colors.yeetPink]}
+              color={Colors.yeetPurple}
+              size={width * 0.6}
+              logoSize={width * 0.15}
+              logoBorderRadius={1000}
+              logoBackgroundColor="#FFF"
+              logoMargin={2}
+              logo={
+                tempUserProfilePhoto
+                  ? {
+                      uri: tempUserProfilePhoto,
+                    }
+                  : userProfilePhoto
+                  ? {
+                      uri: `${BASE_URL}images/mobile/photos/${userProfilePhoto}`,
+                    }
+                  : null
+              }
+            />
+            <View
+              style={{
+                marginTop: "5%",
+                width: "100%",
+                // backgroundColor:'green',
+              }}
+            >
               <Text
-                style={{ fontSize: RFPercentage(1.7), marginTop: "3%" }}
-                onPress={() => {
-                  {
-                    userActiveNFCDevice
-                      ? Linking.openURL(
-                          `https://yeetapp.io/profile/${userActiveNFCDevice.nfc_code}`
-                        )
-                      : null;
-                  }
+                style={{
+                  fontSize: RFPercentage(4),
+                  fontWeight: "bold",
+                  textAlign: "center",
                 }}
               >
-                {userActiveNFCDevice
-                  ? `yeetapp.io/profile/${userActiveNFCDevice.nfc_code}`
-                  : null}
+                {tempUserName ? tempUserName : userName ? userName : null}
               </Text>
+            </View>
+
+            <Text
+              style={{ fontSize: RFPercentage(1.7), marginTop: "3%" }}
+              onPress={() => {
+                {
+                  userActiveYeetDevice
+                    ? Linking.openURL(
+                        `https://yeetapp.io/profile/${userActiveYeetDevice}`
+                      )
+                    : null;
+                }
+              }}
+            >
+              {userActiveYeetDevice
+                ? `yeetapp.io/profile/${userActiveYeetDevice}`
+                : null}
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                width: "100%",
+                marginTop: "7.5%",
+              }}
+            >
               <View
                 style={{
-                  flexDirection: "row",
-                  width: "100%",
-                  marginTop: "7.5%",
+                  flex: 1,
                 }}
               >
-                <View
+                <TouchableOpacity
                   style={{
-                    flex: 1,
+                    ...styles.buttonStyle,
                   }}
+                  onPress={copyToClipboard}
                 >
-                  <TouchableOpacity
-                    style={{
-                      ...styles.buttonStyle,
-                    }}
-                    onPress={copyToClipboard}
-                  >
-                    <FontAwesome5
-                      name="copy"
-                      size={RFPercentage(3)}
-                      color={Colors.yeetPurple}
-                    />
-                    <Text style={styles.buttonText}>Copy Link</Text>
-                  </TouchableOpacity>
-                </View>
-                {/* <View
+                  <FontAwesome5
+                    name="copy"
+                    size={RFPercentage(3)}
+                    color={Colors.yeetPurple}
+                  />
+                  <Text style={styles.buttonText}>Copy Link</Text>
+                </TouchableOpacity>
+              </View>
+              {/* <View
                   style={{
                     // backgroundColor: "#00F5",
                     flex: 1,
@@ -191,29 +204,26 @@ export default function YeetScreen() {
                     <Text style={styles.buttonText}>Save to Gallery</Text>
                   </TouchableOpacity>
                 </View> */}
-              </View>
-            </>
-          ) : (
-            <View
-              style={{
-                backgroundColor: "white",
-                height: "75%",
-                width: "100%",
-                alignItems: "center",
-              }}
-            >
-              <Image
-                source={noDevicesImage}
-                style={{ height: "75%", width: "100%" }}
-                resizeMode="contain"
-              />
-              <Text style={{ fontSize: RFPercentage(3), textAlign: "center" }}>
-                Your profile is not yet connected to any Yeet Device.
-              </Text>
             </View>
-          )
+          </>
         ) : (
-          <LoadingResource />
+          <View
+            style={{
+              backgroundColor: "white",
+              height: "75%",
+              width: "100%",
+              alignItems: "center",
+            }}
+          >
+            <Image
+              source={noDevicesImage}
+              style={{ height: "75%", width: "100%" }}
+              resizeMode="contain"
+            />
+            <Text style={{ fontSize: RFPercentage(3), textAlign: "center" }}>
+              Your profile is not yet connected to any Yeet Device.
+            </Text>
+          </View>
         )}
       </View>
     </ScrollView>

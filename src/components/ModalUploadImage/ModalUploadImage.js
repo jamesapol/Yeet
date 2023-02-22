@@ -60,7 +60,7 @@ import {
                   style={styles.modalImage}
                 />
               )}
-              <View
+              {/* <View
                 style={{
                   // backgroundColor: "#00f3",
                   width: "100%",
@@ -81,10 +81,10 @@ import {
                     onPress={onUploadPhotoPressed}
                     style={{
                       width: "100%",
-                      height: "75%",
+                      height: "70%",
                       borderWidth: 2,
                       borderColor: Colors.yeetPurple,
-                      borderRadius: 1000,
+                      borderRadius: 7,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
@@ -95,7 +95,7 @@ import {
                     </Text>
                   </TouchableOpacity>
                 </View>
-              </View>
+              </View> */}
             </View>
             <View style={styles.buttonContainer}>
               <TouchableOpacity
@@ -133,8 +133,8 @@ import {
     },
   
     modal: {
-      width: "75%",
-      height: height * 0.44,
+      width: "85%",
+      height: width ,
       borderRadius: 25,
       backgroundColor: "#ECECEC",
     },
@@ -148,7 +148,7 @@ import {
       width: "100%",
       height: "90%",
       alignItems: "center",
-      justifyContent: "flex-start",
+      justifyContent: "center",
       // backgroundColor: "#f2f2",
     },
   
@@ -156,17 +156,17 @@ import {
       width: height * 0.1,
       height: height * 0.1,
       borderRadius: 1000,
-      borderWidth: 0.1,
+      borderWidth: 1,
       borderColor: "#111111",
     },
   
     modalImage: {
       marginVertical: "3%",
-      width: height * 0.25,
-      height: height * 0.25,
+      width: width * 0.75,
+      height: width * 0.75,
       borderWidth: 2,
       borderColor: Colors.yeetPurple,
-      borderRadius: 5,
+      borderRadius: 15,
     },
   
     modalHeaderText: {

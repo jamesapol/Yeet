@@ -93,7 +93,6 @@ export default function App() {
   const [expoPushToken, setExpoPushToken] = useState("");
 
   const getNotificationPushToken = async (userLinkID) => {
-
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
 
@@ -144,7 +143,7 @@ export default function App() {
 
     const registerForPushNotifications = async () => {
       const { status } = await Notifications.getPermissionsAsync();
-      console.log(status)
+      // console.log(status);
       if (status !== "granted") {
         const { status } = await Notifications.requestPermissionsAsync();
         if (status !== "granted") {

@@ -127,45 +127,7 @@ export default function ModalUploadFile({
                 />
               </View>
             ) : null}
-            <Text
-              style={{
-                ...styles.buttonText,
-                display: fileSize > 10000000 ? "flex" : "none",
-                // display: fileSize > 1000000 ? "flex" : "none",
-                color: Colors.yeetPink,
-              }}
-            >
-              File size exceeds 10 MB.
-            </Text>
-            <View
-              style={{
-                // backgroundColor: "#00f3",
-                width: "50%",
-                height: "20%",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <TouchableOpacity
-                onPress={onUploadFilePressed}
-                style={{
-                  width: "100%",
-                  height: RFPercentage(4.5),
-                  borderWidth: 2,
-                  borderColor: Colors.yeetPurple,
-                  borderRadius: 1000,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-                activeOpacity={0.4}
-              >
-                <Text
-                  style={{ ...styles.buttonText, color: Colors.yeetPurple }}
-                >
-                  {!file ? "Upload File" : "Change File"}
-                </Text>
-              </TouchableOpacity>
-            </View>
+            
           </View>
           <View
             style={{

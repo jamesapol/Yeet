@@ -11,19 +11,20 @@ import {
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
+import { BASE_URL } from "../../../../config";
+
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
-import * as Clipboard from "expo-clipboard";
 import * as FileSystem from "expo-file-system";
 import { AuthContext } from "../../../../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { RFPercentage } from "react-native-responsive-fontsize";
 
 import { Ionicons } from "@expo/vector-icons";
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign } from "@expo/vector-icons";
 import PageHeader from "../../../../components/PageHeader";
-
-import { BASE_URL } from "../../../../config";
 
 import ModalTextInput from "../../../../components/ModalTextInput/ModalTextInput";
 import ModalMessage from "../../../../components/ModalMessage/ModalMessage";
@@ -33,6 +34,7 @@ import ModalUploadImage from "../../../../components/ModalUploadImage/ModalUploa
 import ModalUploadFile from "../../../../components/ModalUploadFile/ModalUploadFile";
 import ModalCustomLink from "../../../../components/ModalCustomLink/ModalCustomLink";
 import ModalEmbedVideo from "../../../../components/ModalEmbedVideo/ModalEmbedVideo";
+import { linksData } from "./linksData";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -62,11 +64,7 @@ const LinkButton = ({ linkName, linkImage, linkIndex, linkID, onPress }) => (
       }}
     >
       <Image
-        source={
-          linkImage
-            ? { uri: `${BASE_URL}images/social-logo/${linkImage}` }
-            : linkImage
-        }
+        source={linkImage}
         style={{
           height: RFPercentage(3),
           width: RFPercentage(3),
@@ -82,19 +80,37 @@ const LinkButton = ({ linkName, linkImage, linkIndex, linkID, onPress }) => (
         }}
       >
         {linkName}
-        {linkIndex}
+        {/* {linkID} */}
       </Text>
-      <Text
-        style={{
-          fontSize: RFPercentage(1.5),
-          fontWeight: "bold",
-          color: "#562C73",
-        }}
-        >
-        </Text>
     </View>
     <View style={{ backgroundColor: "#0f00" }}>
-      <Ionicons name="ios-add" size={RFPercentage(3)} color={Colors.yeetPink} />
+      {linkID == 23 || linkID == 24 || linkID == 26 ? (
+        <AntDesign
+          name="qrcode"
+          size={RFPercentage(3)}
+          color={Colors.yeetPink}
+        />
+      ) : linkID == 30 ? (
+        <AntDesign
+          name="youtube"
+          size={RFPercentage(3)}
+          color={Colors.yeetPink}
+        />
+      ) : linkID == 31 ? (
+        <AntDesign
+          name="pdffile1"
+          size={RFPercentage(3)}
+          color={Colors.yeetPink}
+        />
+      ) : linkID == 32 ? (
+        <AntDesign name="link" size={RFPercentage(3)} color={Colors.yeetPink} />
+      ) : (
+        <Ionicons
+          name="ios-add"
+          size={RFPercentage(3)}
+          color={Colors.yeetPink}
+        />
+      )}
     </View>
   </TouchableOpacity>
 );
@@ -104,6 +120,14 @@ function checkURL(str) {
     str
   );
 }
+
+function validateYouTubeURL(url) {
+  let reg = /^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/;
+  if (reg.test(url) === false) {
+    return false;
+  }
+}
+
 export default function AddLinksScreen() {
   const {
     userInfo,
@@ -113,7 +137,7 @@ export default function AddLinksScreen() {
     isLoading,
     userLinks,
     setUserLinks,
-    addLink,
+    // addLink,
     addCustomLink,
     addYouTubeLink,
     addLinkLoading,
@@ -124,6 +148,8 @@ export default function AddLinksScreen() {
     uploadFile,
     modalHeader,
     modalMessage,
+    setModalHeader,
+    setModalMessage,
 
     showAddLinkMessage,
     setShowAddLinkMessage,
@@ -157,21 +183,17 @@ export default function AddLinksScreen() {
   const [fileImage, setFileImage] = useState();
 
   const [showNewLinkModal, setShowNewLinkModal] = useState(false);
-  const [showUploadModal, setShowUploadModal] = useState(false);
-  const [showEmbedModal, setShowEmbedModal] = useState(false);
+  const [showUploadPaymentModalVisible, setShowUploadPaymentModalVisible] =
+    useState(false);
+  const [uploadFileModalVisible, setUploadFileModalVisible] = useState(false);
   const [showCustomLinkModal, setShowCustomLinkModal] = useState(false);
-  const [embedVideoModalVisible, setEmbedVideoModalVisible] = useState(false);
+  const [youtubeLinkModalVisible, setYoutubeLinkModalVisible] = useState(false);
 
-  const [embedVideoImage, setEmbedVideoImage] = useState();
   const [embedVideoTitle, setEmbedVideoTitle] = useState();
   const [embedVideoURL, setEmbedVideoURL] = useState();
-  const [embedVideoThumbnail, setEmbedVideoThumbnail] = useState();
-  // cosnt [embedVi]
-
-  const [embedVideoTitleErrorVisible, setEmbedVideoTitleErrorVisible] =
-    useState("none");
-  const [embedVideoURLErrorVisible, setEmbedVideoURLErrorVisible] =
-    useState("none");
+  const [embedVideoThumbnailURI, setEmbedVideoThumbnailURI] = useState();
+  const [embedVideoTitleError, setEmbedVideoTitleError] = useState(false);
+  const [embedVideoURLError, setEmbedVideoURLError] = useState(false);
   const [embedVideoURLErrorMessage, setEmbedVideoURLErrorMessage] = useState();
 
   const [error, setError] = useState("none");
@@ -180,9 +202,10 @@ export default function AddLinksScreen() {
   const [linkURL, setLinkURL] = useState();
   const [linkURLHeader, setLinkURLHeader] = useState();
 
-  const [searchKey, setSearchKey] = useState("");
+  const [paymentPhotoURI, setPaymentPhotoURI] = useState();
+  const [paymentPhotoName, setPaymentPhotoName] = useState();
+  const [paymentPhotoFileType, setPaymentPhotoFileType] = useState();
 
-  const [image, setImage] = useState(null);
   useEffect(() => {
     (async () => {
       if (Platform.OS !== "web") {
@@ -209,7 +232,10 @@ export default function AddLinksScreen() {
     }
   };
 
-  const pickPDF = async () => {
+  /**
+   * SELECT A PDF TO BE UPLOADED
+   */
+  const selectPDF = async () => {
     let result = await DocumentPicker.getDocumentAsync({
       // type: ["image/jpeg", "image/png", "application/pdf"],
       type: "application/pdf",
@@ -225,12 +251,15 @@ export default function AddLinksScreen() {
         setFileName(result.name);
         setFileType(result.mimeType);
 
-        setShowEmbedModal(true);
+        setUploadFileModalVisible(true);
       }
     }
   };
 
-  const pickImage = async () => {
+  /**
+   * SELECT A PAYMENT PHOTO FOR GCASH, PAYMAYA, PAYMONGO
+   */
+  const selectPaymentPhoto = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -244,7 +273,17 @@ export default function AddLinksScreen() {
       if (fileInfo.size >= 5000000) {
         setFileSizeErrorModalVisible(true);
       } else {
-        setImage(result.uri);
+        setShowUploadPaymentModalVisible(true);
+        let fileUri = result.uri;
+
+        let fileName = fileUri.split("/").pop();
+
+        const extArr = /\.(\w+)$/.exec(fileName);
+        const fileType = getMimeType(extArr[1]);
+
+        setPaymentPhotoURI(result.uri);
+        setPaymentPhotoName(fileName);
+        setPaymentPhotoFileType(fileType);
       }
     }
   };
@@ -254,9 +293,6 @@ export default function AddLinksScreen() {
     navigation.goBack();
   };
 
-  const onTestPressed = () => {
-    console.log(userLinks);
-  };
 
   const closeErrorModal = () => {
     setFileSizeErrorModalVisible(false);
@@ -266,11 +302,11 @@ export default function AddLinksScreen() {
     setError("none");
     setShowNewLinkModal(false);
     setAddLinksModalVisible(false);
-    setShowUploadModal(false);
+    setShowUploadPaymentModalVisible(false);
     setShowAddLinkMessage(false);
-    setShowEmbedModal(false);
+    setUploadFileModalVisible(false);
     setShowCustomLinkModal(false);
-    setEmbedVideoModalVisible(false);
+    setYoutubeLinkModalVisible(false);
     setLinkURL();
     setFile();
     setFileName();
@@ -278,20 +314,25 @@ export default function AddLinksScreen() {
     setFileSize();
     setFileURI();
     setFileTitle();
-    setImage();
     setLink();
+
     setCustomLinkName();
     setCustomLinkURL();
     setCustomLinkNameErrorVisible("none");
     setCustomLinkURLErrorVisible("none");
     setCustomLinkNameErrorMessage();
     setCustomLinkURLErrorMessage();
+
     setEmbedVideoURL();
     setEmbedVideoTitle();
-    setEmbedVideoTitleErrorVisible("none");
-    setEmbedVideoURLErrorVisible("none");
+    setEmbedVideoTitleError(false);
+    setEmbedVideoURLError(false);
     setEmbedVideoURLErrorMessage();
-    setEmbedVideoThumbnail();
+    setEmbedVideoThumbnailURI();
+
+    setPaymentPhotoURI();
+    setPaymentPhotoName();
+    setPaymentPhotoFileType();
   };
 
   const onSavePressed = () => {
@@ -317,9 +358,9 @@ export default function AddLinksScreen() {
       setCustomLinkURLErrorMessage("PLEASE ENTER A LINK!");
     }
     if (customLinkName && customLinkURL) {
-      addCustomLink(linkID, customLinkName, customLinkURL);
+      addLink(linkID);
 
-      setShowNewLinkModal(false);
+      setShowCustomLinkModal(false);
       setCustomLinkNameErrorVisible("none");
       setCustomLinkURLErrorVisible("none");
       setEmbedVideoURL();
@@ -329,73 +370,245 @@ export default function AddLinksScreen() {
     }
   };
 
-  const onUploadPhotoPressed = () => {
-    const fileUri = image;
-
-    let fileName = fileUri.split("/").pop();
-
-    const extArr = /\.(\w+)$/.exec(fileName);
-    const fileType = getMimeType(extArr[1]);
-
-    uploadPaymentPhoto(linkID, fileUri, fileName, fileType);
-    setShowUploadModal(false);
+  const onUploadPaymentPhotoPressed = () => {
+    addLink(linkID);
+    setShowUploadPaymentModalVisible(false);
   };
 
   const onUploadFilePressed = () => {
-    // uploadFile(fileURI, fileName);
-    // setShowEmbedModal(false);
-    let _fileTitle;
-    if (!fileTitle) {
-      if (fileType == "application/pdf") {
-        _fileTitle = "PDF File";
-      } else {
-        _fileTitle = "Image";
-      }
-      uploadFile(fileURI, fileName, fileType, _fileTitle);
-    } else {
-      uploadFile(fileURI, fileName, fileType, fileTitle);
-    }
-    setShowEmbedModal(false);
-    // console.log(fileTitle);
+    addLink(linkID);
+    setUploadFileModalVisible(false);
   };
 
-  const validateYouTubeURL = (url) => {
-    let reg = /^(http(s)?:\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+/;
-    if (reg.test(url) === false) {
-      return false;
-    }
-  };
-
-  const onEmbedVideoSaved = () => {
+  const onSaveYoutubeLinkPressed = () => {
     if (validateYouTubeURL(embedVideoURL) === false) {
-      setEmbedVideoURLErrorVisible("flex");
+      setEmbedVideoURLError(true);
       setEmbedVideoURLErrorMessage("PLEASE ENTER A VALID YOUTUBE LINK!");
-    }
-    if (!embedVideoURL) {
-      setEmbedVideoURLErrorVisible("flex");
+    } else if (!embedVideoURL) {
+      setEmbedVideoURLError(true);
       setEmbedVideoURLErrorMessage("PLEASE ENTER A LINK!");
-    }
-    if (!embedVideoTitle) {
-      setEmbedVideoTitleErrorVisible("flex");
-    }
-    if (embedVideoURL && embedVideoTitle) {
-      let videoID;
-
-      if (embedVideoURL.includes("youtu.be")) {
-        videoID = embedVideoURL.split(".be/")[1];
-      } else {
-        videoID = embedVideoURL.split("v=")[1].split("&")[0];
-      }
-
-      let thumbnailURI = `https://img.youtube.com/vi/${videoID}/hqdefault.jpg`;
-      // addYouTubeLink(linkID, embedVideoTitle, embedVideoURL, thumbnailURI);
-      console.log(linkID);
-
-      setEmbedVideoModalVisible(false);
-      setEmbedVideoTitleErrorVisible("none");
-      setEmbedVideoURLErrorVisible("none");
+    } else if (!embedVideoTitle) {
+      setEmbedVideoTitleError(true);
+    } else if (
+      embedVideoURL &&
+      embedVideoTitle &&
+      validateYouTubeURL !== false
+    ) {
+      addLink(30);
+      setYoutubeLinkModalVisible(false);
+      setEmbedVideoTitleError(false);
+      setEmbedVideoURLError(false);
       setEmbedVideoURLErrorMessage();
-      setEmbedVideoThumbnail();
+    }
+  };
+
+  /**
+   *
+   * Add Links Functions
+   *
+   */
+  const addLink = async (userLinkID) => {
+    setAddLinkLoading(true);
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    //UPLOAD PAYMENT PHOTO/QR
+    //GCASH
+    //PAYMAYA
+    //PAYMONGO
+    if (userLinkID == 23 || userLinkID == 24 || userLinkID == 26) {
+      let formData = new FormData();
+      formData.append("paymentPhoto", {
+        uri: paymentPhotoURI,
+        name: paymentPhotoName,
+        type: paymentPhotoFileType,
+      });
+
+      formData.append("userUUID", userUUID);
+      formData.append("userLinkID", userLinkID);
+      await axios({
+        method: "POST",
+        url: `${BASE_URL}api/uploadPaymentPhoto`,
+        data: formData,
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${userToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+        .then((response) => {
+          let userLinks = response.data;
+          setUserLinks(userLinks);
+          setAddLinksModalVisible(true);
+          setModalHeader("Success");
+          setModalMessage("Image successfully uploaded.");
+          setAddLinkLoading(false);
+        })
+        .catch((error) => {
+          console.log(error.response);
+          setAddLinkLoading(false);
+        });
+
+      setPaymentPhotoURI();
+      setPaymentPhotoName();
+      setPaymentPhotoFileType();
+    } else if (userLinkID == 30) {
+      console.log(embedVideoThumbnailURI);
+      await axios
+        .post(
+          `${BASE_URL}api/addYouTubeLink`,
+          {
+            userUUID: userUUID,
+            youtubeLinkName: embedVideoTitle,
+            youtubeURL: embedVideoURL,
+            youtubeThumbnailURI: embedVideoThumbnailURI,
+          },
+          {
+            headers: { Authorization: `Bearer ${userToken}` },
+          }
+        )
+        .then((response) => {
+          if (response.data.duplicateLink) {
+            setAddLinkLoading(false);
+            setAddLinksModalVisible(true);
+            setModalHeader("Error");
+            setModalMessage(response.data.duplicateLink);
+          } else {
+            let userLinks = response.data;
+
+            console.log(userLinks);
+            setUserLinks(userLinks);
+            setAddLinksModalVisible(true);
+            setModalHeader("Success");
+            setModalMessage("Link saved successfully!");
+            setAddLinkLoading(false);
+            console.log(response.data);
+          }
+        })
+        .catch((error) => {
+          console.log(error.response);
+          setAddLinkLoading(false);
+        });
+      setEmbedVideoTitle();
+      setEmbedVideoURL();
+      setEmbedVideoThumbnailURI();
+    } else if (userLinkID == 31) {
+      let formData = new FormData();
+      formData.append("file", {
+        uri: fileURI,
+        name: fileName,
+        type: fileType,
+      });
+      formData.append("originalFileName", fileName);
+      formData.append("fileTitle", fileTitle ? fileTitle : "PDF File");
+      formData.append("userUUID", userUUID);
+
+      await axios({
+        method: "POST",
+        url: `${BASE_URL}api/uploadFile`,
+        data: formData,
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${userToken}`,
+          "Content-Type": "multipart/form-data",
+        },
+      })
+        .then((response) => {
+          console.log(response.data);
+          let userLinks = response.data;
+          setUserLinks(userLinks);
+          setAddLinksModalVisible(true);
+          setModalHeader("Success");
+          setModalMessage("File successfully uploaded.");
+          setAddLinkLoading(false);
+        })
+        .catch((error) => {
+          console.log(error);
+          setAddLinkLoading(false);
+        });
+
+      setFileURI();
+      setFileName();
+      setFileType();
+      setFileTitle();
+    } else if (userLinkID == 32) {
+      await axios
+        .post(
+          `${BASE_URL}api/addCustomLink`,
+          {
+            userUUID: userUUID,
+            userLinkName: customLinkName,
+            userLinkURL: customLinkURL,
+          },
+          {
+            headers: { Authorization: `Bearer ${userToken}` },
+          }
+        )
+        .then((response) => {
+          if (response.data.duplicateLink) {
+            setAddLinkLoading(false);
+            setAddLinksModalVisible(true);
+            setModalHeader("Error");
+            setModalMessage(response.data.duplicateLink);
+          } else {
+            let userLinks = response.data;
+
+            console.log(userLinks);
+            setUserLinks(userLinks);
+            setAddLinksModalVisible(true);
+            setModalHeader("Success");
+            setModalMessage("Link saved successfully!");
+            // getUserLinks(userUUID, userToken);
+            // setAddLinkLoading(false);1
+            setAddLinkLoading(false);
+            console.log(response.data);
+          }
+        })
+        .catch((error) => {
+          console.log(error.response);
+          setAddLinkLoading(false);
+        });
+
+      setCustomLinkName();
+      setCustomLinkURL();
+    } else {
+      await axios
+        .post(
+          `${BASE_URL}api/addUserLink`,
+          {
+            userUUID: userUUID,
+            userLinkID: linkID,
+            userLinkURLHeader: linkURLHeader,
+            userLinkURL: linkURL,
+          },
+          {
+            headers: { Authorization: `Bearer ${userToken}` },
+          }
+        )
+        .then((response) => {
+          if (response.data.duplicateLink) {
+            setAddLinkLoading(false);
+            setAddLinksModalVisible(true);
+            setModalHeader("Error");
+            setModalMessage(response.data.duplicateLink);
+          } else {
+            let userLinks = response.data;
+
+            console.log(userLinks);
+            setUserLinks(userLinks);
+            setAddLinksModalVisible(true);
+            setModalHeader("Success");
+            setModalMessage("Link saved successfully!");
+            // getUserLinks(userUUID, userToken);
+            // setAddLinkLoading(false);1
+            setAddLinkLoading(false);
+            console.log(response.data);
+          }
+        })
+        .catch((error) => {
+          console.log(error.response);
+          setAddLinkLoading(false);
+        });
     }
   };
 
@@ -455,7 +668,7 @@ export default function AddLinksScreen() {
           warningVisible={error}
           defaultValue={linkURLHeader}
           linkName={linkName}
-          linkImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
+          linkImage={linkImage}
           onCancelPressed={onCancelPressed}
           onSavePressed={onSavePressed}
         />
@@ -506,73 +719,95 @@ export default function AddLinksScreen() {
           linkURLWarningVisible={customLinkURLErrorVisible}
           linkNameErrorMessage={customLinkNameErrorMessage}
           linkURLErrorMessage={customLinkURLErrorMessage}
-          linkImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
+          linkImage={linkImage}
           onCancelPressed={onCancelPressed}
           onSavePressed={onCustomLinkSavePressed}
         />
       </Modal>
 
-      {/* UPLOAD IMAGE MODAL */}
+      {/* UPLOAD PAYMENT QR MODAL */}
       <Modal
         transparent
         animationType="fade"
         hardwareAccelerated
-        visible={showUploadModal}
+        visible={showUploadPaymentModalVisible}
         onRequestClose={onCancelPressed}
       >
         <ModalUploadImage
           cancelText="Cancel"
           onCancelPressed={onCancelPressed}
           saveText="Save"
-          onSavePressed={onUploadPhotoPressed}
-          onUploadPhotoPressed={pickImage}
-          disabled={image ? false : true}
-          image={image}
-          modalImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
+          onSavePressed={onUploadPaymentPhotoPressed}
+          // onUploadPaymentPhotoPressed={selectPaymentPhoto}
+          disabled={paymentPhotoURI ? false : true}
+          image={paymentPhotoURI}
+          modalImage={linkImage}
         />
       </Modal>
 
-      {/* EMBED VIDEO MODAL */}
+      {/* YOUTUBE LINK MODAL */}
       <Modal
         transparent
         animationType="fade"
         hardwareAccelerated
-        visible={embedVideoModalVisible}
+        visible={youtubeLinkModalVisible}
         onRequestClose={onCancelPressed}
       >
         <ModalEmbedVideo
           placeholder={"Enter YouTube link here"}
           onLinkURLChangeText={(text) => {
             if (!text) {
-              setEmbedVideoURLErrorVisible("flex");
+              setEmbedVideoURLError(true);
               setEmbedVideoURLErrorMessage("PLEASE ENTER A LINK!");
+              setEmbedVideoThumbnailURI();
               setEmbedVideoURL(null);
             } else {
-              setEmbedVideoURLErrorVisible("none");
+              setEmbedVideoURLError(false);
               if (text.includes(" ")) {
                 setEmbedVideoURL(text.trim());
               } else {
+                let videoURL = text;
                 setEmbedVideoURL(text);
+                let videoID;
+
+                if (videoURL.includes("youtu.be")) {
+                  videoID = videoURL.split(".be/")[1];
+                } else if (videoURL.includes("youtube.com/watch?v=")) {
+                  videoID = videoURL.split("v=")[1].split("&")[0];
+                }
+
+                if (videoID) {
+                  setEmbedVideoThumbnailURI(
+                    `https://img.youtube.com/vi/${videoID}/hqdefault.jpg`
+                  );
+                  console.log(videoID);
+                } else {
+                  setEmbedVideoURLError(true);
+                  setEmbedVideoURLErrorMessage(
+                    "PLEASE ENTER A VALID YOUTUBE LINK!"
+                  );
+                }
               }
             }
           }}
           onLinkNameChangeText={(text) => {
             if (!text) {
-              setEmbedVideoTitleErrorVisible("flex");
+              setEmbedVideoTitleError(true);
               setEmbedVideoTitle(null);
             } else {
-              setEmbedVideoTitleErrorVisible("none");
+              setEmbedVideoTitleError(false);
               setEmbedVideoTitle(text);
             }
           }}
           embedVideoTitle={embedVideoTitle}
           embedVideoURL={embedVideoURL}
-          embedVideoTitleErrorVisible={embedVideoTitleErrorVisible}
-          embedVideoURLErrorVisible={embedVideoURLErrorVisible}
+          embedVideoTitleError={embedVideoTitleError}
+          embedVideoURLError={embedVideoURLError}
           embedVideoURLErrorMessage={embedVideoURLErrorMessage}
-          linkImage={linkImage}
+          linkImage={embedVideoThumbnailURI ? embedVideoThumbnailURI : null}
+          disabled={validateYouTubeURL}
           onCancelPressed={onCancelPressed}
-          onSavePressed={onEmbedVideoSaved}
+          onSavePressed={onSaveYoutubeLinkPressed}
         />
       </Modal>
 
@@ -581,7 +816,7 @@ export default function AddLinksScreen() {
         transparent
         animationType="fade"
         hardwareAccelerated
-        visible={showEmbedModal}
+        visible={uploadFileModalVisible}
         onRequestClose={onCancelPressed}
       >
         <ModalUploadFile
@@ -592,7 +827,7 @@ export default function AddLinksScreen() {
           fileUri={fileURI}
           fileTitle={fileTitle}
           onChangeText={(text) => setFileTitle(text)}
-          onUploadFilePressed={pickPDF}
+          onUploadFilePressed={selectPDF}
           cancelText="Cancel"
           saveText="Save"
           onCancelPressed={onCancelPressed}
@@ -600,6 +835,7 @@ export default function AddLinksScreen() {
           disabled={file ? false : true}
         />
       </Modal>
+
       <PageHeader
         headerText="Add Links"
         iconColor="#562C73"
@@ -609,32 +845,30 @@ export default function AddLinksScreen() {
       <SectionList
         overScrollMode="never"
         showsVerticalScrollIndicator={false}
-        sections={isLoading == false ? allLinks : ""}
+        sections={linksData}
         keyExtractor={(item, index) => item + index}
         renderItem={({ item }) => (
           <LinkButton
             linkName={item.lnk_name}
             linkImage={item.lnk_image}
             linkID={item.lnk_id}
-            // linkIndex={item.lnk_id}
-            // linkIndex={item.lnk_id}
             onPress={() => {
               if (item.lnk_id == 23 || item.lnk_id == 24 || item.lnk_id == 26) {
                 console.log(item.lnk_name);
-                setShowUploadModal(true);
+                selectPaymentPhoto();
                 setLinkName(item.lnk_name);
                 setLinkImage(item.lnk_image);
                 setLinkID(item.lnk_id);
                 setLinkURLHeader(item.lnk_url);
               } else if (item.lnk_id == 30) {
-                setEmbedVideoModalVisible(true);
+                setYoutubeLinkModalVisible(true);
                 setLinkImage();
-                // setLinkImage(item.lnk_image);
+                setLinkImage(item.lnk_image);
                 setLinkID(item.lnk_id);
               } else if (item.lnk_id == 31) {
                 setLinkImage(item.lnk_image);
                 setLinkID(item.lnk_id);
-                pickPDF();
+                selectPDF();
               } else if (item.lnk_id == 32) {
                 setLinkID(item.lnk_id);
                 setLinkImage(item.lnk_image);
@@ -644,8 +878,6 @@ export default function AddLinksScreen() {
                 setLinkName(item.lnk_name);
                 setLinkImage(item.lnk_image);
                 setLinkID(item.lnk_id);
-                // console.log(item.lnk_image);
-
                 setShowNewLinkModal(true);
               }
             }}

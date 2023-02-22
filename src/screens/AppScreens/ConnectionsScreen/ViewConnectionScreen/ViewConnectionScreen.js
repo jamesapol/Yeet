@@ -60,7 +60,6 @@ export default function ViewConnectionScreen() {
     addLinkTap,
 
     userNotFound,
-    setUserNotFound,
   } = useContext(AuthContext);
 
   const ref = React.useRef(null);
@@ -68,25 +67,14 @@ export default function ViewConnectionScreen() {
 
   const onRefresh = () => {};
 
-  const [linkIndex, setLinkIndex] = useState();
-  const [linkName, setLinkName] = useState();
-  const [linkURL, setLinkURL] = useState();
-
   const [linkID, setLinkID] = useState();
   const [linkImage, setLinkImage] = useState();
 
-  const [optionsModalVisible, setOptionsModalVisible] = useState(false);
   const [paymentImageVisible, setPaymentImageVisible] = useState(false);
   const [paymentImage, setPaymentImage] = useState();
   const [errorURLModalVisible, setErrorURLModalVisible] = useState(false);
 
-  const [fileName, setFileName] = useState();
-
   const navigation = useNavigation();
-
-  const [location, setLocation] = useState(null);
-
-  const [errorMsg, setErrorMsg] = useState(null);
 
   useEffect(() => {
     const backAction = () => {
@@ -103,19 +91,6 @@ export default function ViewConnectionScreen() {
       backHandler.remove();
     };
   });
-  // useEffect(() => {
-  //   (async () => {
-  //     let { status } = await Location.requestForegroundPermissionsAsync();
-  //     if (status !== "granted") {
-  //       setErrorMsg("Permission to access location was denied");
-  //       return;
-  //     }
-
-  //     let location = await Location.getCurrentPositionAsync({});
-  //     setLocation(location);
-  //     console.log(location);
-  //   })();
-  // }, []);
 
   const onBackPressed = () => {
     setUserBlockStatus();

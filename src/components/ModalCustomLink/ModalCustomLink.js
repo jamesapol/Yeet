@@ -57,14 +57,13 @@ export default function ModalCustomLink({
             <TextInput
               style={{
                 ...styles.linkName,
-                borderBottomWidth: 1,
-                borderBottomColor: "#948E8E",
               }}
               placeholder="Custom Link Name"
               onChangeText={onLinkNameChangeText}
               value={customLinkNameValue}
               multiline={false}
               numberOfLines={1}
+              autoFocus
             />
             <Text
               style={{
@@ -90,7 +89,7 @@ export default function ModalCustomLink({
                 style={styles.link}
                 multiline={false}
                 numberOfLines={1}
-                autoFocus
+                // autoFocus
                 keyboardType="url"
                 autoCapitalize="none"
                 // defaultValue={defaultValue}

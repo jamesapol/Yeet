@@ -1,26 +1,26 @@
 import {
-  ImageBackground,
   Modal,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
   Dimensions,
+  Keyboard,
 } from "react-native";
-import React, { useContext, useState } from "react";
+import axios from "axios";
+import * as Device from "expo-device";
+
+import React, { useState } from "react";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 import PageHeader from "../../../components/PageHeader";
 import SectionHeader from "../../../components/SectionHeader/SectionHeader";
 import CustomInput from "../../../components/CustomInput/CustomInput";
-import { useIsFocused, useNavigation } from "@react-navigation/native";
-import { AuthContext } from "../../../context/AuthContext";
-import ModalMessage from "../../../components/ModalMessage/ModalMessage";
-import { useEffect } from "react";
-import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen";
+import { useNavigation } from "@react-navigation/native";
 import { RFPercentage } from "react-native-responsive-fontsize";
 import { Colors, GlobalStyles } from "../../../styles/GlobalStyles";
-
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { BASE_URL } from "../../../config";
+
+import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -29,19 +29,6 @@ export default function RegisterScreen() {
   const [email, setEmail] = useState(null);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const {
-    valid,
-    setValid,
-    isLoading,
-    checkEmailAvailability,
-
-    registrationModalVisible,
-    setRegistrationModalVisible,
-    modalHeader,
-    modalMessage,
-    setModalHeader,
-    setModalMessage,
-  } = useContext(AuthContext);
   const [passwordHidden, setPasswordHidden] = useState(true);
   const [confirmPasswordHidden, setConfirmPasswordHidden] = useState(true);
   const [validEmail, setValidEmail] = useState(false);
@@ -49,39 +36,67 @@ export default function RegisterScreen() {
   const [errorTextVisible, setErrorTextVisible] = useState(false);
   const [errorText, setErrorText] = useState("");
 
+  const [valid, setValid] = useState(false);
+  const [checkEmailLoading, setCheckEmailLoading] = useState(false);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [errorModalVisible, setErrorModalVisible] = useState(false);
+
+  const [modalHeader, setModalHeader] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+
   const togglePasswordHidden = () =>
     setPasswordHidden((previousState) => !previousState);
   const toggleConfirmPasswordHidden = () =>
     setConfirmPasswordHidden((previousState) => !previousState);
 
+  /**
+   * ----------------------------------
+   * MAIN FUNCTIONS
+   * ----------------------------------
+   */
+
   const onCheckEmail = () => {
-    // if (!email || !password || !confirmPassword) {
-    //   setRegistrationModalVisible(true);
-    //   setModalHeader("Error");
-    //   setModalMessage("Please fill out all of the required fields!");
-    // } else if (password != confirmPassword) {
-    //   setRegistrationModalVisible(true);
-    //   setModalHeader("Error");
-    //   setModalMessage("Passwords do not match!");
-    // } else if ((password && confirmPassword).length < 8) {
-    //   setRegistrationModalVisible(true);
-    //   setModalHeader("Error");
-    //   setModalMessage("Passwords must be at least 8 characters!");
-    // } else {
-    //   console.log(isLoading);
-    // }
+    Keyboard.dismiss();
     checkEmailAvailability(email, password, confirmPassword);
   };
 
-  useEffect(() => {
-    if (valid) {
-      navigation.navigate("ConfirmEmailScreen", {
-        email: email,
-        password: password,
+  const checkEmailAvailability = (email, password, confirmPassword) => {
+    setValid(false);
+    setCheckEmailLoading(true);
+    axios
+      .post(
+        `${BASE_URL}api/checkEmailAvailability`,
+        {
+          email: email,
+          password: password,
+          password_confirmation: confirmPassword,
+          deviceName: Device.modelName,
+        },
+        {}
+      )
+      .then((response) => {
+        let responseData = response.data.data;
+        console.log(response.data);
+        if (responseData.coolDown) {
+          setSuccessModalVisible(true);
+          setModalHeader("Confirmation Code");
+          setModalMessage(responseData.coolDown);
+        } else if (responseData.success) {
+          setSuccessModalVisible(true);
+          setModalHeader("Code Sent");
+          setModalMessage(responseData.success);
+        }
+        setCheckEmailLoading(false);
+      })
+      .catch((e) => {
+        console.log("Error: " + e.response.data.errors.email);
+        setErrorModalVisible(true);
+        setModalHeader("Email Taken");
+        setModalMessage(e.response.data.errors.email);
+        setValid(false);
+        setCheckEmailLoading(false);
       });
-      clearAll()
-    }
-  });
+  };
 
   const clearAll = () => {
     setValid(false);
@@ -94,7 +109,8 @@ export default function RegisterScreen() {
     setValidPassword(false);
     setErrorTextVisible();
     setErrorText("");
-    setRegistrationModalVisible(false);
+    setSuccessModalVisible(false);
+    setErrorModalVisible(false);
   };
 
   const navigation = useNavigation();
@@ -102,12 +118,17 @@ export default function RegisterScreen() {
     navigation.goBack();
   };
 
-  const closeModal = () => {
-    setRegistrationModalVisible(false);
+  const closeSuccessModal = () => {
+    setSuccessModalVisible(false);
     navigation.navigate("ConfirmEmailScreen", {
       email: email,
       password: password,
     });
+    clearAll();
+  };
+
+  const closeErrorModal = () => {
+    setErrorModalVisible(false);
     clearAll();
   };
 
@@ -120,7 +141,6 @@ export default function RegisterScreen() {
   };
 
   const validateEmail = (text) => {
-    // console.log(text);
     let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
     if (reg.test(text) === false) {
       setValidEmail(false);
@@ -135,7 +155,11 @@ export default function RegisterScreen() {
   const validatePassword = (password, confirmPassword) => {
     let hasNumber = containsNumber(password);
     let hasUppercase = containsUppercase(password);
-    if (password.length < 8 || password.length === undefined) {
+    if (!validEmail) {
+      setValidEmail(false);
+      setErrorTextVisible(true);
+      setErrorText("Invalid email.");
+    } else if (password.length < 8 || password.length === undefined) {
       setValidPassword(false);
       setErrorText("Password must be at least 8 characters");
       setErrorTextVisible(true);
@@ -157,22 +181,37 @@ export default function RegisterScreen() {
       setValidPassword(true);
       setErrorTextVisible(false);
     }
-    // console.log(password + " " + confirmPassword);
   };
 
   return (
     <View style={GlobalStyles.root}>
+      {/* SUCCESS MODAL */}
       <Modal
         transparent
         animationType="fade"
         hardwareAccelerated
-        visible={registrationModalVisible}
-        onRequestClose={closeModal}
+        visible={successModalVisible}
+        onRequestClose={closeSuccessModal}
       >
         <ModalMessage
           modalHeader={modalHeader}
           modalMessage={modalMessage}
-          onOKPressed={closeModal}
+          onOKPressed={closeSuccessModal}
+        />
+      </Modal>
+
+      {/* ERROR MODAL */}
+      <Modal
+        transparent
+        animationType="fade"
+        hardwareAccelerated
+        visible={errorModalVisible}
+        onRequestClose={closeErrorModal}
+      >
+        <ModalMessage
+          modalHeader={modalHeader}
+          modalMessage={modalMessage}
+          onOKPressed={closeErrorModal}
         />
       </Modal>
       <PageHeader headerText="Create an account" onPress={onBackPressed} />
@@ -253,15 +292,16 @@ export default function RegisterScreen() {
         </View>
         <View style={styles.footerContainer}>
           <CustomButton
-            // onPress={onContinuePressed}
             fgColor="#FFF"
             bgColor={
               validEmail && validPassword ? Colors.yeetPurple : Colors.yeetGray
             }
             btnText="Continue"
             onPress={onCheckEmail}
-            loading={isLoading}
-            disabled={isLoading || (validEmail && validPassword ? false : true)}
+            loading={checkEmailLoading}
+            disabled={
+              checkEmailLoading || (validEmail && validPassword ? false : true)
+            }
             // disabled={continueButtonDisabled}
           />
           <Text style={styles.footerText}>
@@ -294,7 +334,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    // backgroundColor: "#000",
     backgroundColor: "#DEE0E2",
     borderRadius: 30,
 

@@ -7,9 +7,6 @@ import {
   TouchableOpacity,
   View,
   Modal,
-  // Switch,
-  Pressable,
-  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
@@ -17,8 +14,11 @@ import * as DocumentPicker from "expo-document-picker";
 
 import aboutIcon from "../../../../assets/UXMaterials/icons/flatIcons/purpleIcons/about.png";
 import plusIcon from "../../../../assets/UXMaterials/icons/flatIcons/purpleIcons/plus.png";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Notifications from "expo-notifications";
+import * as Device from "expo-device";
 
-import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
+import { RFPercentage } from "react-native-responsive-fontsize";
 
 import { useContext } from "react";
 import { AuthContext } from "../../../context/AuthContext";
@@ -29,9 +29,6 @@ import CustomButton from "../../../components/CustomButton/CustomButton";
 import { useNavigation, useScrollToTop } from "@react-navigation/native";
 import ModalTextInput from "../../../components/ModalTextInput/ModalTextInput";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
-import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen";
-import DefaultCoverPhoto from "../../../../assets/UXMaterials/defaults/default.jpg";
-import DefaultProfilePhoto from "../../../../assets/UXMaterials/defaults/default.png";
 
 import noLinks from "../../../../assets/UXMaterials/placeholders/no-links.png";
 
@@ -52,6 +49,7 @@ import ModalCustomLink from "../../../components/ModalCustomLink/ModalCustomLink
 import { themes } from "../../../../themes/themes";
 import ModalEmbedVideo from "../../../components/ModalEmbedVideo/ModalEmbedVideo";
 import LinksLoadingScreen from "../../../components/LinksLoadingScreen/LinksLoadingScreen";
+import ModalWithButtons from "../../../components/ModalWithButtons/ModalWithButtons";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -63,8 +61,13 @@ export default function HomeScreen() {
     registered,
     setRegistered,
 
+    userInfo,
+    userToken,
     userLinks,
+    allLinks,
+    getAllLinks,
     getUserData,
+    getUserLinks,
     editLink,
     editCustomLink,
     removeDirectLink,
@@ -83,6 +86,9 @@ export default function HomeScreen() {
     showInputModal,
     modalHeader,
     modalMessage,
+    showSuccessModal,
+    removeLinkFromUser,
+    setUserLinks,
     setShowSuccessModal,
     userDirectLink,
     userDirectLinkID,
@@ -100,15 +106,13 @@ export default function HomeScreen() {
     editLinkMessageModalVisible,
     setEditLinkMessageModalVisible,
 
+    saveNotificationPushToken,
     tempCoverPhoto,
+    setTempCoverPhoto,
     tempProfilePhoto,
-    tempUserName,
-    tempUserBio,
+    setTempProfilePhoto,
   } = useContext(AuthContext);
 
-  // const [isDirectLinkEnabled, setIsDirectLinkEnabled] = useState(
-  //   userInfo.usr_direct_link_active == 1 ? true : false
-  // );
   // useEffect(() => {
   //   if(userTheme){
   //     if(userTheme == 2){
@@ -118,6 +122,29 @@ export default function HomeScreen() {
   //     }
   //   }
   // }, [userTheme])
+
+  const [isDirectLinkEnabled, setIsDirectLinkEnabled] = useState(
+    userDirectLink == 0 ? false : true
+  );
+
+  const toggleSwitch = () => {
+    setIsDirectLinkEnabled((previousState) => !previousState);
+    setUserDirectLink(0);
+    setUserDirectLinkID(null);
+    removeDirectLink();
+  };
+
+  const ref = React.useRef(null);
+  useScrollToTop(ref);
+
+  const onRefresh = () => {
+    getUserData();
+  };
+
+  const closeRegistrationModal = () => {
+    setRegistered(false);
+  };
+
   const [error, setError] = useState("none");
 
   const [oldLink, setOldLink] = useState();
@@ -158,31 +185,33 @@ export default function HomeScreen() {
   const [customLinkName, setCustomLinkName] = useState();
   const [customLinkURL, setCustomLinkURL] = useState();
 
+  const [refreshFlatList, setRefreshFlatList] = useState(false);
+  const [removeLinkModalVisible, setRemoveLinkModalVisible] = useState(false);
+  const [successDeleteModalVisible, setSuccessDeleteModalVisible] =
+    useState(false);
+
   const [errorMessageModalVisible, setErrorMessageModalVisible] =
     useState(false);
 
-  const [isDirectLinkEnabled, setIsDirectLinkEnabled] = useState(
-    userDirectLink == 0 ? false : true
-  );
-  const toggleSwitch = () => {
-    setIsDirectLinkEnabled((previousState) => !previousState);
-    setUserDirectLink(0);
-    setUserDirectLinkID(null);
-    removeDirectLink();
-  };
-
-  const ref = React.useRef(null);
-  useScrollToTop(ref);
-
-  const onRefresh = () => {
-    getUserData();
-  };
-
-  const closeRegistrationModal = () => {
-    setRegistered(false);
-  };
-
+  const [removeLinkVisible, setRemoveLinkVisible] = useState(false);
   const [image, setImage] = useState(null);
+  // useEffect(() => {
+  //   const registerForPushNotifications = async () => {
+  //     const { status } = await Notifications.getPermissionsAsync();
+  //     console.log(status);
+  //     if (status !== "granted") {
+  //       const { status } = await Notifications.requestPermissionsAsync();
+  //       if (status !== "granted") {
+  //         return;
+  //       }
+  //     }
+
+  //     const token = await Notifications.getExpoPushTokenAsync();
+  //     console.log(token);
+  //     setExpoPushToken(token);
+  //   };
+  //   registerForPushNotifications();
+  // }, []);
   const getMimeType = (ext) => {
     // mime type mapping for few of the sample file types
     switch (ext) {
@@ -241,13 +270,24 @@ export default function HomeScreen() {
   };
 
   const onManageLinksPressed = () => {
-    // console.log(userBio == null);
-    // console.log(!tempCoverPhoto);
     navigation.navigate("ManageLinksScreen");
+    // setRemoveLinkVisible(true);
   };
 
   const onDirectLinkPressed = () => {
     navigation.navigate("DirectLinkScreen");
+  };
+
+  const onRemoveLink = ({ linkID }) => {
+    // shake();
+    removeLinkFromUser(linkID);
+    let linkArray = userLinks;
+    linkArray.splice(linkIndex, 1);
+    setUserLinks(linkArray);
+    setRefreshFlatList(!refreshFlatList);
+
+    setRemoveLinkModalVisible(false);
+    setSuccessDeleteModalVisible(true);
   };
 
   const onCancelPressed = () => {
@@ -274,6 +314,8 @@ export default function HomeScreen() {
     setEmbedVideoThumbnail();
     setOldLink();
     setReactivateModalVisible(false);
+    setRemoveLinkModalVisible(false);
+    setSuccessDeleteModalVisible(false);
   };
 
   const onCloseErrorPressed = () => {
@@ -422,9 +464,7 @@ export default function HomeScreen() {
               onOKPressed={closeRegistrationModal}
             />
           </Modal>
-        ) : (
-          ""
-        )}
+        ) : null}
         <Modal
           transparent
           animationType="fade"
@@ -553,7 +593,7 @@ export default function HomeScreen() {
         >
           <ModalEmbedVideo
             placeholder={"Enter YouTube link here"}
-            linkImage={linkImage ? linkImage : null}
+            linkImage={{ uri: linkImage }}
             onLinkURLChangeText={(text) => {
               if (!text) {
                 setEmbedVideoURLErrorVisible("flex");
@@ -631,6 +671,42 @@ export default function HomeScreen() {
             onUploadFilePressed={pickPDF}
           />
         </Modal>
+
+        {/* CONFIRM DELETE LINK MODAL */}
+        <Modal
+          transparent
+          animationType="fade"
+          hardwareAccelerated
+          visible={removeLinkModalVisible}
+          onRequestClose={onCancelPressed}
+        >
+          <ModalWithButtons
+            onCancelPressed={onCancelPressed}
+            modalHeaderText={linkName}
+            modalMessage="Are you sure you want to remove this link?"
+            // modalImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
+            modalImage={linkID == 30 ? linkImage : `${BASE_URL}images/social-logo/${linkImage}`}
+            onRemovePressed={onRemoveLink}
+            cancelText="Cancel"
+            saveText="Delete"
+          />
+        </Modal>
+
+        {/* SUCCESS MESSAGE MODAL */}
+        <Modal
+          transparent
+          animationType="fade"
+          hardwareAccelerated
+          visible={successDeleteModalVisible}
+          onRequestClose={onCancelPressed}
+        >
+          <ModalMessage
+            modalHeader="Success"
+            modalMessage="Link successfully removed!"
+            onOKPressed={onCancelPressed}
+          />
+        </Modal>
+
         <FlatList
           onRefresh={onRefresh}
           refreshing={refreshing}
@@ -651,25 +727,17 @@ export default function HomeScreen() {
                     resizeMode="stretch"
                     style={GlobalStyles.coverPhoto}
                   />
-                ) : (
+                ) : userCoverPhoto ? (
                   <Image
-                    source={
-                      !userCoverPhoto
-                        ? DefaultCoverPhoto
-                        : // {
-                          // uri: `${BASE_URL}images/mobile/cover/default.jpg`,
-                          // }
-                          {
-                            uri: `${BASE_URL}images/mobile/cover/${userCoverPhoto}`,
-                          }
-                    }
+                    source={{
+                      uri: `${BASE_URL}images/mobile/cover/${userCoverPhoto}`,
+                    }}
                     resizeMode="stretch"
                     style={GlobalStyles.coverPhoto}
                   />
-                )}
-                {/* : userInfoLoading ? (
+                ) : userInfoLoading ? (
                   <LoadingResource />
-                ) : null} */}
+                ) : null}
               </View>
               {/* PROFILE PHOTO */}
               <View style={GlobalStyles.profilePhotoContainer}>
@@ -682,126 +750,153 @@ export default function HomeScreen() {
                         uri: tempProfilePhoto,
                       }}
                     />
-                  ) : (
+                  ) : userProfilePhoto ? (
                     <Avatar.Image
                       backgroundColor="#DEDEDE"
                       size={RFPercentage(15)}
-                      source={
-                        !userProfilePhoto
-                          ? DefaultProfilePhoto
-                          : {
-                              uri: `${BASE_URL}images/mobile/photos/${userProfilePhoto}`,
-                            }
-                      }
+                      source={{
+                        uri: `${BASE_URL}images/mobile/photos/${userProfilePhoto}`,
+                      }}
                     />
-                  )}
+                  ) : userInfoLoading == true ? (
+                    <LoadingResource />
+                  ) : null}
                 </View>
               </View>
 
               <View style={GlobalStyles.userNameAndBioContainer}>
                 <View style={GlobalStyles.userNameContainer}>
+                  {/* <Text style={GlobalStyles.userNameText}> */}
                   <Text style={GlobalStyles.userNameText}>
-                    {/* {userName} */}
-                    {/* {userLinks.length} */}
-                    {tempUserName ? tempUserName : userName ? userName : null}
+                    {userName ? userName : null}
+                    {/* {userInfoLoading == false
+                      ? userName
+                        ? userName
+                        : userInfo.usr_name
+                      : ""} */}
+                    {/* {Object.keys(userLinks).length} */}
                   </Text>
                 </View>
 
                 <View style={GlobalStyles.userBioContainer}>
                   <Text style={GlobalStyles.userBioText}>
-                    {tempUserBio
-                      ? tempUserBio
-                      : userBio 
+                    {userBio ? userBio : null}
+                    {/* {userInfoLoading == false
                       ? userBio
-                      : "You have no bio yet."}
+                        ? userBio
+                        : userInfo.usr_bio
+                      : ""} */}
                   </Text>
                 </View>
               </View>
 
               {userInfoLoading == false ? (
-                <View style={styles.mainContentContainer}>
-                  <CustomButton
-                    bgColor="transparent"
-                    fgColor="#562C73"
-                    btnText="Edit Profile"
-                    borderColor={Colors.yeetPurple}
-                    borderWidth="2"
-                    onPress={onEditProfilePressed}
-                  />
+                !removeLinkVisible ? (
+                  <View style={styles.mainContentContainer}>
+                    <CustomButton
+                      bgColor="transparent"
+                      fgColor="#562C73"
+                      btnText="Edit Profile"
+                      borderColor={Colors.yeetPurple}
+                      borderWidth="2"
+                      onPress={onEditProfilePressed}
+                    />
 
-                  <View
-                    style={{ flexDirection: "row", justifyContent: "center" }}
-                  >
-                    <TouchableOpacity
-                      style={styles.buttons}
-                      activeOpacity={0.5}
-                      onPress={onManageLinksPressed}
-                    >
-                      <Image
-                        source={aboutIcon}
-                        style={styles.buttonImage}
-                        resizeMode="stretch"
-                      />
-                      <Text style={styles.buttonText}>Manage Links</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.buttons}
-                      activeOpacity={0.8}
-                      onPress={onDirectLinkPressed}
-                    >
-                      <Image
-                        source={aboutIcon}
-                        style={styles.buttonImage}
-                        resizeMode="stretch"
-                      />
-                      <Text style={styles.buttonText}>Direct Link</Text>
-                      <Switch
-                        style={{ height: RFPercentage(2.5) }}
-                        disabled={userDirectLink == 0 ? true : false}
-                        trackColor={{ false: "#767577", true: "#D81D4C55" }}
-                        thumbColor={userDirectLink == 1 ? "#D81D4C" : "#F4F3F4"}
-                        onValueChange={toggleSwitch}
-                        value={userDirectLink == 1 ? true : false}
-                      />
-                    </TouchableOpacity>
-                  </View>
-
-                  {userLinks.length === 0 ? (
                     <View
-                      style={{
-                        width: "100%",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
+                      style={{ flexDirection: "row", justifyContent: "center" }}
                     >
-                      <Image
-                        source={noLinks}
-                        resizeMode="center"
-                        style={{
-                          marginVertical: "5%",
-                          height: RFPercentage(20),
-                          width: RFPercentage(30),
-                        }}
-                      />
+                      <TouchableOpacity
+                        style={styles.buttons}
+                        activeOpacity={0.5}
+                        onPress={onManageLinksPressed}
+                      >
+                        <Image
+                          source={aboutIcon}
+                          style={styles.buttonImage}
+                          resizeMode="stretch"
+                        />
+                        <Text style={styles.buttonText}>Manage Links</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.buttons}
+                        activeOpacity={0.8}
+                        onPress={onDirectLinkPressed}
+                      >
+                        <Image
+                          source={aboutIcon}
+                          style={styles.buttonImage}
+                          resizeMode="stretch"
+                        />
+                        <Text style={styles.buttonText}>Direct Link</Text>
+                        <Switch
+                          style={{ height: RFPercentage(2.5) }}
+                          // style={{transform: [{ scaleX: RFPercentage(0.1) }, { scaleY: RFPercentage(0.1) }]}}
+                          disabled={userDirectLink == 0 ? true : false}
+                          trackColor={{ false: "#767577", true: "#D81D4C55" }}
+                          thumbColor={
+                            userDirectLink == 1 ? "#D81D4C" : "#F4F3F4"
+                          }
+                          onValueChange={toggleSwitch}
+                          value={userDirectLink == 1 ? true : false}
+                          // value={isDirectLinkEnabled}
+                        />
+                      </TouchableOpacity>
+                    </View>
+
+                    {userLinks.length == 0 ? (
                       <View
                         style={{
+                          width: "100%",
                           justifyContent: "center",
                           alignItems: "center",
-                          width: "50%",
                         }}
                       >
-                        <CustomButton
-                          bgColor="transparent"
-                          fgColor="#562C73"
-                          btnText="Add Link"
-                          borderColor={Colors.yeetPurple}
-                          borderWidth="2"
-                          onPress={onAddLinksPressed}
+                        {/* <Text
+                      style={{
+                        fontSize: RFPercentage(3),
+                        marginVertical: "5%",
+                      }}
+                    >
+                      You have no links yet.
+                    </Text> */}
+                        <Image
+                          source={noLinks}
+                          resizeMode="center"
+                          style={{
+                            marginVertical: "5%",
+                            height: RFPercentage(20),
+                            width: RFPercentage(30),
+                            // backgroundColor: "red",
+                          }}
                         />
+                        {/* <Text
+                        style={{
+                          marginVertical: "3%",
+                          fontSize: RFPercentage(2),
+                        }}
+                      >
+                        You have no links yet.
+                      </Text> */}
+                        <View
+                          style={{
+                            justifyContent: "center",
+                            alignItems: "center",
+                            width: "50%",
+                          }}
+                        >
+                          <CustomButton
+                            bgColor="transparent"
+                            fgColor="#562C73"
+                            btnText="Add Link"
+                            borderColor={Colors.yeetPurple}
+                            borderWidth="2"
+                            onPress={onAddLinksPressed}
+                          />
+                        </View>
                       </View>
-                    </View>
-                  ) : null}
-                </View>
+                    ) : null}
+                  </View>
+                ) : null
               ) : null}
             </View>
           )}
@@ -810,54 +905,96 @@ export default function HomeScreen() {
               <View>
                 <LoadingResource />
               </View>
-            ) : null
+            ) : removeLinkVisible ? (
+              <View
+                style={{
+                  width: " 100%",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: height * 0.1,
+                }}
+              >
+                <View
+                  style={{
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "50%",
+                  }}
+                >
+                  <CustomButton
+                    bgColor="transparent"
+                    fgColor={Colors.yeetPurple}
+                    btnText="Cancel"
+                    borderColor={Colors.yeetPurple}
+                    borderWidth="2"
+                    onPress={() => setRemoveLinkVisible(false)}
+                  />
+                </View>
+              </View>
+            ) : (
+              <View
+                style={{
+                  width: " 100%",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: height * 0.05,
+                }}
+              >
+                <View
+                  style={{
+                    justifyContent: "center",
+                    alignItems: "center",
+                    width: "50%",
+                  }}
+                ></View>
+              </View>
+            )
           }
+          extraData={refreshFlatList}
           keyExtractor={(item) => item.uln_id}
           data={
-            userInfoLoading == false
-              ? userLinks.length !== 0
-                ? [...userLinks, { addLinks: true }]
-                : null
-              : null
+            userInfoLoading == false ? [...userLinks, { addLinks: true }] : null
           }
-          // data={userInfoLoading == false ? userLinks : null}
           renderItem={({ item, index }) => {
             if (userInfoLoading == false) {
-              if (item.addLinks) {
-                return (
-                  <TouchableOpacity
-                    style={[
-                      {
-                        marginLeft:
-                          index % 3 == 0 ? width * 0.15 : width * 0.025,
-                        marginRight:
-                          index % 3 == 2 ? width * 0.15 : width * 0.025,
-                        display: userLinks.length == 0 ? "none" : "flex",
-                      },
+              // if (Object.keys(userLinks).length > 0) {
+              if (!removeLinkVisible) {
+                if (item.addLinks) {
+                  return (
+                    <TouchableOpacity
+                      style={[
+                        {
+                          marginLeft:
+                            index % 3 == 0 ? width * 0.15 : width * 0.025,
+                          marginRight:
+                            index % 3 == 2 ? width * 0.15 : width * 0.025,
+                          display: userLinks.length == 0 ? "none" : "flex",
+                        },
 
-                      ButtonStyles.socialMediaButtons,
-                    ]}
-                    onPress={onAddLinksPressed}
-                  >
-                    <Image
-                      source={plusIcon}
-                      style={{
-                        width: width * 0.13,
-                        height: width * 0.13,
-                        opacity: 1,
-                      }}
-                      resizeMode="stretch"
-                    />
-                    <Text
-                      style={{
-                        fontSize: RFPercentage(1.3),
-                      }}
+                        ButtonStyles.socialMediaButtons,
+                      ]}
+                      onPress={onAddLinksPressed}
                     >
-                      Add Link
-                    </Text>
-                  </TouchableOpacity>
-                );
-                // }
+                      <Image
+                        source={plusIcon}
+                        style={{
+                          width: width * 0.13,
+                          height: width * 0.13,
+                          opacity: 1,
+                        }}
+                        resizeMode="stretch"
+                      />
+                      <Text
+                        style={{
+                          fontSize: RFPercentage(1.3),
+                        }}
+                      >
+                        Add Link
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                  // }
+                }
               }
               return (
                 <TouchableOpacity
@@ -869,81 +1006,135 @@ export default function HomeScreen() {
                     },
                     ButtonStyles.socialMediaButtons,
                   ]}
+                  activeOpacity={!removeLinkVisible ? 0.2 : 1}
                   onPress={() => {
-                    if (
-                      item.lnk_id == 23 ||
-                      item.lnk_id == 24 ||
-                      item.lnk_id == 26
-                    ) {
-                      setPaymentModalVisible(true);
-                      setLinkID(item.lnk_id);
-                      setLinkName(item.lnk_name);
-                      setLinkURL(item.uln_url);
-                      setLinkImage(item.lnk_image);
-                      setLinkIndex(item.uln_id);
+                    if (!removeLinkVisible) {
+                      if (
+                        item.lnk_id == 23 ||
+                        item.lnk_id == 24 ||
+                        item.lnk_id == 26
+                      ) {
+                        setPaymentModalVisible(true);
+                        setLinkID(item.lnk_id);
+                        setLinkName(item.lnk_name);
+                        setLinkURL(item.uln_url);
+                        setLinkImage(item.lnk_image);
+                        setLinkIndex(item.uln_id);
 
-                      console.log(item.uln_id);
-                    } else if (item.lnk_id == 30) {
-                      setEmbedVideoModalVisible(true);
-                      setLinkImage(item.uln_youtube_thumbnail);
-                      setEmbedVideoTitle(item.uln_custom_link_name);
-                      setEmbedVideoURL(item.uln_url);
-                      setLinkIndex(item.uln_id);
-                      setOldLink(item.uln_url);
-                    } else if (item.lnk_id == 31) {
-                      setFileTitle(item.uln_file_title);
-                      setFileName(item.uln_original_file_name);
-                      setFile(item.uln_file);
-                      setLinkIndex(item.uln_id);
-                      setFileModalVisible(true);
-                    } else if (item.lnk_id == 32) {
-                      setCustomLinkModalVisible(true);
-                      setCustomLinkName(item.uln_custom_link_name);
-                      setCustomLinkURL(item.uln_url);
-                      setLinkImage(item.lnk_image);
-                      setLinkIndex(item.uln_id);
-                      console.log(item.uln_id);
-                    } else {
-                      setShowInputModal(true);
-                      setLinkName(item.lnk_name);
-                      setLinkURL(item.uln_url);
-                      setLinkImage(item.lnk_image);
-                      setLinkIndex(item.uln_id);
-                      setLinkURLHeader(item.lnk_url);
+                        console.log(item.uln_id);
+                      } else if (item.lnk_id == 30) {
+                        setEmbedVideoModalVisible(true);
+                        setLinkImage(item.uln_youtube_thumbnail);
+                        setEmbedVideoTitle(item.uln_custom_link_name);
+                        setEmbedVideoURL(item.uln_url);
+                        setLinkIndex(item.uln_id);
+                        setOldLink(item.uln_url);
+                      } else if (item.lnk_id == 31) {
+                        setFileTitle(item.uln_file_title);
+                        setFileName(item.uln_original_file_name);
+                        setFile(item.uln_file);
+                        setLinkIndex(item.uln_id);
+                        setFileModalVisible(true);
+                      } else if (item.lnk_id == 32) {
+                        setCustomLinkModalVisible(true);
+                        setCustomLinkName(item.uln_custom_link_name);
+                        setCustomLinkURL(item.uln_url);
+                        setLinkImage(item.lnk_image);
+                        setLinkIndex(item.uln_id);
+                        console.log(item.uln_id);
+                      } else {
+                        setShowInputModal(true);
+                        setLinkName(item.lnk_name);
+                        setLinkURL(item.uln_url);
+                        setLinkImage(item.lnk_image);
+                        setLinkIndex(item.uln_id);
+                        setLinkURLHeader(item.lnk_url);
 
-                      let linkContent = item.uln_url.replace(item.lnk_url, "");
+                        let linkContent = item.uln_url.replace(
+                          item.lnk_url,
+                          ""
+                        );
 
-                      console.log(item.uln_url);
-                      setLinkURLContent(linkContent);
+                        console.log(item.uln_url);
+                        setLinkURLContent(linkContent);
+                      }
                     }
-                    // onLinkPressed
                   }}
-                  // onPress={() => {
-                  //   Linking.openURL(`https://${item.uln_url}`);
-                  // }}
                 >
-                  <Image
-                    prefetch
-                    source={
-                      item.lnk_id == 30
-                        ? { uri: item.uln_youtube_thumbnail }
-                        : {
-                            uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
-                          }
-                    }
+                  <View
                     style={{
-                      borderRadius: item.lnk_id == 30 ? 20 : null,
-                      width: width * 0.13,
-                      height: width * 0.13,
-                      opacity:
-                        userDirectLink == 1
-                          ? userDirectLinkID == item.uln_id
-                            ? 1
-                            : 0.3
-                          : 1,
+                      paddingHorizontal: width * 0.005,
+                      paddingVertical: height * 0.005,
+                      // backgroundColor: "#33f3",
                     }}
-                    resizeMode="contain"
-                  />
+                  >
+                    <TouchableOpacity
+                      disabled={removeLinkVisible ? false : true}
+                      style={{
+                        // backgroundColor: 'blue',
+                        borderWidth: 0,
+                        position: "absolute",
+                        zIndex: 1,
+                        right: 1,
+                        top: 1,
+                        opacity: removeLinkVisible ? 1 : 0,
+                        display:
+                          userDirectLinkID == item.uln_id ? "none" : "flex",
+                      }}
+                      onPress={() => {
+                        setLinkIndex(item.uln_id);
+                        setLinkID(item.lnk_id)
+                        if (item.lnk_id == 30) {
+                          setLinkName(item.uln_custom_link_name);
+                          setLinkImage(item.uln_youtube_thumbnail);
+                        } else if (item.lnk_id == 31) {
+                          setLinkName(item.uln_file_title);
+                          setLinkImage(item.lnk_image);
+                        } else if (item.lnk_id == 32) {
+                          setLinkName(item.custom_link_name);
+                          setLinkImage(item.lnk_image);
+                        } else {
+                          setLinkName(item.lnk_name);
+                          setLinkImage(item.lnk_image);
+                        }
+                        setRemoveLinkModalVisible(true);
+                      }}
+                    >
+                      <MaterialCommunityIcons
+                        style={{
+                          backgroundColor: Colors.yeetGray,
+                          padding: "5%",
+                          borderRadius: 5000,
+                        }}
+                        name="close"
+                        size={width * 0.03}
+                        color="#000"
+                        //   size={RFPercentage(2.3)}
+                      />
+                    </TouchableOpacity>
+                    <Image
+                      prefetch
+                      source={
+                        item.lnk_id == 30
+                          ? { uri: item.uln_youtube_thumbnail }
+                          : {
+                              uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
+                            }
+                      }
+                      style={{
+                        borderRadius: item.lnk_id == 30 ? 20 : null,
+                        width: width * 0.13,
+                        height: width * 0.13,
+                        opacity:
+                          userDirectLink == 1
+                            ? userDirectLinkID == item.uln_id
+                              ? 1
+                              : 0.3
+                            : 1,
+                      }}
+                      resizeMode="contain"
+                    />
+                  </View>
                   {/* <Text>{item.uln_id}</Text>
                         <Text>{item.lnk_id}</Text> */}
                   <Text
@@ -951,12 +1142,10 @@ export default function HomeScreen() {
                       fontSize: RFPercentage(1.5),
                     }}
                   >
-                    {item.lnk_id == 30
+                    {item.lnk_id == 30 || item.lnk_id == 32
                       ? item.uln_custom_link_name
                       : item.lnk_id == 31
                       ? item.uln_file_title
-                      : item.lnk_id == 32
-                      ? item.uln_custom_link_name
                       : item.lnk_name}
                     {/* {item.lnk_name} */}
                   </Text>

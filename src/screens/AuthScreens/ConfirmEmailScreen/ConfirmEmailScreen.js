@@ -1,21 +1,15 @@
 import {
   BackHandler,
-  Image,
-  ImageBackground,
   Modal,
   StyleSheet,
   Dimensions,
   TextInput,
-  TouchableOpacity,
   View,
-  Text,
   Keyboard,
 } from "react-native";
-
+import axios from "axios";
 import React from "react";
 import CustomButton from "../../../components/CustomButton/CustomButton";
-import { useContext } from "react";
-import { AuthContext } from "../../../context/AuthContext";
 import { useEffect } from "react";
 import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
@@ -23,28 +17,36 @@ import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 import PageHeader from "../../../components/PageHeader";
 import SectionHeader from "../../../components/SectionHeader";
 import { useRef } from "react";
-import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen";
 import { GlobalStyles } from "../../../styles/GlobalStyles";
+import { BASE_URL } from "../../../config";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
 
 export default function ConfirmEmailScreen({ route }) {
-  const {
-    valid,
-    setValid,
-    checkConfirmationCode,
-    isLoading,
-
-    confirmEmailModalVisible,
-    setConfirmEmailModalVisible,
-    modalHeader,
-    setModalHeader,
-    modalMessage,
-    setModalMessage,
-  } = useContext(AuthContext);
-
   const { email, password } = route.params;
+
+  const [valid, setValid] = useState(false);
+  const [confirmEmailModalVisible, setConfirmEmailModalVisible] =
+    useState(false);
+  const [modalHeader, setModalHeader] = useState();
+  const [modalMessage, setModalMessage] = useState();
+  const [confirmEmailLoading, setConfirmEmailLoading] = useState(false);
+
+  useEffect(() => {
+    const backAction = () => {
+      setValid(false);
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => {
+      backHandler.remove();
+    };
+  });
 
   const navigation = useNavigation();
   useEffect(() => {
@@ -66,21 +68,6 @@ export default function ConfirmEmailScreen({ route }) {
         password: password,
       });
     }
-  });
-
-  useEffect(() => {
-    const backAction = () => {
-      setValid(false);
-    };
-
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
-
-    return () => {
-      backHandler.remove();
-    };
   });
 
   const onBackPressed = () => {
@@ -107,12 +94,49 @@ export default function ConfirmEmailScreen({ route }) {
   const onConfirmPressed = () => {
     if (!pin1 || !pin2 || !pin3 || !pin4 || !pin5 || !pin6) {
       setConfirmEmailModalVisible(true);
-      setModalHeader("Error");
+      setModalHeader("Invalid Code");
       setModalMessage("Please enter the 6 digit code sent to your email.");
     } else {
       let code = pin1 + pin2 + pin3 + pin4 + pin5 + pin6;
       checkConfirmationCode(code, email);
+      Keyboard.dismiss();
     }
+  };
+
+  const checkConfirmationCode = async (code, email) => {
+    setConfirmEmailLoading(true);
+    axios
+      .post(`${BASE_URL}api/checkConfirmationCode`, {
+        code: code,
+        email: email,
+      })
+      .then((response) => {
+        let responseData = response.data.data;
+
+        if (responseData.invalidCode) {
+          setValid(false);
+          setConfirmEmailModalVisible(true)
+          setModalHeader("Invalid Code");
+          setModalMessage(responseData.invalidCode)
+        } else if (responseData.expiredCode) {
+          setValid(false);
+          setConfirmEmailModalVisible(true);
+          setModalHeader("Expired Code");
+          setModalMessage(responseData.expiredCode);
+        } else if (responseData.emailSuccess){
+          setValid(true);
+        }
+        console.log(response.data);
+        setConfirmEmailLoading(false);
+      })
+      .catch((e) => {
+        console.log(e.response.data);
+        setConfirmEmailModalVisible(true);
+        setModalHeader("Error");
+        setModalMessage(e.response.data.errors);
+        setConfirmEmailLoading(false);
+      });
+    // console.log(code)
   };
 
   const closeModal = () => {
@@ -133,6 +157,7 @@ export default function ConfirmEmailScreen({ route }) {
   };
   return (
     <View style={GlobalStyles.root}>
+      {/* ERROR MODAL ONLY */}
       <Modal
         transparent
         animationType="fade"
@@ -146,6 +171,7 @@ export default function ConfirmEmailScreen({ route }) {
           onOKPressed={closeModal}
         />
       </Modal>
+
       <PageHeader
         headerText="Confirm Email"
         onPress={onBackPressed}
@@ -157,6 +183,7 @@ export default function ConfirmEmailScreen({ route }) {
       <View style={styles.sectionContainer}>
         <View style={styles.inputContainer}>
           <TextInput
+            selectTextOnFocus={true}
             autoFocus
             keyboardType="number-pad"
             style={styles.inputStyle}
@@ -171,6 +198,7 @@ export default function ConfirmEmailScreen({ route }) {
             }}
           />
           <TextInput
+            selectTextOnFocus={true}
             onKeyPress={({ nativeEvent }) => {
               if (nativeEvent.key === "Backspace") {
                 pin1Ref.current.focus();
@@ -189,6 +217,7 @@ export default function ConfirmEmailScreen({ route }) {
             }}
           />
           <TextInput
+            selectTextOnFocus={true}
             onKeyPress={({ nativeEvent }) => {
               if (nativeEvent.key === "Backspace") {
                 pin2Ref.current.focus();
@@ -207,6 +236,7 @@ export default function ConfirmEmailScreen({ route }) {
             }}
           />
           <TextInput
+            selectTextOnFocus={true}
             onKeyPress={({ nativeEvent }) => {
               if (nativeEvent.key === "Backspace") {
                 pin3Ref.current.focus();
@@ -225,6 +255,7 @@ export default function ConfirmEmailScreen({ route }) {
             }}
           />
           <TextInput
+            selectTextOnFocus={true}
             onKeyPress={({ nativeEvent }) => {
               if (nativeEvent.key === "Backspace") {
                 pin4Ref.current.focus();
@@ -243,6 +274,7 @@ export default function ConfirmEmailScreen({ route }) {
             }}
           />
           <TextInput
+            selectTextOnFocus={true}
             onKeyPress={({ nativeEvent }) => {
               if (nativeEvent.key === "Backspace") {
                 pin5Ref.current.focus();
@@ -257,21 +289,22 @@ export default function ConfirmEmailScreen({ route }) {
 
               let code = pin1 + pin2 + pin3 + pin4 + pin5 + pin6;
 
-              Keyboard.dismiss();
-              checkConfirmationCode(code, email);
+              if(pin1 && pin2 && pin3 && pin4 && pin5 && pin6){
+                checkConfirmationCode(code, email);
+                Keyboard.dismiss();
+              }
             }}
           />
         </View>
         <View style={styles.footerContainer}>
-          {/* <Text>{email + password}</Text> */}
           <CustomButton
             fgColor="#FFF"
             bgColor="#562C73"
             style={styles.continueButton}
             btnText="Confirm"
             onPress={onConfirmPressed}
-            loading={isLoading}
-            disabled={isLoading}
+            loading={confirmEmailLoading}
+            disabled={confirmEmailLoading}
           />
         </View>
       </View>
@@ -306,7 +339,7 @@ const styles = StyleSheet.create({
 
   inputStyle: {
     backgroundColor: "#DEE0E2",
-    paddingHorizontal: width * 0.05,
+    paddingHorizontal: "4%",
     paddingVertical: height * 0.01,
     borderRadius: 10,
     fontSize: 30,

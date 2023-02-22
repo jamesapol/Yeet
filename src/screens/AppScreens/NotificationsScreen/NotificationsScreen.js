@@ -9,11 +9,15 @@ import {
   Vibration,
   Modal,
 } from "react-native";
+
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
+
 import React, { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { RFPercentage } from "react-native-responsive-fontsize";
 
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 
 import PageHeader from "../../../components/PageHeader";
 
@@ -39,7 +43,6 @@ const NotificationsButton = ({
   notificationMessage,
   notificationUserImage,
   notificationType,
-  notificationRead = 0,
   notificationDate,
   notificationID,
   onNotificationPressed,
@@ -50,7 +53,6 @@ const NotificationsButton = ({
   <View
     style={{
       flexDirection: "row",
-      backgroundColor: notificationRead == 0 ? Colors.yeetGray : "white",
       marginBottom: "0.5%",
     }}
   >
@@ -161,9 +163,7 @@ const NotificationsButton = ({
               </>
             )}
           </Text>
-          <Text>
-            {notificationDate}
-          </Text>
+          <Text>{notificationDate}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -189,26 +189,11 @@ const NotificationsButton = ({
 export default function NotificationsScreen() {
   const {
     refreshing,
-    userConnections,
 
-    getUserNotifications,
-    openNotification,
-    userNotifications,
-    setUserNotifications,
-    userNotificationsLoading,
-    setUserNotificationsLoading,
-    showUserConnection,
-    getUserConnections,
-    userConnectionsLoading,
-    isLoading,
-    showInputModal,
-    setShowInputModal,
     showSuccessModal,
-    setShowSuccessModal,
     modalHeader,
     modalMessage,
-    removeNotification,
-    readNotification,
+    // removeNotification,
   } = useContext(AuthContext);
 
   const [refreshFlatList, setRefreshFlatList] = useState(false);
@@ -223,13 +208,10 @@ export default function NotificationsScreen() {
   const [notificationType, setNotificationType] = useState();
   const [connectionNotes, setConnectionNotes] = useState();
 
+  const [userNotifications, setUserNotifications] = useState({});
+  const [userNotificationsLoading, setUserNotificationsLoading] =
+    useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-
-  useEffect(() => {
-    return () => {
-      readNotification();
-    };
-  }, []);
 
   const ref = React.useRef(null);
   useScrollToTop(ref);
@@ -252,6 +234,57 @@ export default function NotificationsScreen() {
     removeNotification(notificationID);
     setRefreshFlatList(!refreshFlatList);
     setModalVisible(false);
+  };
+
+  useEffect(() => {
+    getUserNotifications();
+  }, []);
+
+  const getUserNotifications = async () => {
+    setUserNotificationsLoading(true);
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+    console.log(userUUID);
+
+    await axios
+      .get(`${BASE_URL}api/getNotifications/${userUUID}`, {
+        headers: { Authorization: `Bearer ${userToken}` },
+      })
+      .then((response) => {
+        console.log(response.data);
+        let userNotifications = response.data.userNotifications;
+        setUserNotifications(userNotifications);
+        setUserNotificationsLoading(false);
+        console.log(userNotifications);
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setUserNotificationsLoading(false);
+      });
+  };
+
+  const removeNotification = async (notificationID) => {
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .patch(
+        `${BASE_URL}api/removeNotification/${notificationID}/${userUUID}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        console.log(response.data);
+        let userNotifications = response.data.userNotifications;
+        setUserNotifications(userNotifications);
+        // setUserNotificationsLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        // setUserNotificationsLoading(false);
+      });
   };
 
   // const pageSize = 10;
@@ -296,8 +329,6 @@ export default function NotificationsScreen() {
         <ModalWithButtons
           onCancelPressed={closeModal}
           modalHeaderText="Are you sure you want to remove this notification?"
-          // modalMessage="Are you sure you want to remove this notification?"
-          // modalImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
           onRemovePressed={onRemovePressed}
           cancelText="Cancel"
           saveText="Remove"
@@ -310,8 +341,6 @@ export default function NotificationsScreen() {
           iconColor="#562C73"
           textColor="#562C73"
           display="none"
-          // pageActionIcon="sort"
-          // pageActionVisible="flex"
         />
       </View>
       <FlatList
@@ -323,9 +352,9 @@ export default function NotificationsScreen() {
         style={{ backgroundColor: "#fff" }}
         extraData={refreshFlatList}
         keyExtractor={(item) => item.ntf_id}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
         // onEndReached={handleLoadMore}
         // onEndReachedThreshold={0.5}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
         // ListFooterComponent={
         //   !userNotificationsLoading ? (
         //     <View
@@ -354,37 +383,18 @@ export default function NotificationsScreen() {
             <NotificationsButton
               notificationUserImage={item.usr_profile_photo_storage}
               notificationConnectionName={item.usr_name}
-              notificationRead={item.ntf_read}
               notificationType={item.ntf_type}
               notificationDate={item.ntf_date_created}
               // notificationMessage={item.usr_bio}
 
-              onPress={() => {
-                openNotification(item.ntf_uuid_connection);
-                readNotification(item.ntf_id);
-                onConnectionPressed();
-              }}
               onRemovePressed={() => {
                 setNotificationID(item.ntf_id);
                 setModalVisible(true);
               }}
-              onOptionsPressed={() => {
-                setConnectionConnUUID(item.con_uuid);
-                setConnectionUUID(item.usr_uuid);
-                setNotificationUserImage(item.usr_profile_photo_storage);
-                setNotificationConnectionName(item.usr_name);
-                setNotificationMessage(item.usr_bio);
-                setConnectionNotes(item.con_notes);
-              }}
               onLongPress={() => {
                 Vibration.vibrate(100);
-                console.log(item.con_uuid);
-                setConnectionConnUUID(item.con_uuid);
-                setConnectionUUID(item.usr_uuid);
-                setNotificationUserImage(item.usr_profile_photo_storage);
-                setNotificationConnectionName(item.usr_name);
-                setNotificationMessage(item.usr_bio);
-                setConnectionNotes(item.con_notes);
+                setNotificationID(item.ntf_id);
+                setModalVisible(true);
               }}
             />
           );

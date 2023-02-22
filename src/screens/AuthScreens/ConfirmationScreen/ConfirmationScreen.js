@@ -28,6 +28,14 @@ import { AuthStyles, Colors, GlobalStyles } from "../../../styles/GlobalStyles";
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
 
+// const email = 'test@test1.com';
+// const password = 'Test1234'
+// const fullName = 'Amabatakam Ambasing Omaygot Shet'
+// const fileURI = 'file:///data/user/0/host.exp.exponent/cache/ImagePicker/27368578-15ac-42c6-8e29-b771f2c1068e.jpeg'
+// const fileName = 'tangina';
+// const fileType = 'image'
+// const mobileNumber = '666'
+
 export default function ConfirmationScreen({ route }) {
   const {
     register,
@@ -37,6 +45,8 @@ export default function ConfirmationScreen({ route }) {
     userInfoLoading,
     userLinksLoading,
   } = useContext(AuthContext);
+
+  // let email = 'test1@test.com';
 
   const {
     email,

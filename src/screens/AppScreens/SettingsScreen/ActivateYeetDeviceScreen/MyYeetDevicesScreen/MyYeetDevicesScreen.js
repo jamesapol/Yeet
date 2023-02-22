@@ -42,7 +42,7 @@ export default function MyYeetDevicesScreen() {
     setShowSuccessModal,
     displayYeetDevice,
     disconnectYeetDevice,
-    userActiveNFCDevice,
+    userActiveYeetDevice,
     activateYeetDevice,
     successMessage,
     errorMessage,

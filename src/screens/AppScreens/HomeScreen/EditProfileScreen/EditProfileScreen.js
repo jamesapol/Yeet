@@ -20,25 +20,22 @@ import { RFPercentage } from "react-native-responsive-fontsize";
 
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
-import * as SecureStore from "expo-secure-store";
 
 import { AuthContext } from "../../../../context/AuthContext";
 import { BASE_URL } from "../../../../config";
 
 import { Avatar } from "react-native-paper";
 import CustomButton from "../../../../components/CustomButton/CustomButton";
-import {
-  NavigationHelpersContext,
-  useNavigation,
-  useScrollToTop,
-} from "@react-navigation/native";
+import { useNavigation, useScrollToTop } from "@react-navigation/native";
 import ModalMessage from "../../../../components/ModalMessage/ModalMessage";
 
 import PageHeader from "../../../../components/PageHeader";
 
-import { Button } from "react-native-paper";
 import { Colors, GlobalStyles } from "../../../../styles/GlobalStyles";
 import ModalPhotoOptions from "../../../../components/ModalPhotoOptions/ModalPhotoOptions";
+
+import DefaultCoverPhoto from "../../../../../assets/UXMaterials/defaults/default.jpg";
+import DefaultProfilePhoto from "../../../../../assets/UXMaterials/defaults/default.png";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -66,6 +63,14 @@ export default function HomeScreen() {
 
     setUserProfilePhoto,
     setUserCoverPhoto,
+    userProfilePhoto,
+    userCoverPhoto,
+    userName,
+    userBio,
+    setUserName,
+    setUserBio,
+    setTempUserName,
+    setTempUserBio,
     setTempCoverPhoto,
     setTempProfilePhoto,
   } = useContext(AuthContext);
@@ -79,8 +84,8 @@ export default function HomeScreen() {
   const [previewBio, setPreviewBio] = useState();
   const [previewName, setPreviewName] = useState();
 
-  const [userName, setUserName] = useState(userInfo.usr_name);
-  const [userBio, setUserBio] = useState(userInfo.usr_bio);
+  // const [userName, setUserName] = useState(userInfo.usr_name);
+  // const [userBio, setUserBio] = useState(userInfo.usr_bio);
 
   const [profilePhoto, setProfilePhoto] = useState(null);
   const [coverPhoto, setCoverPhoto] = useState(null);
@@ -107,7 +112,7 @@ export default function HomeScreen() {
         }
       }
     })();
-    console.log(coverPhoto)
+    // console.log(coverPhoto)
   }, []);
 
   const navigation = useNavigation();
@@ -118,7 +123,7 @@ export default function HomeScreen() {
       previewCoverPhotoURI: coverPhoto,
       previewProfilePhotoURI: profilePhoto,
       previewName: previewName,
-      previewBio: previewBio
+      previewBio: previewBio,
     });
   };
 
@@ -295,12 +300,14 @@ export default function HomeScreen() {
       filteredUserName,
       userBio
     );
-    if(coverPhoto){
+    if (coverPhoto) {
       setTempCoverPhoto(coverPhoto);
     }
-    if(profilePhoto){
-      setTempProfilePhoto(profilePhoto)
+    if (profilePhoto) {
+      setTempProfilePhoto(profilePhoto);
     }
+    setTempUserName(filteredUserName);
+    setTempUserBio(userBio);
     setUpdateSuccessModalVisible(true);
   };
 
@@ -433,11 +440,15 @@ export default function HomeScreen() {
             ) : (
               <Image
                 source={
-                  userInfo.usr_cover_photo_storage
+                  userCoverPhoto
+                    ? {
+                        uri: `${BASE_URL}images/mobile/cover/${userCoverPhoto}`,
+                      }
+                    : userInfo.usr_cover_photo_storage
                     ? {
                         uri: `${BASE_URL}images/mobile/cover/${userInfo.usr_cover_photo_storage}`,
                       }
-                    : null
+                    : DefaultCoverPhoto
                 }
                 resizeMode="stretch"
                 style={GlobalStyles.coverPhoto}
@@ -485,13 +496,15 @@ export default function HomeScreen() {
                   backgroundColor="#DEDEDE"
                   size={RFPercentage(15)}
                   source={
-                    userInfo.usr_profile_photo_storage
+                    userProfilePhoto
+                      ? {
+                          uri: `${BASE_URL}images/mobile/photos/${userProfilePhoto}`,
+                        }
+                      : userInfo.usr_profile_photo_storage
                       ? {
                           uri: `${BASE_URL}images/mobile/photos/${userInfo.usr_profile_photo_storage}`,
                         }
-                      : {
-                          uri: `${BASE_URL}images/profile/photos/default.png`,
-                        }
+                      : DefaultProfilePhoto
                   }
                 />
               )}
