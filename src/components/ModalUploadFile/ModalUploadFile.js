@@ -119,6 +119,7 @@ export default function ModalUploadFile({
                   value={fileTitle}
                   onChangeText={onChangeText}
                   numberOfLines={1}
+                  maxLength={20}
                   multiline={false}
                   autoFocus
                   placeholder={

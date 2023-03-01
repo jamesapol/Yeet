@@ -6,7 +6,7 @@ import { RFPercentage } from "react-native-responsive-fontsize";
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
 export default function CustomInput({
-  ref,
+  innerRef,
   onFocus,
   selectTextOnFocus,
   value,
@@ -26,8 +26,9 @@ export default function CustomInput({
   return (
     <View style={styles.root}>
       <TextInput
+      
         selectTextOnFocus={selectTextOnFocus}
-        ref={ref}
+        ref={innerRef}
         onFocus={onFocus}
         returnKeyType={returnKeyType}
         onSubmitEditing={onSubmitEditing}

@@ -7,6 +7,9 @@ import {
   TouchableOpacity,
   View,
   Modal,
+  // Switch,
+  Pressable,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
@@ -42,7 +45,6 @@ import UserTheme, {
   updateTheme,
 } from "../../../styles/GlobalStyles";
 import ModalPaymentImage from "../../../components/ModalPaymentImage/ModalPaymentImage";
-import ModalViewPaymentImage from "../../../components/ModalViewPaymentImage/ModalViewPaymentImage";
 import { useEffect } from "react";
 import ModalViewFile from "../../../components/ModalViewFile/ModalViewFile";
 import ModalCustomLink from "../../../components/ModalCustomLink/ModalCustomLink";
@@ -368,13 +370,17 @@ export default function HomeScreen() {
   };
 
   const onUploadFilePressed = () => {
-    console.log(linkIndex)
-    console.log(fileURI)
-    console.log(fileName)
-    console.log(fileType)
-    console.log(fileTitle)
-
-    editFile(fileURI, fileName, fileType, fileTitle, linkIndex);
+    let _fileTitle;
+    if (!fileTitle) {
+      if (fileType == "application/pdf") {
+        _fileTitle = "PDF File";
+      } else {
+        _fileTitle = "Image";
+      }
+      editFile(fileURI, fileName, fileType, _fileTitle, linkIndex);
+    } else {
+      editFile(fileURI, fileName, fileType, fileTitle, linkIndex);
+    }
     setFileModalVisible(false);
     setFileURI();
     setFileName();
@@ -589,11 +595,13 @@ export default function HomeScreen() {
           visible={paymentModalVisible}
           onRequestClose={onCancelPressed}
         >
-          <ModalViewPaymentImage
+          <ModalPaymentImage
             onChangePhotoPressed={pickImage}
             image={image}
-            cancelText="Close"
+            cancelText="Cancel"
             onCancelPressed={onCancelPressed}
+            saveText="Save"
+            onSavePressed={onUploadPhotoPressed}
             disabled={image ? false : true}
             modalImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
             defaultImage={
@@ -633,6 +641,170 @@ export default function HomeScreen() {
           numColumns={3}
           style={styles.flatListContainer}
           ListHeaderComponent={() => (
+            // <View style={styles.mainContainer}>
+            //   {/* COVER PHOTO */}
+            //   <View style={GlobalStyles.coverPhotoContainer}>
+            //     {tempCoverPhoto ? (
+            //       <Image
+            //         source={{
+            //           uri: tempCoverPhoto,
+            //         }}
+            //         resizeMode="stretch"
+            //         style={GlobalStyles.coverPhoto}
+            //       />
+            //     ) : (
+            //       <Image
+            //         source={
+            //           !userCoverPhoto
+            //             ? DefaultCoverPhoto
+            //             : // {
+            //               // uri: `${BASE_URL}images/mobile/cover/default.jpg`,
+            //               // }
+            //               {
+            //                 uri: `${BASE_URL}images/mobile/cover/${userCoverPhoto}`,
+            //               }
+            //         }
+            //         resizeMode="stretch"
+            //         style={GlobalStyles.coverPhoto}
+            //       />
+            //     )}
+            //     {/* : userInfoLoading ? (
+            //       <LoadingResource />
+            //     ) : null} */}
+            //   </View>
+            //   {/* PROFILE PHOTO */}
+            //   <View style={GlobalStyles.profilePhotoContainer}>
+            //     <View style={GlobalStyles.profilePhoto}>
+            //       {tempProfilePhoto ? (
+            //         <Avatar.Image
+            //           backgroundColor="#DEDEDE"
+            //           size={RFPercentage(15)}
+            //           source={{
+            //             uri: tempProfilePhoto,
+            //           }}
+            //         />
+            //       ) : (
+            //         <Avatar.Image
+            //           backgroundColor="#DEDEDE"
+            //           size={RFPercentage(15)}
+            //           source={
+            //             !userProfilePhoto
+            //               ? DefaultProfilePhoto
+            //               : {
+            //                   uri: `${BASE_URL}images/mobile/photos/${userProfilePhoto}`,
+            //                 }
+            //           }
+            //         />
+            //       )}
+            //     </View>
+            //   </View>
+
+            //   <View style={GlobalStyles.userNameAndBioContainer}>
+            //     <View style={GlobalStyles.userNameContainer}>
+            //       <Text style={GlobalStyles.userNameText}>
+            //         {/* {userName} */}
+            //         {/* {userLinks.length} */}
+            //         {tempUserName ? tempUserName : userName ? userName : null}
+            //       </Text>
+            //     </View>
+
+            //     <View style={GlobalStyles.userBioContainer}>
+            //       <Text style={GlobalStyles.userBioText}>
+            //         {tempUserBio
+            //           ? tempUserBio
+            //           : userBio
+            //           ? userBio
+            //           : "You have no bio yet."}
+            //       </Text>
+            //     </View>
+            //   </View>
+
+            //   {userInfoLoading == false ? (
+            //     <View style={styles.mainContentContainer}>
+            //       <CustomButton
+            //         bgColor="transparent"
+            //         fgColor="#562C73"
+            //         btnText="Edit Profile"
+            //         borderColor={Colors.yeetPurple}
+            //         borderWidth="2"
+            //         onPress={onEditProfilePressed}
+            //       />
+
+            //       <View
+            //         style={{ flexDirection: "row", justifyContent: "center" }}
+            //       >
+            //         <TouchableOpacity
+            //           style={styles.buttons}
+            //           activeOpacity={0.5}
+            //           onPress={onManageLinksPressed}
+            //         >
+            //           <Image
+            //             source={aboutIcon}
+            //             style={styles.buttonImage}
+            //             resizeMode="stretch"
+            //           />
+            //           <Text style={styles.buttonText}>Manage Links</Text>
+            //         </TouchableOpacity>
+            //         <TouchableOpacity
+            //           style={styles.buttons}
+            //           activeOpacity={0.8}
+            //           onPress={onDirectLinkPressed}
+            //         >
+            //           <Image
+            //             source={aboutIcon}
+            //             style={styles.buttonImage}
+            //             resizeMode="stretch"
+            //           />
+            //           <Text style={styles.buttonText}>Direct Link</Text>
+            //           <Switch
+            //             style={{ height: RFPercentage(2.5) }}
+            //             disabled={userDirectLink == 0 ? true : false}
+            //             trackColor={{ false: "#767577", true: "#D81D4C55" }}
+            //             thumbColor={userDirectLink == 1 ? "#D81D4C" : "#F4F3F4"}
+            //             onValueChange={toggleSwitch}
+            //             value={userDirectLink == 1 ? true : false}
+            //           />
+            //         </TouchableOpacity>
+            //       </View>
+
+            //       {userLinks.length === 0 ? (
+            //         <View
+            //           style={{
+            //             width: "100%",
+            //             justifyContent: "center",
+            //             alignItems: "center",
+            //           }}
+            //         >
+            //           <Image
+            //             source={noLinks}
+            //             resizeMode="center"
+            //             style={{
+            //               marginVertical: "5%",
+            //               height: RFPercentage(20),
+            //               width: RFPercentage(30),
+            //             }}
+            //           />
+            //           <View
+            //             style={{
+            //               justifyContent: "center",
+            //               alignItems: "center",
+            //               width: "50%",
+            //             }}
+            //           >
+            //             <CustomButton
+            //               bgColor="transparent"
+            //               fgColor="#562C73"
+            //               btnText="Add Link"
+            //               borderColor={Colors.yeetPurple}
+            //               borderWidth="2"
+            //               onPress={onAddLinksPressed}
+            //             />
+            //           </View>
+            //         </View>
+            //       ) : null}
+            //     </View>
+            //   ) : null}
+            // </View>
             <View style={styles.mainContainer}>
               <UserProfileComponents
                 tempCoverPhoto={tempCoverPhoto}
@@ -818,7 +990,6 @@ export default function HomeScreen() {
                       setLinkIndex(item.uln_id);
                       setOldLink(item.uln_url);
                     } else if (item.lnk_id == 31) {
-                      
                       setFileTitle(item.uln_file_title);
                       setFileName(item.uln_original_file_name);
                       setFile(item.uln_file);
@@ -841,9 +1012,9 @@ export default function HomeScreen() {
 
                       let linkContent = item.uln_url.replace(item.lnk_url, "");
 
+                      console.log(item.uln_url);
                       setLinkURLContent(linkContent);
                     }
-                    console.log(item.uln_id);
                     // onLinkPressed
                   }}
                   // onPress={() => {

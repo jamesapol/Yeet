@@ -29,8 +29,7 @@ import {
     cancelText,
     saveText,
   }) {
-    const [connectionNote, setConnectionNote] = useState();
-  
+
     return (
       <View style={styles.centeredModal}>
         <View style={styles.modal}>
@@ -65,6 +64,15 @@ import {
             </View>
             <View style={styles.buttonContainer}>
               <TouchableOpacity
+                onPress={onSavePressed}
+                style={styles.saveButtonContainer}
+                activeOpacity={0.4}
+              >
+                <Text style={[styles.buttonText, { color: "#562C73" }]}>
+                  {saveText}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
                 onPress={onCancelPressed}
                 style={styles.cancelButtonContainer}
                 activeOpacity={0.4}
@@ -72,15 +80,6 @@ import {
                 <Text style={[styles.buttonText, { color: "#D81D4C" }]}>
   
                   {cancelText}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={onSavePressed}
-                style={styles.saveButtonContainer}
-                activeOpacity={0.4}
-              >
-                <Text style={[styles.buttonText, { color: "#562C73" }]}>
-                  {saveText}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -185,8 +184,8 @@ import {
       // borderTopColor: "#948E8E",
       height: "100%",
       width: "50%",
-      borderRightColor: "#948E8E",
-      borderRightWidth: 0.5,
+      borderLeftColor: "#948E8E",
+      borderLeftWidth: 0.5,
       justifyContent: "center",
       alignItems: "center",
     },
@@ -200,8 +199,8 @@ import {
       // backgroundColor: "#00f2",
       height: "100%",
       width: "50%",
-      borderLeftColor: "#948E8E",
-      borderLeftWidth: 0.5,
+      borderRightColor: "#948E8E",
+      borderRightWidth: 0.5,
       justifyContent: "center",
       alignItems: "center",
     },

@@ -60,7 +60,7 @@ const ConnectionsButton = ({
           source={
             connectionImage
               ? { uri: `${BASE_URL}images/mobile/photos/${connectionImage}` }
-              : { uri: `${BASE_URL}images/profile/photos/default.png` }
+              : { uri: `${BASE_URL}images/profile/photos/default-profile.png` }
           }
           style={{
             borderWidth: 0.1,
@@ -199,7 +199,7 @@ export default function BlockedContactsScreen() {
             connectionImage
               ? { uri: `${BASE_URL}images/mobile/photos/${connectionImage}` }
               : {
-                  uri: `${BASE_URL}images/profile/photos/default.png`,
+                  uri: `${BASE_URL}images/profile/photos/default-profile.png`,
                 }
           }
           onRemovePressed={onUnblockPressed}

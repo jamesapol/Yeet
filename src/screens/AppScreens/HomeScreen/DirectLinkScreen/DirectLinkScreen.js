@@ -179,19 +179,23 @@ export default function DirectLinkScreen() {
         renderItem={({ item, index }) => {
           return (
             <TouchableOpacity
+              disabled={
+                item.lnk_id === 23 || item.lnk_id === 24 || item.lnk_id === 26
+                  ? true
+                  : false
+              }
               activeOpacity={0.3}
               style={[
                 {
                   marginLeft: index % 3 == 0 ? width * 0.15 : width * 0.025,
                   marginRight: index % 3 == 2 ? width * 0.15 : width * 0.025,
-                  display:
-                    item.lnk_id == 23 || item.lnk_id == 24 || item.lnk_id == 26
-                      ? "none"
-                      : "flex",
                 },
                 styles.socialMediaButtons,
               ]}
               onPress={() => {
+                if(item.lnk_id === 23) {
+                  console.log("nope")
+                }
                 setDirectLinkID(item.uln_id);
                 // setUserDirectLinkID(item.uln_id);
                 setSaveDisabled(false);
@@ -202,10 +206,15 @@ export default function DirectLinkScreen() {
               }}
             >
               <Image
-                source={{
-                  uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
-                }}
+                source={
+                  item.lnk_id == 30
+                    ? { uri: item.uln_youtube_thumbnail }
+                    : {
+                        uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
+                      }
+                }
                 style={{
+                  borderRadius: item.lnk_id == 30 ? 20 : null,
                   width: width * 0.13,
                   height: width * 0.13,
                   opacity:
@@ -222,13 +231,16 @@ export default function DirectLinkScreen() {
                 resizeMode="stretch"
               />
               {/* <Text>{item.uln_id}</Text>
-                      <Text>{item.lnk_id}</Text> */}
+                        <Text>{item.lnk_id}</Text> */}
               <Text
                 style={{
                   fontSize: RFPercentage(1.3),
                 }}
               >
-                {item.lnk_id == 31
+                {/* {item.lnk_id} */}
+                {item.lnk_id == 30
+                  ? item.uln_custom_link_name
+                  : item.lnk_id == 31
                   ? item.uln_file_title
                   : item.lnk_id == 32
                   ? item.uln_custom_link_name

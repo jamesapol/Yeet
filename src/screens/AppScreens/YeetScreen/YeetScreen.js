@@ -96,6 +96,7 @@ export default function YeetScreen() {
             <Text style={styles.welcomeText}> profile</Text>
           </View>
         </View>
+        {userActiveYeetDevice}
         {userActiveYeetDevice ? (
           <>
             <QRCode

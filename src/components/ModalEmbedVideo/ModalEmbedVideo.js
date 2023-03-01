@@ -69,6 +69,7 @@ export default function ModalEmbedVideo({
               value={embedVideoTitle}
               multiline={false}
               numberOfLines={1}
+              maxLength={20}
               autoFocus
             />
             <Text

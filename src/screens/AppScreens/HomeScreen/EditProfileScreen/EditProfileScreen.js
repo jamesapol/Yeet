@@ -34,8 +34,8 @@ import PageHeader from "../../../../components/PageHeader";
 import { Colors, GlobalStyles } from "../../../../styles/GlobalStyles";
 import ModalPhotoOptions from "../../../../components/ModalPhotoOptions/ModalPhotoOptions";
 
-import DefaultCoverPhoto from "../../../../../assets/UXMaterials/defaults/default.jpg";
-import DefaultProfilePhoto from "../../../../../assets/UXMaterials/defaults/default.png";
+import DefaultCoverPhoto from "../../../../../assets/UXMaterials/defaults/default-cover.jpg";
+import DefaultProfilePhoto from "../../../../../assets/UXMaterials/defaults/default-profile.png";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -288,6 +288,11 @@ export default function HomeScreen() {
   };
 
   const onSavePressed = () => {
+    console.log(!userBio)
+    // let bio = userBio;
+    // if(bio === null){
+    //   bio == null;
+    // }
     let filteredUserName = removeWhiteSpace(userName);
     // console.log(filteredUserName)
     updateProfile(

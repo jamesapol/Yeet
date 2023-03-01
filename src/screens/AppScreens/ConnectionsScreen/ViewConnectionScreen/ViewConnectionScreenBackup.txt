@@ -245,31 +245,95 @@ export default function ViewConnectionScreen() {
           numColumns={3}
           style={{ backgroundColor: "#fff" }}
           ListHeaderComponent={() => (
-            <View style={styles.mainContainer}>
-              <UserProfileComponents
-                userCoverPhoto={userConnectionData.usr_cover_photo_storage}
-                userProfilePhoto={userConnectionData.usr_profile_photo_storage}
-                userName={userConnectionData.usr_name}
-                userBio={userConnectionData.usr_bio}
-              />
-              {isLoading == false ? (
-                userConnectionStatus == 0 ? (
-                  <View style={styles.addContactContainer}>
-                    <CustomButton
-                      bgColor="transparent"
-                      fgColor="#562C73"
-                      btnText="Add Contact"
-                      borderColor={Colors.yeetPurple}
-                      borderWidth="2"
-                      onPress={onAddContactPressed}
-                      loading={publicLoading}
-                      loadingColor={Colors.yeetPurple}
-                      disabled={publicLoading}
+              <View style={styles.mainContainer}>
+                {/* COVER PHOTO */}
+                <View style={GlobalStyles.coverPhotoContainer}>
+                  {isLoading == true ? (
+                    <LoadingResource />
+                  ) : (
+                    <Image
+                      // key={userInfo.usr_cover_photo_storage}
+                      source={
+                        isLoading == false
+                          ? userConnectionData.usr_cover_photo_storage
+                            ? {
+                                // uri: `${BASE_URL}images/profile/cover/${coverPhoto}`,
+                                uri: `${BASE_URL}images/mobile/cover/${userConnectionData.usr_cover_photo_storage}`,
+                              }
+                            : null
+                          : null
+                      }
+                      resizeMode="stretch"
+                      style={GlobalStyles.coverPhoto}
                     />
+                  )}
+                </View>
+
+                {/* PROFILE PHOTO */}
+                <View style={GlobalStyles.profilePhotoContainer}>
+                  <View style={GlobalStyles.profilePhoto}>
+                    {isLoading == true ? (
+                      <LoadingResource visible={true} />
+                    ) : (
+                      <Avatar.Image
+                        // key={userInfo.usr_profile_photo_storage}
+                        backgroundColor="#DEDEDE"
+                        // size={width * 0.35}
+                        size={RFPercentage(15)}
+                        source={
+                          isLoading == false
+                            ? userConnectionData.usr_profile_photo_storage
+                              ? {
+                                  uri: `${BASE_URL}images/mobile/photos/${userConnectionData.usr_profile_photo_storage}`,
+                                }
+                              : {
+                                  uri: `${BASE_URL}images/profile/photos/default-profile.png`,
+                                }
+                            : null
+                        }
+                      />
+                    )}
                   </View>
-                ) : null
-              ) : null}
-            </View>
+                </View>
+
+                <View style={GlobalStyles.userNameAndBioContainer}>
+                  <View style={GlobalStyles.userNameContainer}>
+                    <Text style={GlobalStyles.userNameText}>
+                      {isLoading == false ? userConnectionData.usr_name : null}
+                      {/* {JSON.stringify(location)} */}
+                    </Text>
+                  </View>
+                  <View style={GlobalStyles.userBioContainer}>
+                    <Text style={GlobalStyles.userBioText}>
+                      {isLoading == false ? userConnectionData.usr_bio : null}
+                    </Text>
+                  </View>
+                </View>
+
+                <UserProfileComponents   
+                  userCoverPhoto={userConnectionData.usr_cover_photo_storage}
+                  userProfilePhoto={userConnectionData.usr_profile_photo_storage}
+                  userName={userConnectionData.usr_name}
+                  userBio={userConnectionData.usr_bio}
+                />
+                {isLoading == false ? (
+                  userConnectionStatus == 0 ? (
+                    <View style={styles.addContactContainer}>
+                      <CustomButton
+                        bgColor="transparent"
+                        fgColor="#562C73"
+                        btnText="Add Contact"
+                        borderColor={Colors.yeetPurple}
+                        borderWidth="2"
+                        onPress={onAddContactPressed}
+                        loading={publicLoading}
+                        loadingColor={Colors.yeetPurple}
+                        disabled={publicLoading}
+                      />
+                    </View>
+                  ) : null
+                ) : null}
+              </View>
           )}
           keyExtractor={(item) => item.lnk_id}
           // keyExtractor={(item, index) => index.toString()}
@@ -322,6 +386,7 @@ export default function ViewConnectionScreen() {
                         setModalHeader("Error");
                         setModalMessage(
                           `This link cannot be opened and may be broken.`
+
                         );
                       }
                     });

@@ -14,13 +14,15 @@ import React, { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { RFPercentage } from "react-native-responsive-fontsize";
 
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
+import { BASE_URL } from "../../../config";
+
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 
 import PageHeader from "../../../components/PageHeader";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import { BASE_URL } from "../../../config";
-import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen";
 import { useState } from "react";
 import {
   useFocusEffect,
@@ -34,6 +36,8 @@ import ModalWithButtons from "../../../components/ModalWithButtons/ModalWithButt
 import { Colors, GlobalStyles } from "../../../styles/GlobalStyles";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 import CustomInput from "../../../components/CustomInput/CustomInput";
+import noConnections from "../../../../assets/UXMaterials/placeholders/no-connections.png";
+
 import LoadingResource from "../../../components/LoadingResource/LoadingResource";
 
 var { width } = Dimensions.get("window");
@@ -56,8 +60,6 @@ const ConnectionsButton = ({
       onPress={onPress}
       style={{
         flex: 1,
-        // backgroundColor: "#DEE0E2",
-        // marginHorizontal: width * 0.02,
         marginLeft: width * 0.03,
         marginVertical: height * 0.003,
         height: height * 0.075,
@@ -73,7 +75,6 @@ const ConnectionsButton = ({
         style={{
           flexDirection: "row",
           alignItems: "flex-start",
-          // backgroundColor: "#f003",
           flex: 1,
         }}
       >
@@ -81,7 +82,7 @@ const ConnectionsButton = ({
           source={
             connectionImage
               ? { uri: `${BASE_URL}images/mobile/photos/${connectionImage}` }
-              : { uri: `${BASE_URL}images/profile/photos/default.png` }
+              : { uri: `${BASE_URL}images/profile/photos/default-profile.png` }
           }
           style={{
             borderWidth: 0.1,
@@ -94,7 +95,6 @@ const ConnectionsButton = ({
         />
         <View
           style={{
-            // backgroundColor: "#00f5",
             alignItems: "flex-start",
             justifyContent: "flex-start",
             flex: 1,
@@ -127,7 +127,6 @@ const ConnectionsButton = ({
       style={{
         alignItems: "center",
         justifyContent: "center",
-        // backgroundColor: "#562c7340",
         paddingHorizontal: width * 0.02,
         marginRight: width * 0.03,
         marginVertical: height * 0.003,
@@ -145,26 +144,19 @@ const ConnectionsButton = ({
 export default function ConnectionsScreen() {
   const {
     refreshing,
-    leaveNote,
-    reportConnection,
-    deleteConnection,
     userConnections,
-    blockConnection,
-    showUserConnection,
-    getUserConnections,
-    userConnectionsLoading,
+    setUserConnections,
     setUserBlockStatus,
-    userBlockStatus,
-    isLoading,
-    showInputModal,
+    setIsLoading,
     setShowInputModal,
-    showSuccessModal,
-    setShowSuccessModal,
     modalHeader,
     modalMessage,
     addProfileView,
-    searchUserConnections,
-
+    setUserConnectionData,
+    setUserConnectionLinks,
+    setUserConnectionStatus,
+    userConnectionsLoading,
+    setUserConnectionsLoading,
     setUserNotFound,
     connectionsScreenModalVisible,
     setConnectionsScreenModalVisible,
@@ -186,6 +178,9 @@ export default function ConnectionsScreen() {
   const [connectionBio, setConnectionBio] = useState();
   const [connectionNotes, setConnectionNotes] = useState();
 
+  const [searchResults, setSearchResults] = useState(null);
+  const [resultsEmpty, setResultsEmpty] = useState(false);
+
   const [note, setNote] = useState();
   const [report, setReport] = useState();
 
@@ -203,7 +198,6 @@ export default function ConnectionsScreen() {
 
   const onRefresh = () => {
     getUserConnections();
-    // setRefreshing(true);
   };
 
   const navigation = useNavigation();
@@ -227,23 +221,36 @@ export default function ConnectionsScreen() {
   };
 
   const onLeaveNotePressed = () => {
+    console.log(note);
+    leaveNote(note, connectionConnUUID);
     setNote(null);
     setShowLeaveNoteModal(false);
-    leaveNote(note, connectionConnUUID);
+
+    setConnectionsScreenModalVisible(true);
+    setModalHeader("Note Saved");
+    setModalMessage("Note saved successfully.");
+
     refRBSheet.current.close();
   };
 
   const onReportPressed = () => {
+    console.log(report);
+    reportConnection(report, connectionUUID);
     setReport(null);
     setShowReportModal(false);
-    reportConnection(report, connectionUUID);
+
+    setConnectionsScreenModalVisible(true);
+    setModalHeader("Connection Reported");
+    setModalMessage(`Successfully reported ${connectionName}.`);
+
     refRBSheet.current.close();
   };
 
   const onDeletePressed = () => {
-    setShowDeleteContactModal(false);
     deleteConnection(connectionUUID);
     setRefreshFlatList(!refreshFlatList);
+    setShowDeleteContactModal(false);
+
     refRBSheet.current.close();
   };
 
@@ -259,29 +266,238 @@ export default function ConnectionsScreen() {
     navigation.navigate("AddConnectionQRScreen");
   };
 
-  // useEffect(() => {
-  //   if (searchKey == "") {
-  //     getUserConnections();
-  //   }
-  //   if (!searchKey.trim().length) {
-  //     return;
-  //   }
-  //   searchUserConnections(searchKey);
-  // }, [searchKey]);
+  const onClearPressed = () => {
+    setSearchKey();
+    setSearchResults(null);
+    setResultsEmpty(false);
+  };
 
-  const onSearchPressed = () => {
-    if (searchKey.trim().length > 0) {
-      searchUserConnections(searchKey);
-    } else {
+  /**
+   * ------------------------------
+   * CONNECTION SCREEN API CALLS
+   * ------------------------------
+   */
+  const searchUserConnections = async (searchKey) => {
+    setUserConnectionsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .get(`${BASE_URL}api/searchConnections/${userUUID}/${searchKey}`, {
+        headers: { Authorization: `Bearer ${userToken}` },
+      })
+      .then((response) => {
+        let userConnections = response.data.connections;
+        setSearchResults(userConnections);
+        if (userConnections.length === 0) {
+          setResultsEmpty(true);
+        } else {
+          setResultsEmpty(false);
+        }
+
+        setUserConnectionsLoading(false);
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setUserConnectionsLoading(false);
+      });
+  };
+
+  const getUserConnections = async () => {
+    setUserConnectionsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .get(`${BASE_URL}api/getConnections/${userUUID}`, {
+        headers: { Authorization: `Bearer ${userToken}` },
+      })
+      .then((response) => {
+        setUserNotFound(false);
+        let userConnections = response.data.connections;
+        setUserConnections(userConnections);
+        console.log(userConnections);
+        setUserConnectionsLoading(false);
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setUserConnectionsLoading(false);
+      });
+  };
+
+  const leaveNote = async (note, connectionConnUUID) => {
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .patch(
+        `${BASE_URL}api/leaveNote/${connectionConnUUID}`,
+        {
+          note: note,
+          userUUID: userUUID,
+        },
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        let userConnections = response.data.userConnections;
+        console.log(userConnections);
+        setUserConnections(userConnections);
+      })
+      .catch((error) => {
+        console.log(error.response);
+      });
+  };
+
+  const reportConnection = async (report, connectionUUID) => {
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .patch(
+        `${BASE_URL}api/reportConnection/${connectionUUID}`,
+        {
+          report: report,
+          userUUID: userUUID,
+        },
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        console.log(response.data);
+      })
+      .catch((error) => {
+        console.log(error.response);
+      });
+  };
+
+  const deleteConnection = async (connectionUUID) => {
+    setUserConnectionsLoading(true);
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .patch(
+        `${BASE_URL}api/deleteConnection/${connectionUUID}`,
+        {
+          userUUID: userUUID,
+        },
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        let userConnections = response.data.userConnections;
+        setUserConnections(userConnections);
+
+        setConnectionsScreenModalVisible(true);
+        setModalHeader("Deleted Successfully");
+        setModalMessage(
+          `Successfully deleted ${connectionName} in your connections.`
+        );
+        setUserConnectionsLoading(false);
+        console.log(userConnections);
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setUserConnectionsLoading(false);
+      });
+  };
+
+  const blockConnection = async (connectionConnUUID, connectionUUID) => {
+    setUserConnectionsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .patch(
+        `${BASE_URL}api/blockConnection/${connectionUUID}`,
+        {
+          userUUID: userUUID,
+          connectionConnUUID: connectionConnUUID,
+        },
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        let userConnections = response.data.userConnections;
+        setUserConnections(userConnections);
+        console.log(userConnections);
+
+        setConnectionsScreenModalVisible(true);
+        setModalHeader("Blocked Successfully");
+        setModalMessage(`Successfully blocked ${connectionName}.`);
+        setUserConnectionsLoading(false);
+      })
+      .catch((error) => {
+        console.log(error.response);
+        setUserConnectionsLoading(false);
+      });
+  };
+
+  const showUserConnection = async (connectionUUID) => {
+    setIsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .get(`${BASE_URL}api/showConnection/${connectionUUID}/${userUUID}`, {
+        headers: { Authorization: `Bearer ${userToken}` },
+      })
+      .then((response) => {
+        let blockStatus = response.data.blockStatus;
+        setUserBlockStatus(blockStatus);
+
+        let userConnectionData = response.data.connectionData;
+        setUserConnectionData(userConnectionData);
+
+        let userConnectionLinks = response.data.connectionLinks;
+        setUserConnectionLinks(userConnectionLinks);
+
+        let userConnectionStatus = response.data.userConnectionStatus;
+        setUserConnectionStatus(userConnectionStatus);
+
+        addProfileView(connectionUUID);
+        console.log(response.data);
+
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.log(error);
+        setIsLoading(false);
+      });
+  };
+
+  /**
+   * 1 SECOND DELAY IN SEARCH
+   */
+  useEffect(() => {
+    if (searchKey) {
+      const timer = setTimeout(() => {
+        searchUserConnections(searchKey);
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (!searchKey || searchKey.length === 0) {
+      setResultsEmpty(false);
+      setSearchResults(null);
+    }
+  }, [searchKey]);
+
+  useEffect(() => {
+    if (Object.keys(userConnections).length === 0) {
       getUserConnections();
     }
-  };
+  }, []);
 
   return (
     <View style={GlobalStyles.root}>
-      {userConnectionsLoading == true || isLoading == true ? (
-        <LoadingScreen />
-      ) : null}
       {/* SUCCESS MODAL */}
       <Modal
         transparent
@@ -309,9 +525,7 @@ export default function ConnectionsScreen() {
           userImage={
             connectionImage
               ? { uri: `${BASE_URL}images/mobile/photos/${connectionImage}` }
-              : {
-                  uri: `${BASE_URL}images/profile/photos/default.png`,
-                }
+              : require("../../../../assets/UXMaterials/defaults/default-profile.png")
           }
           placeholder={connectionNotes}
           value={note}
@@ -337,9 +551,7 @@ export default function ConnectionsScreen() {
           userImage={
             connectionImage
               ? { uri: `${BASE_URL}images/mobile/photos/${connectionImage}` }
-              : {
-                  uri: `${BASE_URL}images/profile/photos/default.png`,
-                }
+              : require("../../../../assets/UXMaterials/defaults/default-profile.png")
           }
           value={report}
           onChangeText={(text) => setReport(text)}
@@ -368,9 +580,7 @@ export default function ConnectionsScreen() {
           modalImage={
             connectionImage
               ? { uri: `${BASE_URL}images/mobile/photos/${connectionImage}` }
-              : {
-                  uri: `${BASE_URL}images/profile/photos/default.png`,
-                }
+              : require("../../../../assets/UXMaterials/defaults/default-profile.png")
           }
           onRemovePressed={onDeletePressed}
           cancelText="Cancel"
@@ -393,9 +603,7 @@ export default function ConnectionsScreen() {
           modalImage={
             connectionImage
               ? { uri: `${BASE_URL}images/mobile/photos/${connectionImage}` }
-              : {
-                  uri: `${BASE_URL}images/profile/photos/default.png`,
-                }
+              : require("../../../../assets/UXMaterials/defaults/default-profile.png")
           }
           onRemovePressed={onBlockPressed}
           cancelText="Cancel"
@@ -419,55 +627,87 @@ export default function ConnectionsScreen() {
         <CustomInput
           placeholder="Search. . ."
           style={styles.searchBar}
-          onChangeText={(text) => setSearchKey(text)}
+          onChangeText={(text) => {
+            if (text.trim() === "") {
+              setSearchKey("");
+            } else {
+              setSearchKey(text);
+            }
+          }}
           autoCapitalize
-          autoFocus
+          value={searchKey}
         />
         <TouchableOpacity
-          disabled={isLoading ? true : false}
-          onPress={onSearchPressed}
+          disabled={userConnectionsLoading ? true : false}
+          onPress={onClearPressed}
           style={{
+            display: searchKey ? "flex" : "none",
             width: "15%",
             height: "100%",
-            backgroundColor: Colors.yeetPurple,
-            // backgroundColor: "red",
             borderTopRightRadius: 25,
             borderBottomRightRadius: 25,
-            // borderBottomEndRadius: 25,
             flexDirection: "row",
             justifyContent: "center",
             alignItems: "center",
-            // flex: 1
           }}
         >
-          {/* <Text>Search </Text> */}
           <MaterialCommunityIcons
-            // onPress={togglePasswordHidden}
-            name="account-search"
+            name="close"
             size={RFPercentage(3.4)}
-            color={Colors.yeetGray}
+            color={Colors.yeetPurple}
           />
         </TouchableOpacity>
       </View>
-      {/* <View style={{ backgroundColor: "gray" }}></View> */}
       <FlatList
         onRefresh={onRefresh}
         refreshing={refreshing}
         ref={ref}
         overScrollMode="never"
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={isLoading ? <LoadingScreen /> : null}
+        ListHeaderComponent={
+          userConnectionsLoading ? <LoadingResource /> : null
+        }
+        ListFooterComponent={() =>
+          resultsEmpty ? (
+            <View
+              style={{
+                width: "100%",
+                justifyContent: "center",
+                alignItems: "center",
+                paddingVertical: "10%",
+              }}
+            >
+              <Image
+                source={noConnections}
+                resizeMode="center"
+                style={{
+                  height: RFPercentage(40),
+                  width: "75%",
+                }}
+              />
+              <View style={{ textAlign: "center" }}>
+                <Text style={{ fontSize: RFPercentage(3), fontWeight: "bold" }}>
+                  User not found.
+                </Text>
+              </View>
+            </View>
+          ) : null
+        }
         style={{ backgroundColor: "#fff" }}
         extraData={refreshFlatList}
         keyExtractor={(item) => item.con_id}
-        // keyExtractor={(item, index) => index.toString()}
-        data={userConnectionsLoading == false ? userConnections : null}
+        data={
+          !userConnectionsLoading
+            ? searchResults
+              ? searchResults
+              : userConnections
+            : null
+        }
         renderItem={({ item }) => {
           return (
             <ConnectionsButton
               connectionImage={item.usr_profile_photo_storage}
               connectionName={item.usr_name}
-              // connectionBio={item.usr_bio}
               connectionBio={item.usr_bio}
               onPress={() => {
                 if (item.usr_direct_link_active == 1) {
@@ -505,7 +745,6 @@ export default function ConnectionsScreen() {
               }}
               onLongPress={() => {
                 Vibration.vibrate(100);
-                // console.log(item.con_uuid);
                 setConnectionConnUUID(item.con_uuid);
                 setConnectionUUID(item.usr_uuid);
                 setConnectionImage(item.usr_profile_photo_storage);
@@ -513,7 +752,6 @@ export default function ConnectionsScreen() {
                 setConnectionBio(item.usr_bio);
                 setConnectionNotes(item.con_notes);
                 refRBSheet.current.open();
-                console.log(item.con_id);
               }}
             />
           );
@@ -545,7 +783,7 @@ export default function ConnectionsScreen() {
                     uri: `${BASE_URL}images/mobile/photos/${connectionImage}`,
                   }
                 : {
-                    uri: `${BASE_URL}images/profile/photos/default.png`,
+                    uri: `${BASE_URL}images/profile/photos/default-profile.png`,
                   }
             }
             style={styles.drawerImage}
@@ -624,10 +862,7 @@ export default function ConnectionsScreen() {
 const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
-    // justifyContent: "space-between",
     alignItems: "center",
-    // backgroundColor: "#000",
-    // backgroundColor: "#DEE0E2",
     borderRadius: 1000,
     borderWidth: 2,
     borderColor: Colors.yeetPurple,
@@ -662,13 +897,11 @@ const styles = StyleSheet.create({
 
   drawerTextContainer: {
     width: "100%",
-    // backgroundColor: "#F004",
     alignItems: "center",
   },
 
   drawerNameContainer: {
     width: "80%",
-    // backgroundColor: "#0F04",
     alignItems: "center",
   },
 
@@ -681,7 +914,6 @@ const styles = StyleSheet.create({
 
   drawerBioContainer: {
     width: "50%",
-    // backgroundColor: "#00F4",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -715,7 +947,6 @@ const styles = StyleSheet.create({
 
   drawerButtonsContainer: {
     width: "100%",
-    // backgroundColor: "#00F5",
     flexDirection: "row",
     height: "35%",
   },
@@ -749,12 +980,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    // backgroundColor: "#000",
-    backgroundColor: "#DEE0E2",
+    backgroundColor: "#EFF0E2",
     borderRadius: 30,
 
     paddingLeft: width * 0.03,
-    // paddingVertical: height * 0.001,
     marginVertical: height * 0.008,
     marginHorizontal: width * 0.05,
     borderColor: Colors.yeetPurple,
@@ -764,6 +993,5 @@ const styles = StyleSheet.create({
   searchBar: {
     fontSize: RFPercentage(3),
     paddingHorizontal: width * 0.03,
-    // backgroundColor: 'green',
   },
 });

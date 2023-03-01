@@ -98,7 +98,7 @@ export default function App() {
 
     await axios
       .post(
-        `${BASE_URL}api/removeLinkFromUser`,
+        `${BASE_URL}api/removeLink`,
         {
           userUUID: userUUID,
           userLinkID: userLinkID,

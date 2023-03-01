@@ -63,6 +63,7 @@ export default function ModalCustomLink({
               value={customLinkNameValue}
               multiline={false}
               numberOfLines={1}
+              maxLength={20}
               autoFocus
             />
             <Text

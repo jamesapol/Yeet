@@ -212,7 +212,7 @@ export default function AddLinksScreen() {
         const { status } =
           await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== "granted") {
-          alert("Sorry, we need camera roll permissions to make this work!");
+          alert("Sorry, we need library permissions to make this work!");
         }
       }
     })();
@@ -292,7 +292,6 @@ export default function AddLinksScreen() {
   const onBackPressed = () => {
     navigation.goBack();
   };
-
 
   const closeErrorModal = () => {
     setFileSizeErrorModalVisible(false);
@@ -428,7 +427,7 @@ export default function AddLinksScreen() {
       formData.append("userLinkID", userLinkID);
       await axios({
         method: "POST",
-        url: `${BASE_URL}api/uploadPaymentPhoto`,
+        url: `${BASE_URL}api/upload-payment-photo`,
         data: formData,
         headers: {
           Accept: "application/json",
@@ -437,7 +436,7 @@ export default function AddLinksScreen() {
         },
       })
         .then((response) => {
-          let userLinks = response.data;
+          let userLinks = response.data.data.userLinks;
           setUserLinks(userLinks);
           setAddLinksModalVisible(true);
           setModalHeader("Success");
@@ -456,7 +455,7 @@ export default function AddLinksScreen() {
       console.log(embedVideoThumbnailURI);
       await axios
         .post(
-          `${BASE_URL}api/addYouTubeLink`,
+          `${BASE_URL}api/add-youtube-link`,
           {
             userUUID: userUUID,
             youtubeLinkName: embedVideoTitle,
@@ -468,19 +467,20 @@ export default function AddLinksScreen() {
           }
         )
         .then((response) => {
-          if (response.data.duplicateLink) {
+          let linkResponse = response.data.data;
+          if (linkResponse.duplicateLink) {
             setAddLinkLoading(false);
             setAddLinksModalVisible(true);
             setModalHeader("Error");
-            setModalMessage(response.data.duplicateLink);
+            setModalMessage(linkResponse.duplicateLink);
           } else {
-            let userLinks = response.data;
+            let userLinks = linkResponse.userLinks;
 
             console.log(userLinks);
             setUserLinks(userLinks);
             setAddLinksModalVisible(true);
             setModalHeader("Success");
-            setModalMessage("Link saved successfully!");
+            setModalMessage("Youtube Link saved successfully!");
             setAddLinkLoading(false);
             console.log(response.data);
           }
@@ -505,7 +505,7 @@ export default function AddLinksScreen() {
 
       await axios({
         method: "POST",
-        url: `${BASE_URL}api/uploadFile`,
+        url: `${BASE_URL}api/upload-pdf-file`,
         data: formData,
         headers: {
           Accept: "application/json",
@@ -514,8 +514,7 @@ export default function AddLinksScreen() {
         },
       })
         .then((response) => {
-          console.log(response.data);
-          let userLinks = response.data;
+          let userLinks = response.data.data.userLinks;
           setUserLinks(userLinks);
           setAddLinksModalVisible(true);
           setModalHeader("Success");
@@ -534,7 +533,7 @@ export default function AddLinksScreen() {
     } else if (userLinkID == 32) {
       await axios
         .post(
-          `${BASE_URL}api/addCustomLink`,
+          `${BASE_URL}api/add-custom-link`,
           {
             userUUID: userUUID,
             userLinkName: customLinkName,
@@ -545,13 +544,14 @@ export default function AddLinksScreen() {
           }
         )
         .then((response) => {
-          if (response.data.duplicateLink) {
+          let linkResponse = response.data.data;
+          if (linkResponse.duplicateLink) {
             setAddLinkLoading(false);
             setAddLinksModalVisible(true);
             setModalHeader("Error");
-            setModalMessage(response.data.duplicateLink);
+            setModalMessage(linkResponse.duplicateLink);
           } else {
-            let userLinks = response.data;
+            let userLinks = linkResponse.userLinks;
 
             console.log(userLinks);
             setUserLinks(userLinks);
@@ -574,7 +574,7 @@ export default function AddLinksScreen() {
     } else {
       await axios
         .post(
-          `${BASE_URL}api/addUserLink`,
+          `${BASE_URL}api/add-link`,
           {
             userUUID: userUUID,
             userLinkID: linkID,
@@ -586,13 +586,14 @@ export default function AddLinksScreen() {
           }
         )
         .then((response) => {
-          if (response.data.duplicateLink) {
+          let linkResponse = response.data.data;
+          if (linkResponse.duplicateLink) {
             setAddLinkLoading(false);
             setAddLinksModalVisible(true);
             setModalHeader("Error");
-            setModalMessage(response.data.duplicateLink);
-          } else {
-            let userLinks = response.data;
+            setModalMessage(linkResponse.duplicateLink);
+          } else if (linkResponse.userLinks) {
+            let userLinks = linkResponse.userLinks;
 
             console.log(userLinks);
             setUserLinks(userLinks);
@@ -602,7 +603,6 @@ export default function AddLinksScreen() {
             // getUserLinks(userUUID, userToken);
             // setAddLinkLoading(false);1
             setAddLinkLoading(false);
-            console.log(response.data);
           }
         })
         .catch((error) => {

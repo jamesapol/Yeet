@@ -181,7 +181,6 @@ export const AuthProvider = ({ children }) => {
   const [manageAccountLoading, setManageAccountLoading] = useState(false);
 
   //REGISTRATION STEP 1
-  
 
   const checkConfirmationCode = async (code, email) => {
     setIsLoading(true);
@@ -842,7 +841,7 @@ export const AuthProvider = ({ children }) => {
           setUserName(userInfo.user.usr_name);
           setUserBio(userInfo.user.usr_bio);
           setUserProfilePhoto(userInfo.user.usr_profile_photo_storage);
-          setUserCoverPhoto(userInfo.user.usr_cover_photo_storage)
+          setUserCoverPhoto(userInfo.user.usr_cover_photo_storage);
 
           if (userInfo.user.nfc_device) {
             SecureStore.setItemAsync(
@@ -857,15 +856,21 @@ export const AuthProvider = ({ children }) => {
             );
           }
           SecureStore.setItemAsync("userName", userInfo.user.usr_name);
-          SecureStore.setItemAsync("userBio", userInfo.user.usr_bio);
-          SecureStore.setItemAsync(
-            "userCoverPhoto",
-            userInfo.user.usr_cover_photo_storage
-          );
-          SecureStore.setItemAsync(
-            "userProfilePhoto",
-            userInfo.user.usr_profile_photo_storage
-          );
+          if (userInfo.user.usr_bio) {
+            SecureStore.setItemAsync("userBio", userInfo.user.usr_bio);
+          }
+          if (userInfo.user.usr_cover_photo_storage) {
+            SecureStore.setItemAsync(
+              "userCoverPhoto",
+              userInfo.user.usr_cover_photo_storage
+            );
+          }
+          if (userInfo.user.usr_profile_photo_storage) {
+            SecureStore.setItemAsync(
+              "userProfilePhoto",
+              userInfo.user.usr_profile_photo_storage
+            );
+          }
           SecureStore.setItemAsync("userUUID", userInfo.user.usr_uuid);
           SecureStore.setItemAsync("userToken", userInfo.token);
         }
@@ -2674,10 +2679,10 @@ export const AuthProvider = ({ children }) => {
   const clearAll = () => {
     SecureStore.deleteItemAsync("userUUID");
     SecureStore.deleteItemAsync("userToken");
-    SecureStore.deleteItemAsync("userName"); 
-    SecureStore.deleteItemAsync("userBio");  
-    SecureStore.deleteItemAsync("userProfilePhoto");  
-    SecureStore.deleteItemAsync("userCoverPhoto"); 
+    SecureStore.deleteItemAsync("userName");
+    SecureStore.deleteItemAsync("userBio");
+    SecureStore.deleteItemAsync("userProfilePhoto");
+    SecureStore.deleteItemAsync("userCoverPhoto");
     SecureStore.deleteItemAsync("userActiveYeetDevice");
 
     setUserInfo({});

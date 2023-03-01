@@ -94,7 +94,7 @@ export default function HomeScreen({ route }) {
                           cache: "reload",
                         }
                       : {
-                          uri: `${BASE_URL}images/profile/photos/default.png`,
+                          uri: `${BASE_URL}images/profile/photos/default-profile.png`,
                         }
                   }
                 />

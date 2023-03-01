@@ -7,6 +7,9 @@ import { useNavigation } from "@react-navigation/native";
 import { useContext } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
+import { BASE_URL } from "../../../config";
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("screen");
 
@@ -15,7 +18,15 @@ function getCode(code) {
 }
 
 export default function AddConnectionQRScreen() {
-  const { showProfileFromQR } = useContext(AuthContext);
+  const {
+    setUserBlockStatus,
+    setUserNotFound,
+    setUserConnectionData,
+    setUserConnectionLinks,
+    setUserConnectionStatus,
+    setIsLoading
+    // showProfileFromQR,
+  } = useContext(AuthContext);
 
   const navigation = useNavigation();
   const onBackPressed = () => {
@@ -32,7 +43,7 @@ export default function AddConnectionQRScreen() {
     };
 
     getBarCodeScannerPermissions();
-  }, []);
+  });
 
   const handleBarCodeScanned = ({ type, data }) => {
     if (type == "256") {
@@ -73,6 +84,43 @@ export default function AddConnectionQRScreen() {
       </Text>
     );
   }
+
+  const showProfileFromQR = async (code) => {
+    setIsLoading(true);
+
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    console.log(userUUID);
+
+    await axios
+      .get(`${BASE_URL}api/showProfileFromQR/${code}/${userUUID}`, {})
+      .then((response) => {
+        console.log(response.data);
+        if (response.data.userNotFound) {
+          setUserNotFound(true);
+        } else {
+          let blockStatus = response.data.blockStatus;
+          setUserBlockStatus(blockStatus);
+
+          let userConnectionData = response.data.userProfileData;
+          setUserConnectionData(userConnectionData);
+
+          let userConnectionLinks = response.data.userProfileLinks;
+          setUserConnectionLinks(userConnectionLinks);
+
+          let userConnectionStatus = response.data.connectionStatus;
+          setUserConnectionStatus(userConnectionStatus);
+          // console.log(userConnectionLinks);
+          // console.log(response.data);
+        }
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.log("ERROR: " + error);
+        setIsLoading(false);
+      });
+  };
   return (
     <View style={styles.root}>
       <View resizeMode="stretch" style={styles.mainContainer}>
@@ -91,19 +139,19 @@ export default function AddConnectionQRScreen() {
           <View
             style={[
               {
-                // backgroundColor: "#fff0",
-                // width: width * 0.5,
-                // height: width * 0.5,
-                // marginBottom: height * 0.3,
-                // borderRadius: 50,
-                // borderWidth: 5,
-                // borderColor: "#fff",
-                // justifyContent: "center",
-                // alignItems: "center",
+                backgroundColor: "#fff0",
+                width: width * 0.5,
+                height: width * 0.5,
+                marginBottom: height * 0.3,
+                borderRadius: 50,
+                borderWidth: 5,
+                borderColor: "#fff",
+                justifyContent: "center",
+                alignItems: "center",
               },
             ]}
           >
-            {/* <View
+            <View
                 style={{
                   backgroundColor: "#0f0",
                   height: height * 0.15,
@@ -138,7 +186,7 @@ export default function AddConnectionQRScreen() {
                   position: "absolute",
                   bottom: -5,
                 }}
-              /> */}
+              />
           </View>
         </View>
       </View>

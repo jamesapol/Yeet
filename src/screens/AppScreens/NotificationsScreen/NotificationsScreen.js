@@ -90,7 +90,7 @@ const NotificationsButton = ({
               ? {
                   uri: `${BASE_URL}images/mobile/photos/${notificationUserImage}`,
                 }
-              : { uri: `${BASE_URL}images/profile/photos/default.png` }
+              : { uri: `${BASE_URL}images/profile/photos/default-profile.png` }
           }
           style={{
             borderWidth: 0.1,

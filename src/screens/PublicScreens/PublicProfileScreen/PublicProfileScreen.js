@@ -61,38 +61,21 @@ function getLastName(name) {
 
 export default function PublicProfileScreen({ route }) {
   const {
-    userInfo,
     showPublicProfile,
-    showPublicProfileDirectLink,
-    userToken,
-    refreshing,
-    setRefreshing,
     publicProfileLoading,
-    getUserData,
-    userLinks,
-    getUserLinks,
-    userConnectionData,
-    userConnectionLinks,
-    showModal,
-    showSuccessModal,
     setShowModal,
     modalHeader,
     modalMessage,
     userBlockStatus,
-    setUserBlockStatus,
     userPrivateStatus,
-    setUserPrivateStatus,
     setModalHeader,
     setModalMessage,
 
     addConnection,
     publicProfileInfo,
     publicProfileLinks,
-    publicProfileDirectLink,
     publicConnectionStatus,
     publicLoading,
-    downloadVCF,
-    setSplashLoading,
     setPublicProfileLoading,
     addLinkTap,
     addProfileTap,
@@ -320,7 +303,7 @@ export default function PublicProfileScreen({ route }) {
                                     uri: `${BASE_URL}images/mobile/photos/${publicProfileInfo.usr_profile_photo_storage}`,
                                   }
                                 : {
-                                    uri: `${BASE_URL}images/profile/photos/default.png`,
+                                    uri: `${BASE_URL}images/profile/photos/default-profile.png`,
                                   }
                               : null
                           }

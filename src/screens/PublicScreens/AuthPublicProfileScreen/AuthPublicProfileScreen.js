@@ -292,7 +292,7 @@ export default function PublicProfileScreen({ route }) {
                                     uri: `${BASE_URL}images/mobile/photos/${publicProfileInfo.usr_profile_photo_storage}`,
                                   }
                                 : {
-                                    uri: `${BASE_URL}images/profile/photos/default.png`,
+                                    uri: `${BASE_URL}images/profile/photos/default-profile.png`,
                                   }
                               : null
                           }

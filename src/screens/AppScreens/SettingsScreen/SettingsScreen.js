@@ -25,9 +25,12 @@ import activateDeviceIcon from "../../../../assets/UXMaterials/icons/flatIcons/p
 import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen";
 
 import * as Linking from "expo-linking";
+import * as SQLite from "expo-sqlite";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
+
+
 
 export default function SettingsScreen() {
   const {
@@ -65,10 +68,6 @@ export default function SettingsScreen() {
   const onVisitYeetWebsitePressed = () => {
     // Linking.openURL(`https:/www.facebook.com/apol.james.79`);
     Linking.openURL("https://www.yeet.store/");
-  };
-
-  const test = () => {
-    showPublicProfile("JAMES");
   };
 
   return (

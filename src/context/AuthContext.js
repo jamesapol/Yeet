@@ -7,10 +7,14 @@ import { BASE_URL } from "../config";
 import * as Device from "expo-device";
 import { useState } from "react";
 import { useEffect } from "react";
+import * as SQLite from "expo-sqlite";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+  //TEMPORARY LINKS
+  const [tempLinks, setTempLinks] = useState([]);
+
   //LOGGED IN USER ALL DATA
   const [validToken, setValidToken] = useState(false);
 
@@ -107,7 +111,7 @@ export const AuthProvider = ({ children }) => {
   const [userNotFound, setUserNotFound] = useState(false);
   const [publicLoading, setPublicLoading] = useState(false);
 
-  //INSIGHTS
+  //INSIGHT
   const [userProfileTaps, setUserProfileTaps] = useState();
   const [userLinksInsights, setUserLinksInsights] = useState({});
   const [totalUserLinkTaps, setTotalUserLinkTaps] = useState();
@@ -278,7 +282,9 @@ export const AuthProvider = ({ children }) => {
     }
 
     formData.append("userName", userName);
-    formData.append("userBio", userBio);
+    if (userBio) {
+      formData.append("userBio", userBio);
+    }
     formData.append("userUUID", userUUID);
     await axios({
       method: "POST",
@@ -306,11 +312,11 @@ export const AuthProvider = ({ children }) => {
           setTempCoverPhoto(null);
           setUserInfo(userInfo);
           console.log(userInfo.usr_name);
-          
+
           setUserName(userInfo.usr_name);
           setUserCoverPhoto(userInfo.usr_cover_photo_storage);
           setUserProfilePhoto(userInfo.usr_profile_photo_storage);
-          
+
           SecureStore.setItemAsync("userName", userInfo.usr_name);
           if (userInfo.usr_bio) {
             setUserBio(userInfo.usr_bio);
@@ -752,6 +758,9 @@ export const AuthProvider = ({ children }) => {
           setUserProfilePhoto(userInfo.user.usr_profile_photo_storage);
           setUserCoverPhoto(userInfo.user.usr_cover_photo_storage);
 
+          SecureStore.setItemAsync("userName", userInfo.user.usr_name);
+          SecureStore.setItemAsync("userUUID", userInfo.user.usr_uuid);
+          SecureStore.setItemAsync("userToken", userInfo.token);
           if (userInfo.user.nfc_device) {
             SecureStore.setItemAsync(
               "userActiveYeetDevice",
@@ -764,32 +773,40 @@ export const AuthProvider = ({ children }) => {
               JSON.stringify(userInfo.nfcDevices)
             );
           }
-          SecureStore.setItemAsync("userName", userInfo.user.usr_name);
-          SecureStore.setItemAsync("userBio", userInfo.user.usr_bio);
-          SecureStore.setItemAsync(
-            "userCoverPhoto",
-            userInfo.user.usr_cover_photo_storage
-          );
-          SecureStore.setItemAsync(
-            "userProfilePhoto",
-            userInfo.user.usr_profile_photo_storage
-          );
-          SecureStore.setItemAsync("userUUID", userInfo.user.usr_uuid);
-          SecureStore.setItemAsync("userToken", userInfo.token);
+          if(userInfo.user.usr_bio){
+            SecureStore.setItemAsync("userBio", userInfo.user.usr_bio);
+          }
+          if(userInfo.user.usr_cover_photo_storage){
+            SecureStore.setItemAsync(
+              "userCoverPhoto",
+              userInfo.user.usr_cover_photo_storage
+            );
+          }
+          if(userInfo.user.usr_profile_photo_storage){
+            SecureStore.setItemAsync(
+              "userProfilePhoto",
+              userInfo.user.usr_profile_photo_storage
+            );
+          }
         }
         setUserInfoLoading(false);
       })
       .catch((error) => {
         setUserInfoLoading(false);
-        console.warn(error);
-        console.log(error.response.data.status);
-        console.log(error.response);
+        setLoginModalVisible(true);
+        setModalHeader("Error");
+        setModalMessage(
+          "There seems to be a problem with your connection. Please try logging in again."
+        );
+        // console.log(error.response.data.status);
+        console.log(error.response.data);
+        // console.log(error.response);
       });
   };
 
-  const logout = () => {
+  const logout = async () => {
     setIsLoading(true);
-    axios
+    await axios
       .post(
         `${BASE_URL}api/logout`,
         {},
@@ -798,7 +815,7 @@ export const AuthProvider = ({ children }) => {
         }
       )
       .then((res) => {
-        console.log(res.data);
+        console.log(res.data.data);
         clearAll();
 
         setIsLoading(false);
@@ -867,9 +884,7 @@ export const AuthProvider = ({ children }) => {
         setUserConnectionsLoading(false);
         setShowModal(false);
         console.log("No userUUID and userToken");
-      }
-      // CHECK TOKEN FIRST IF VALID OR NOT
-      else if (userUUID && userToken) {
+      } else if (userUUID && userToken) {
         if (userName) {
           setUserToken(userToken);
           setSplashLoading(false);
@@ -908,24 +923,19 @@ export const AuthProvider = ({ children }) => {
               console.log(response.data.userData);
 
               setUserInfo(userInfo.user);
-              setUserActiveYeetDevice(userInfo.activeNFCDevice);
-              setUserNFCDevices(userInfo.nfcDevice);
+              setUserActiveYeetDevice(userInfo.user.nfc_device);
+              setUserNFCDevices(userInfo.nfcDevices);
               setUserToken(userInfo.token);
               setUserDirectLink(userInfo.user.usr_direct_link_active);
               setUserDirectLinkID(userInfo.user.uln_id);
               setUserLinks(userInfo.userLinks);
               setUserTheme(userInfo.userTheme);
-
-              console.log("Logged In as: " + userInfo.user.usr_email);
-              console.log("NFC Active: " + userInfo.user.nfc_device);
-              console.log("Bio: " + userInfo.user.usr_bio);
-
               setUserName(userInfo.user.usr_name);
               setUserCoverPhoto(userInfo.user.usr_cover_photo_storage);
               setUserProfilePhoto(userInfo.user.usr_profile_photo_storage);
-              
+
               SecureStore.setItemAsync("userName", userInfo.user.usr_name);
-              
+
               if (userInfo.user.usr_bio) {
                 setUserBio(userInfo.user.usr_bio);
                 SecureStore.setItemAsync("userBio", userInfo.user.usr_bio);
@@ -951,6 +961,8 @@ export const AuthProvider = ({ children }) => {
                   userInfo.activeNFCDevice
                 );
               }
+              console.log("Logged In as: " + userInfo.user.usr_email);
+              console.log("User Links: " + userInfo.userLinks.length);
             }
             setSplashLoading(false);
             setUserInfoLoading(false);
@@ -1000,31 +1012,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const removeLinkFromUser = async (userLinkID) => {
+  const removeLink = async (userLinkID) => {
     // setUserLinksLoading(true);
 
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
 
     await axios
-      .post(
-        `${BASE_URL}api/removeLinkFromUser`,
-        {
-          userUUID: userUUID,
-          userLinkID: userLinkID,
-        },
+      .patch(
+        `${BASE_URL}api/remove-link/${userLinkID}`,
+        {},
         {
           headers: { Authorization: `Bearer ${userToken}` },
         }
       )
       .then((response) => {
-        console.log(response.data);
+        console.log(response.data.data);
 
         // getUserLinks(userUUID, userToken);
         // setIsLoading(false);
       })
       .catch((error) => {
-        console(error.response);
+        console.log(error.response);
         setUserLinksLoading(false);
       });
   };
@@ -1035,18 +1044,13 @@ export const AuthProvider = ({ children }) => {
     youtubeURL,
     youtubeThumbnailURI
   ) => {
-    // setAddLinkLoading(true);
-    // setIsLoading(true);
-
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
-
     await axios
-      .post(
-        `${BASE_URL}api/editYouTubeLink`,
+      .patch(
+        `${BASE_URL}api/edit-youtube-link/${userLinkIndex}`,
         {
           userUUID: userUUID,
-          userLinkIndex: userLinkIndex,
           youtubeLinkName: youtubeLinkName,
           youtubeURL: youtubeURL,
           youtubeThumbnailURI: youtubeThumbnailURI,
@@ -1056,24 +1060,12 @@ export const AuthProvider = ({ children }) => {
         }
       )
       .then((response) => {
-        if (response.data.duplicateLink) {
-          setAddLinkLoading(false);
-          setAddLinksModalVisible(true);
-          setModalHeader("Error");
-          setModalMessage(response.data.duplicateLink);
-        } else {
-          let userLinks = response.data;
-
-          console.log(userLinks);
-          setUserLinks(userLinks);
-          setEditLinkMessageModalVisible(true);
-          setModalHeader("Success");
-          setModalMessage("Link saved successfully!");
-          // getUserLinks(userUUID, userToken);
-          // setIsLoading(false);1
-          // setAddLinkLoading(false);
-          console.log(response.data);
-        }
+        let userLinks = response.data.data.userLinks;
+        console.log(userLinks);
+        setUserLinks(userLinks);
+        setEditLinkMessageModalVisible(true);
+        setModalHeader("Success");
+        setModalMessage("Youtube link successfully udpated.");
       })
       .catch((error) => {
         console.log(error.response);
@@ -1088,83 +1080,52 @@ export const AuthProvider = ({ children }) => {
     fileTitle,
     linkIndex
   ) => {
-    // setUserLinksLoading(true);
-
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
 
-    if (!fileURI) {
-      await axios
-        .post(
-          `${BASE_URL}api/editFile`,
-          {
-            userUUID: userUUID,
-            fileTitle: fileTitle,
-            linkIndex: linkIndex,
-          },
-          {
-            headers: { Authorization: `Bearer ${userToken}` },
-          }
-        )
-        .then((response) => {
-          console.log(response.data);
-          let userLinks = response.data;
-          setUserLinks(userLinks);
-          setShowSuccessModal(true);
-          setModalMessage("File successfully renamed.");
-          // setUserLinksLoading(false);
-        })
-        .catch((error) => {
-          console.log(error.response.data);
-          // setUserLinksLoading(false);
-        });
-    } else {
-      let formData = new FormData();
-      formData.append("file", {
-        uri: fileURI,
-        name: fileName,
-        type: fileType,
-      });
-      formData.append("originalFileName", fileName);
-      formData.append("fileTitle", fileTitle);
-      formData.append("userUUID", userUUID);
-      formData.append("linkIndex", linkIndex);
+    let formData = new FormData();
+    formData.append("file", {
+      uri: fileURI,
+      name: fileName,
+      type: fileType,
+    });
+    formData.append("originalFileName", fileName);
+    formData.append("fileTitle", fileTitle ? fileTitle : "PDF File");
+    formData.append("userUUID", userUUID);
+    formData.append("linkIndex", linkIndex);
 
-      await axios({
-        method: "POST",
-        url: `${BASE_URL}api/editFile`,
-        data: formData,
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${userToken}`,
-          "Content-Type": "multipart/form-data",
-        },
+    await axios({
+      method: "POST",
+      url: `${BASE_URL}api/edit-pdf-file`,
+      data: formData,
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${userToken}`,
+        "Content-Type": "multipart/form-data",
+      },
+    })
+      .then((response) => {
+        let userLinks = response.data.data.userLinks;
+        setUserLinks(userLinks);
+        setEditLinkMessageModalVisible(true);
+        setModalHeader("Success");
+        setModalMessage("File successfully updated.");
+        setAddLinkLoading(false);
       })
-        .then((response) => {
-          console.log(response.data);
-          let userLinks = response.data;
-          setUserLinks(userLinks);
-          setShowSuccessModal(true);
-          setModalMessage("File successfully uploaded.");
-          // setUserLinksLoading(false);
-        })
-        .catch((error) => {
-          console.log(error);
-          // setUserLinksLoading(false);
-        });
-    }
+      .catch((error) => {
+        console.log(error);
+        setAddLinkLoading(false);
+      });
   };
 
   const editLink = async (userLinkIndex, userLinkURL) => {
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
-
     await axios
       .patch(
-        `${BASE_URL}api/editUserLink/${userUUID}`,
+        `${BASE_URL}api/edit-link/${userLinkIndex}`,
         {
           userUUID: userUUID,
-          userLinkIndex: userLinkIndex,
           userLinkURL: userLinkURL,
         },
         {
@@ -1172,25 +1133,18 @@ export const AuthProvider = ({ children }) => {
         }
       )
       .then((response) => {
-        if (response.data.duplicateLink) {
+        let linkResponse = response.data.data;
+        if (linkResponse.duplicateLink) {
           setEditLinkMessageModalVisible(true);
           setModalHeader("Error");
-          setModalMessage(response.data.duplicateLink);
+          setModalMessage(linkResponse.duplicateLink);
         } else {
-          let userLinks = response.data.userLinks;
+          let userLinks = linkResponse.userLinks;
           setUserLinks(userLinks);
           setEditLinkMessageModalVisible(true);
           setModalHeader("Success");
-          setModalMessage("Link successfully updated");
+          setModalMessage("Link successfully updated.");
         }
-        // console.log(response.data);
-        // let userLinks = response.data.userLinks;
-        // setUserLinks(userLinks);
-        // if (userLinksLoading == false) {
-        //   setShowModal(true);
-        //   setSuccessMessage("Link successfully updated.");
-        // }
-        // setIsLoading(false);
       })
       .catch((error) => {
         console.log(error.response);
@@ -1204,10 +1158,9 @@ export const AuthProvider = ({ children }) => {
     // console.log(userLinkIndex)
     await axios
       .patch(
-        `${BASE_URL}api/editCustomLink/${userUUID}`,
+        `${BASE_URL}api/edit-custom-link/${userLinkIndex}`,
         {
           userUUID: userUUID,
-          userLinkIndex: userLinkIndex,
           userLinkName: userLinkName,
           userLinkURL: userLinkURL,
         },
@@ -1217,16 +1170,17 @@ export const AuthProvider = ({ children }) => {
       )
       .then((response) => {
         console.log(response.data);
-        if (response.data.duplicateLink) {
+        let linkResponse = response.data.data;
+        if (linkResponse.duplicateLink) {
           setEditLinkMessageModalVisible(true);
           setModalHeader("Error");
-          setModalMessage(response.data.duplicateLink);
+          setModalMessage(linkResponse.duplicateLink);
         } else {
-          let userLinks = response.data.userLinks;
+          let userLinks = linkResponse.userLinks;
           setUserLinks(userLinks);
           setEditLinkMessageModalVisible(true);
           setModalHeader("Success");
-          setModalMessage("Link successfully updated");
+          setModalMessage("Link successfully updated.");
         }
       })
       .catch((error) => {
@@ -1234,6 +1188,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //DISCONTINUED
   const editPaymentPhoto = async (
     userLinkID,
     userLinkIndex,
@@ -1257,7 +1212,7 @@ export const AuthProvider = ({ children }) => {
     formData.append("userUUID", userUUID);
     await axios({
       method: "POST",
-      url: `${BASE_URL}api/editPaymentPhoto`,
+      url: `${BASE_URL}api/edit-payment-photo`,
       data: formData,
       headers: {
         Accept: "application/json",
@@ -1280,17 +1235,14 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
-  const setDirectLink = async (linkID) => {
-    // setUserInfoLoading(true);
-
+  const setDirectLink = async (linkIndex) => {
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
-
     await axios
       .patch(
-        `${BASE_URL}api/setDirectLink/${userUUID}`,
+        `${BASE_URL}api/set-direct-link/${userUUID}`,
         {
-          linkID: linkID,
+          linkIndex: linkIndex,
         },
         {
           headers: { Authorization: `Bearer ${userToken}` },
@@ -1299,7 +1251,7 @@ export const AuthProvider = ({ children }) => {
       .then((response) => {
         console.log(response.data);
         setUserDirectLink(1);
-        setUserDirectLinkID(linkID);
+        setUserDirectLinkID(linkIndex);
       })
       .catch((error) => {
         console.log(error.response);
@@ -1312,7 +1264,7 @@ export const AuthProvider = ({ children }) => {
     let userToken = await SecureStore.getItemAsync("userToken");
     await axios
       .patch(
-        `${BASE_URL}api/removeDirectLink/${userUUID}`,
+        `${BASE_URL}api/remove-direct-link/${userUUID}`,
         {},
         {
           headers: { Authorization: `Bearer ${userToken}` },
@@ -1323,274 +1275,6 @@ export const AuthProvider = ({ children }) => {
       })
       .catch((error) => {
         console.log(error.response);
-      });
-  };
-
-  const getUserConnections = async () => {
-    setUserConnectionsLoading(true);
-
-    let userUUID = await SecureStore.getItemAsync("userUUID");
-    let userToken = await SecureStore.getItemAsync("userToken");
-
-    await axios
-      .get(`${BASE_URL}api/getConnections/${userUUID}`, {
-        headers: { Authorization: `Bearer ${userToken}` },
-      })
-      .then((response) => {
-        setUserNotFound(false);
-        let userConnections = response.data.connections;
-        setUserConnections(userConnections);
-        console.log(userConnections);
-        setUserConnectionsLoading(false);
-      })
-      .catch((error) => {
-        console.log(error.response);
-        setUserConnectionsLoading(false);
-      });
-  };
-
-  const searchUserConnections = async (searchKey) => {
-    setUserConnectionsLoading(true);
-
-    let userUUID = await SecureStore.getItemAsync("userUUID");
-    let userToken = await SecureStore.getItemAsync("userToken");
-
-    await axios
-      .get(`${BASE_URL}api/searchConnections/${userUUID}/${searchKey}`, {
-        headers: { Authorization: `Bearer ${userToken}` },
-      })
-      .then((response) => {
-        let userConnections = response.data.connections;
-        setUserConnections(userConnections);
-        console.log(userConnections);
-        setUserConnectionsLoading(false);
-      })
-      .catch((error) => {
-        console.log(error.response);
-        setUserConnectionsLoading(false);
-      });
-  };
-
-  const showUserConnection = async (connectionUUID) => {
-    setIsLoading(true);
-
-    let userUUID = await SecureStore.getItemAsync("userUUID");
-    let userToken = await SecureStore.getItemAsync("userToken");
-
-    await axios
-      .get(`${BASE_URL}api/showConnection/${connectionUUID}/${userUUID}`, {
-        headers: { Authorization: `Bearer ${userToken}` },
-      })
-      .then((response) => {
-        // let directLinkURL = response.data.directLinkURL;
-        // console.log(directLinkURL)
-        let blockStatus = response.data.blockStatus;
-        setUserBlockStatus(blockStatus);
-
-        let userConnectionData = response.data.connectionData;
-        setUserConnectionData(userConnectionData);
-
-        let userConnectionLinks = response.data.connectionLinks;
-        setUserConnectionLinks(userConnectionLinks);
-
-        let userConnectionStatus = response.data.userConnectionStatus;
-        setUserConnectionStatus(userConnectionStatus);
-
-        // if (userConnectionData.usr_direct_link_active == 1) {
-        //   Linking.canOpenURL(directLinkURL).then((supported) => {
-        //     if (supported) {
-        //       Linking.openURL(directLinkURL);
-        //     } else {
-        //       setConnectionsScreenModalVisible(true);
-        //       setModalHeader("Error");
-        //       setModalMessage("This link cannot be opened and may be broken.");
-        //     }
-        //   });
-        // }
-        addProfileView(connectionUUID);
-        // console.log(userConnectionLinks);
-        console.log(response.data);
-
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.log(error);
-        setIsLoading(false);
-      });
-  };
-
-  const showProfileFromQR = async (code) => {
-    setIsLoading(true);
-
-    let userUUID = await SecureStore.getItemAsync("userUUID");
-    let userToken = await SecureStore.getItemAsync("userToken");
-
-    console.log(userUUID);
-
-    await axios
-      .get(`${BASE_URL}api/showProfileFromQR/${code}/${userUUID}`, {})
-      .then((response) => {
-        console.log(response.data);
-        if (response.data.userNotFound) {
-          setUserNotFound(true);
-        } else {
-          let blockStatus = response.data.blockStatus;
-          setUserBlockStatus(blockStatus);
-
-          let userConnectionData = response.data.userProfileData;
-          setUserConnectionData(userConnectionData);
-
-          let userConnectionLinks = response.data.userProfileLinks;
-          setUserConnectionLinks(userConnectionLinks);
-
-          let userConnectionStatus = response.data.connectionStatus;
-          setUserConnectionStatus(userConnectionStatus);
-          // console.log(userConnectionLinks);
-          // console.log(response.data);
-        }
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.log("ERROR: " + error);
-        setIsLoading(false);
-      });
-  };
-
-  const leaveNote = async (note, connectionUUID) => {
-    setIsLoading(true);
-
-    let userUUID = await SecureStore.getItemAsync("userUUID");
-    let userToken = await SecureStore.getItemAsync("userToken");
-
-    await axios
-      .patch(
-        `${BASE_URL}api/leaveNote/${connectionUUID}`,
-        {
-          note: note,
-        },
-        {
-          headers: { Authorization: `Bearer ${userToken}` },
-        }
-      )
-      .then((response) => {
-        if (response.data.success) {
-          let successMessage = response.data.success;
-          console.log(successMessage);
-
-          setConnectionsScreenModalVisible(true);
-          setModalHeader("Success");
-          setModalMessage(successMessage);
-        }
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.log(error.response);
-        setIsLoading(false);
-      });
-  };
-
-  const reportConnection = async (report, connectionUUID) => {
-    setIsLoading(true);
-
-    let userUUID = await SecureStore.getItemAsync("userUUID");
-    let userToken = await SecureStore.getItemAsync("userToken");
-
-    await axios
-      .patch(
-        `${BASE_URL}api/reportConnection/${connectionUUID}`,
-        {
-          report: report,
-        },
-        {
-          headers: { Authorization: `Bearer ${userToken}` },
-        }
-      )
-      .then((response) => {
-        if (response.data.success) {
-          let successMessage = response.data.success;
-          console.log(successMessage);
-
-          setConnectionsScreenModalVisible(true);
-          setModalHeader("Success");
-          setModalMessage(successMessage);
-        }
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.log(error.response);
-        setIsLoading(false);
-      });
-  };
-
-  const deleteConnection = async (connectionUUID) => {
-    setIsLoading(true);
-
-    let userUUID = await SecureStore.getItemAsync("userUUID");
-    let userToken = await SecureStore.getItemAsync("userToken");
-
-    await axios
-      .patch(
-        `${BASE_URL}api/deleteConnection/`,
-        {
-          userUUID: userUUID,
-          connectionUUID: connectionUUID,
-        },
-        {
-          headers: { Authorization: `Bearer ${userToken}` },
-        }
-      )
-      .then((response) => {
-        if (response.data.success) {
-          let successMessage = response.data.success;
-          let userConnections = response.data.userConnections;
-          setUserConnections(userConnections);
-          console.log(successMessage);
-
-          setConnectionsScreenModalVisible(true);
-          setModalHeader("Success");
-          setModalMessage(successMessage);
-        }
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.log(error.response);
-        setIsLoading(false);
-      });
-  };
-
-  const blockConnection = async (connectionConnUUID, connectionUUID) => {
-    setIsLoading(true);
-
-    let userUUID = await SecureStore.getItemAsync("userUUID");
-    let userToken = await SecureStore.getItemAsync("userToken");
-
-    await axios
-      .patch(
-        `${BASE_URL}api/blockConnection/${connectionUUID}`,
-        {
-          userUUID: userUUID,
-          connectionConnUUID: connectionConnUUID,
-        },
-        {
-          headers: { Authorization: `Bearer ${userToken}` },
-        }
-      )
-      .then((response) => {
-        if (response.data.success) {
-          let successMessage = response.data.success;
-          let userConnections = response.data.userConnections;
-          setUserConnections(userConnections);
-          console.log(successMessage);
-
-          setConnectionsScreenModalVisible(true);
-          setModalHeader("Success");
-          setModalMessage(successMessage);
-        }
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.log(error.response);
-        setIsLoading(false);
       });
   };
 
@@ -2213,7 +1897,7 @@ export const AuthProvider = ({ children }) => {
         setAddLinkLoading,
         showAddLinkMessage,
         setShowAddLinkMessage,
-        
+
         //EDIT LINKS
         editLink,
         editCustomLink,
@@ -2222,7 +1906,7 @@ export const AuthProvider = ({ children }) => {
         editYouTubeLink,
 
         //REMOVE LINKS
-        removeLinkFromUser,
+        removeLink,
 
         //SET DIRECT LINK
         setDirectLink,
@@ -2248,21 +1932,16 @@ export const AuthProvider = ({ children }) => {
         updateMobileNumber,
 
         //FOR GETTING USER CONNECTIONS
-        getUserConnections,
         userConnections,
         setUserConnections,
-        searchUserConnections,
-        showUserConnection,
         userConnectionStatus,
         setUserConnectionStatus,
         userConnectionData,
+        setUserConnectionData,
         userConnectionLinks,
+        setUserConnectionLinks,
         userBlockStatus,
         setUserBlockStatus,
-        leaveNote,
-        reportConnection,
-        deleteConnection,
-        blockConnection,
         unblockConnection,
         showBlockedConnections,
         userBlockedConnections,
@@ -2271,17 +1950,14 @@ export const AuthProvider = ({ children }) => {
         connectionsScreenModalVisible,
         setConnectionsScreenModalVisible,
 
-        //GET CONNECTION FROM QR
-        showProfileFromQR,
-
         //FOR LOGOUT
         logout,
-
 
         //FETCHING DATA LOADING STATES
         userInfoLoading,
         userLinksLoading,
         userConnectionsLoading,
+        setUserConnectionsLoading,
 
         //publicProfile
         showPublicProfile,

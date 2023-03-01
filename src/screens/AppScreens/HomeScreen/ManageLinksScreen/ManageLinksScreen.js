@@ -41,7 +41,7 @@ export default function ManageLinksScreen() {
     userInfo,
     userLinks,
     setUserLinks,
-    removeLinkFromUser,
+    removeLink,
 
     userLinksLoading,
     showModal,
@@ -55,7 +55,6 @@ export default function ManageLinksScreen() {
     tempCoverPhoto,
     tempProfilePhoto,
   } = useContext(AuthContext);
-
 
   const [_userLinks, _setUserLinks] = useState(userLinks);
   const [refreshFlatList, setRefreshFlatList] = useState(false);
@@ -77,7 +76,7 @@ export default function ManageLinksScreen() {
   };
 
   const onDeletePressed = () => {
-    removeLinkFromUser(linkID);
+    removeLink(linkID);
     let linkArray = userLinks;
     linkArray.splice(linkIndex, 1);
     setUserLinks(linkArray);
@@ -177,7 +176,7 @@ export default function ManageLinksScreen() {
                             uri: `${BASE_URL}images/mobile/photos/${userProfilePhoto}`,
                           }
                         : {
-                            uri: `${BASE_URL}images/profile/photos/default.png`,
+                            uri: `${BASE_URL}images/profile/photos/default-profile.png`,
                           }
                     }
                   />
@@ -221,14 +220,6 @@ export default function ManageLinksScreen() {
                     // backgroundColor: "red",
                   }}
                 />
-                {/* <Text
-                        style={{
-                          marginVertical: "3%",
-                          fontSize: RFPercentage(2),
-                        }}
-                      >
-                        You have no links yet.
-                      </Text> */}
                 <View
                   style={{
                     justifyContent: "center",
@@ -249,6 +240,27 @@ export default function ManageLinksScreen() {
             ) : null}
           </View>
         )}
+        ListFooterComponent={() => (
+          <View
+            style={{
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
+              // width: "50%",
+            }}
+          >
+            <View style={{ width: "50%", marginTop: '5%' }}>
+              <CustomButton
+                bgColor="transparent"
+                fgColor="#562C73"
+                btnText="Back"
+                borderColor="#562C73"
+                borderWidth="2"
+                onPress={onBackPressed}
+              />
+            </View>
+          </View>
+        )}
         // keyExtractor={(item, index) => index.toString()}
         extraData={refreshFlatList}
         keyExtractor={(item, index) => index.toString()}
@@ -267,57 +279,62 @@ export default function ManageLinksScreen() {
                   ButtonStyles.socialMediaButtons,
                 ]}
               >
-                  <View
+                <View
+                  style={{
+                    paddingHorizontal: width * 0.005,
+                    paddingVertical: height * 0.005,
+                    // backgroundColor: "#33f3",
+                  }}
+                >
+                  <TouchableOpacity
                     style={{
-                      paddingHorizontal: width * 0.005,
-                      paddingVertical: height * 0.005,
-                      // backgroundColor: "#33f3",
+                      // backgroundColor: 'blue',
+                      borderWidth: 0,
+                      position: "absolute",
+                      zIndex: 1,
+                      right: 1,
+                      top: 1,
+                      display:
+                        userDirectLinkID == item.uln_id ? "none" : "flex",
+                    }}
+                    onPress={() => {
+                      setLinkID(item.uln_id);
+                      setLinkIndex(index);
+                      setLinkImage(item.lnk_image);
+                      setLinkName(item.lnk_name);
+                      setShowModal(true);
                     }}
                   >
-                    <TouchableOpacity
+                    <MaterialCommunityIcons
                       style={{
-                        // backgroundColor: 'blue',
-                        borderWidth: 0,
-                        position: "absolute",
-                        zIndex: 1,
-                        right: 1,
-                        top: 1,
-                        display:
-                          userDirectLinkID == item.uln_id ? "none" : "flex",
+                        backgroundColor: Colors.yeetGray,
+                        padding: "5%",
+                        borderRadius: 5000,
                       }}
-                      onPress={() => {
-                        setLinkID(item.uln_id);
-                        setLinkIndex(index);
-                        setLinkImage(item.lnk_image);
-                        setLinkName(item.lnk_name);
-                        setShowModal(true);
-                      }}
-                    >
-                      <MaterialCommunityIcons
-                        style={{
-                          backgroundColor: Colors.yeetGray,
-                          padding: "5%",
-                          borderRadius: 5000,
-                        }}
-                        name="close"
-                        size={width * 0.03}
-                        color="#000"
-                        //   size={RFPercentage(2.3)}
-                      />
-                    </TouchableOpacity>
-
-                    <Image
-                      source={{
-                        uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
-                      }}
-                      style={{
-                        width: width * 0.13,
-                        height: width * 0.13,
-                        //   backgroundColor: "#22F3",
-                      }}
-                      resizeMode="stretch"
+                      name="close"
+                      size={width * 0.03}
+                      color="#000"
+                      //   size={RFPercentage(2.3)}
                     />
-                  </View>
+                  </TouchableOpacity>
+
+                  <Image
+                    source={
+                      item.lnk_id == 30
+                        ? { uri: item.uln_youtube_thumbnail }
+                        : {
+                            uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
+                          }
+                    }
+                    style={{
+                      borderRadius: item.lnk_id == 30 ? 20 : null,
+                      width: width * 0.13,
+                      height: width * 0.13,
+                      //   backgroundColor: "#22F3",
+                    }}
+                    resizeMode="stretch"
+                  />
+                </View>
                 {/* <Text>{item.uln_id}</Text>
                   <Text>{index}</Text> */}
                 <Text
@@ -325,7 +342,9 @@ export default function ManageLinksScreen() {
                     fontSize: RFPercentage(1.3),
                   }}
                 >
-                  {item.lnk_id == 31
+                  {item.lnk_id == 30
+                    ? item.uln_custom_link_name
+                    : item.lnk_id == 31
                     ? item.uln_file_title
                     : item.lnk_id == 32
                     ? item.uln_custom_link_name

@@ -196,7 +196,7 @@ const AppScreens = () => {
         headerShown: false,
         tabBarActiveTintColor: "#562C73",
         tabBarInactiveTintColor: "#aaa",
-        tabBarStyle: { height: height * 0.07, backgroundColor: "#FFF" },
+        tabBarStyle: { height: height * 0.06, backgroundColor: "#FFF" },
         tabBarLabelStyle: {
           fontSize: 10,
           color: "#D81D4C",
@@ -258,14 +258,14 @@ const AppScreens = () => {
             );
           },
         }}
-        listeners={{
-          tabPress: (e) => {
-            setUserBlockStatus(0);
-            if (Object.keys(userConnections).length == 0) {
-              getUserConnections();
-            }
-          },
-        }}
+        // listeners={{
+        //   tabPress: (e) => {
+        //     setUserBlockStatus(0);
+        //     if (Object.keys(userConnections).length == 0) {
+        //       getUserConnections();
+        //     }
+        //   },
+        // }}
       />
 
       <Tab.Screen
@@ -280,7 +280,8 @@ const AppScreens = () => {
                 style={{
                   height: RFPercentage(12),
                   width: RFPercentage(12),
-                  marginBottom: height * 0.03,
+                  bottom: '50%',
+                  // marginBottom: height * 0.03,
                 }}
               />
             ) : (
@@ -289,7 +290,8 @@ const AppScreens = () => {
                 style={{
                   height: RFPercentage(10),
                   width: RFPercentage(10),
-                  marginBottom: height * 0.03,
+                  bottom: '70%',
+                  // marginBottom: height * 0.03,
                 }}
               />
             );
