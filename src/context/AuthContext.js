@@ -303,7 +303,7 @@ export const AuthProvider = ({ children }) => {
     })
       .then((response) => {
         let dataResponse = response.data.data;
-        console.log(response.data);
+        // console.log(response.data);
         if (dataResponse.profilePhotoError) {
           setUpdateErrorModalVisible(true);
           setModalHeader("Profile Photo Upload Error");
@@ -314,6 +314,7 @@ export const AuthProvider = ({ children }) => {
           setModalMessage(dataResponse.coverPhotoError);
         } else {
           let userInfo = dataResponse.user;
+          console.log(userInfo)
           setTempProfilePhoto(null);
           setTempCoverPhoto(null);
           setUserInfo(userInfo);
@@ -907,8 +908,10 @@ export const AuthProvider = ({ children }) => {
         setNfcDeviceLoading(false);
         setUserConnectionsLoading(false);
         setShowModal(false);
+        console.log("yayw")
         console.log("No userUUID and userToken");
       } else if (userUUID && userToken) {
+          console.log("tangina naa man")
         if (userName) {
           setUserToken(userToken);
           setSplashLoading(false);
@@ -925,6 +928,9 @@ export const AuthProvider = ({ children }) => {
             headers: { Authorization: `Bearer ${userToken}` },
           })
           .then((response) => {
+            console.log("NAAY RESPONSE")
+            console.log(response.data)
+            let responseData = response.data;
             if (response.status === 401) {
               setWelcomeModalVisible(true);
               setModalHeader("Login Error");
@@ -934,17 +940,18 @@ export const AuthProvider = ({ children }) => {
               clearAll();
               console.log(response);
             }
-            if (response.data.userNotFound) {
-              console.log(response.data.userNotFound);
+            if (responseData.userNotFound) {
+              console.log(responseData.userNotFound);
               setWelcomeModalVisible(true);
               setModalHeader("Login Timeout");
               setModalMessage(
                 "Oops! It seems your current login has expired. Please sign in again to continue."
               );
               clearAll();
-            } else if (response.data.data) {
-              console.log(response.data);
-              let userInfo = response.data.data;
+            } else {
+              console.log("NAAY DATA")
+              // console.log(response.data.userData)
+              let userInfo = responseData.userData;
 
               setUserInfo(userInfo.user);
               setUserActiveYeetDevice(userInfo.user.nfc_device);
@@ -958,8 +965,8 @@ export const AuthProvider = ({ children }) => {
               setUserCoverPhoto(userInfo.user.usr_cover_photo_storage);
               setUserProfilePhoto(userInfo.user.usr_profile_photo_storage);
               setUserNotificationCount(userInfo.notificationCount);
-
-              SecureStore.setItemAsync("userName", userInfo.user.usr_name);
+console.log("NASET TANAN")
+                SecureStore.setItemAsync("userName", userInfo.user.usr_name);
 
               if (userInfo.user.usr_bio) {
                 setUserBio(userInfo.user.usr_bio);
@@ -988,7 +995,9 @@ export const AuthProvider = ({ children }) => {
               }
               console.log("Logged In as: " + userInfo.user.usr_email);
               console.log("User Links: " + userInfo.userLinks.length);
+
             }
+            console.log("NAHUMAN UG BASA ANG RESPONSE")
             setSplashLoading(false);
             setUserInfoLoading(false);
             // setPublicLoading(false);
