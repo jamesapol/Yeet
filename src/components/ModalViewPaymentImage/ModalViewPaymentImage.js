@@ -66,17 +66,9 @@ export default function ModalViewPaymentImage({
                   color={Colors.yeetPurple}
                 />
               </View> */}
-              {image ? (
-                image && (
-                  <Image
-                    source={{ uri: image }}
-                    resizeMode="contain"
-                    style={styles.modalImage}
-                  />
-                )
-              ) : (
+              {image && (
                 <Image
-                  source={{ uri: defaultImage }}
+                  source={{ uri: image }}
                   resizeMode="contain"
                   style={styles.modalImage}
                 />
@@ -129,7 +121,6 @@ export default function ModalViewPaymentImage({
                 {cancelText}
               </Text>
             </TouchableOpacity>
-            
           </View>
         </View>
       </View>
@@ -239,7 +230,7 @@ const styles = StyleSheet.create({
     // borderTopWidth: 1,
     // borderTopColor: "#948E8E",
     height: "100%",
-    width:'100%',
+    width: "100%",
     borderRightColor: "#948E8E",
     borderRightWidth: 0.5,
     justifyContent: "center",

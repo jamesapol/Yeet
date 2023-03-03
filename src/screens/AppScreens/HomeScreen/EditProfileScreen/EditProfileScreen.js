@@ -84,6 +84,9 @@ export default function HomeScreen() {
   const [previewBio, setPreviewBio] = useState();
   const [previewName, setPreviewName] = useState();
 
+  const [_userBio, _setUserBio] = useState(userBio);
+  const [_userName, _setUserName] = useState(userName);
+
   // const [userName, setUserName] = useState(userInfo.usr_name);
   // const [userBio, setUserBio] = useState(userInfo.usr_bio);
 
@@ -293,7 +296,7 @@ export default function HomeScreen() {
     // if(bio === null){
     //   bio == null;
     // }
-    let filteredUserName = removeWhiteSpace(userName);
+    let filteredUserName = removeWhiteSpace(_userName);
     // console.log(filteredUserName)
     updateProfile(
       profilePhotoURI,
@@ -303,7 +306,7 @@ export default function HomeScreen() {
       coverPhotoName,
       coverPhotoType,
       filteredUserName,
-      userBio
+      _userBio
     );
     if (coverPhoto) {
       setTempCoverPhoto(coverPhoto);
@@ -312,7 +315,7 @@ export default function HomeScreen() {
       setTempProfilePhoto(profilePhoto);
     }
     setTempUserName(filteredUserName);
-    setTempUserBio(userBio);
+    setTempUserBio(_userBio);
     setUpdateSuccessModalVisible(true);
   };
 
@@ -555,15 +558,16 @@ export default function HomeScreen() {
               </Text>
               <TextInput
                 autoCapitalize="words"
-                value={userName}
+                value={_userName}
                 onChangeText={(text) => {
                   console.log(hasSpacesOnly(text));
                   if (!text || hasSpacesOnly(text) == true) {
                     setError(true);
-                    setUserName();
+                    // setUserName();
+                    _setUserName();
                   } else {
                     setError(false);
-                    setUserName(text);
+                    _setUserName(text);
                     setPreviewName(text);
                   }
                 }}
@@ -595,13 +599,15 @@ export default function HomeScreen() {
                 blurOnSubmit={true}
                 numberOfLines={4}
                 maxLength={90}
-                value={userBio}
+                value={_userBio}
                 onChangeText={(text) => {
                   // console.log(text)
                   if (!text) {
-                    setUserBio("");
+                    _setUserBio("")
+                    // setUserBio("");
                   } else {
-                    setUserBio(text);
+                    _setUserBio(text);
+                    // setUserBio(text);
                     setPreviewBio(text);
                   }
                 }}

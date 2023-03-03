@@ -126,7 +126,7 @@ export default function ManageAccountScreen() {
 
   //WHEN SUBMITTING PASSWORD
   const onSubmitPassword = () => {
-    // console.log(actionType);
+    console.log(actionType);
     if (actionType == "Deactivate") {
       deactivateAccount(password);
     } else if (actionType == "Delete") {

@@ -33,7 +33,8 @@ import {
 import LoadingResource from "../../../../components/LoadingResource/LoadingResource";
 import ModalViewPaymentImage from "../../../../components/ModalViewPaymentImage/ModalViewPaymentImage";
 import ModalMessage from "../../../../components/ModalMessage/ModalMessage";
-import UserProfileComponents from "../../../../components/UserProfileComponents/UserProfileComponents";
+import DefaultCoverPhoto from "../../../../../assets/UXMaterials/defaults/default-cover.jpg";
+import DefaultProfilePhoto from "../../../../../assets/UXMaterials/defaults/default-profile.png";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -61,6 +62,7 @@ export default function ViewConnectionScreen() {
     addLinkTap,
 
     userNotFound,
+    userInfo,
   } = useContext(AuthContext);
 
   const ref = React.useRef(null);
@@ -163,8 +165,7 @@ export default function ViewConnectionScreen() {
       >
         <ModalViewPaymentImage
           onClosePressed={closeModal}
-          linkImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
-          paymentImage={
+          image={
             linkID == 23
               ? `${BASE_URL}images/payments/gcash/${paymentImage}`
               : linkID == 24
@@ -173,6 +174,18 @@ export default function ViewConnectionScreen() {
               ? `${BASE_URL}images/payments/paymongo/${paymentImage}`
               : null
           }
+          modalImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
+          onCancelPressed={closeModal}
+          cancelText="Close"
+          // defaultImage={
+          //   linkID == 23
+          //     ? `${BASE_URL}images/payments/gcash/${paymentImage}`
+          //     : linkID == 24
+          //     ? `${BASE_URL}images/payments/paymaya/${paymentImage}`
+          //     : linkID == 26
+          //     ? `${BASE_URL}images/payments/paymongo/${paymentImage}`
+          //     : null
+          // }
         />
       </Modal>
 
@@ -245,33 +258,96 @@ export default function ViewConnectionScreen() {
           numColumns={3}
           style={{ backgroundColor: "#fff" }}
           ListHeaderComponent={() => (
-            <View style={styles.mainContainer}>
-              <UserProfileComponents
-                userCoverPhoto={userConnectionData.usr_cover_photo_storage}
-                userProfilePhoto={userConnectionData.usr_profile_photo_storage}
-                userName={userConnectionData.usr_name}
-                userBio={userConnectionData.usr_bio}
-              />
-              {isLoading == false ? (
-                userConnectionStatus == 0 ? (
-                  <View style={styles.addContactContainer}>
-                    <CustomButton
-                      bgColor="transparent"
-                      fgColor="#562C73"
-                      btnText="Add Contact"
-                      borderColor={Colors.yeetPurple}
-                      borderWidth="2"
-                      onPress={onAddContactPressed}
-                      loading={publicLoading}
-                      loadingColor={Colors.yeetPurple}
-                      disabled={publicLoading}
+            <>
+              <View style={styles.mainContainer}>
+                {/* COVER PHOTO */}
+                <View style={GlobalStyles.coverPhotoContainer}>
+                  {isLoading == true ? (
+                    <LoadingResource />
+                  ) : (
+                    <Image
+                      // key={userInfo.usr_cover_photo_storage}
+                      source={
+                        isLoading == false
+                          ? userConnectionData.usr_cover_photo_storage
+                            ? {
+                                // uri: `${BASE_URL}images/profile/cover/${coverPhoto}`,
+                                uri: `${BASE_URL}images/mobile/cover/${userConnectionData.usr_cover_photo_storage}`,
+                              }
+                            : DefaultCoverPhoto
+                          : null
+                      }
+                      resizeMode="stretch"
+                      style={GlobalStyles.coverPhoto}
                     />
+                  )}
+                </View>
+
+                {/* PROFILE PHOTO */}
+                <View style={GlobalStyles.profilePhotoContainer}>
+                  <View style={GlobalStyles.profilePhoto}>
+                    {isLoading == true ? (
+                      <LoadingResource visible={true} />
+                    ) : (
+                      <Avatar.Image
+                        // key={userInfo.usr_profile_photo_storage}
+                        backgroundColor="#DEDEDE"
+                        // size={width * 0.35}
+                        size={RFPercentage(15)}
+                        source={
+                          isLoading == false
+                            ? userConnectionData.usr_profile_photo_storage
+                              ? {
+                                  uri: `${BASE_URL}images/mobile/photos/${userConnectionData.usr_profile_photo_storage}`,
+                                }
+                              : {
+                                  uri: `${BASE_URL}images/profile/photos/default.png`,
+                                }
+                            : null
+                        }
+                      />
+                    )}
                   </View>
-                ) : null
-              ) : null}
-            </View>
+                </View>
+
+                <View style={GlobalStyles.userNameAndBioContainer}>
+                  <View style={GlobalStyles.userNameContainer}>
+                    <Text style={GlobalStyles.userNameText}>
+                      {isLoading == false ? userConnectionData.usr_name : null}
+                      {/* {JSON.stringify(location)} */}
+                    </Text>
+                  </View>
+                  <View style={GlobalStyles.userBioContainer}>
+                    <Text style={GlobalStyles.userBioText}>
+                      {isLoading == false
+                        ? userConnectionData.usr_bio
+                          ? userConnectionData.usr_bio
+                          : "This user has no bio yet."
+                        : null}
+                    </Text>
+                  </View>
+                </View>
+                {isLoading == false ? (
+                  (userConnectionStatus == 0 && userConnectionData.usr_uuid != userInfo.usr_uuid)  ? (
+                    <View style={styles.addContactContainer}>
+                      <CustomButton
+                        bgColor="transparent"
+                        fgColor="#562C73"
+                        btnText="Add Contact"
+                        borderColor={Colors.yeetPurple}
+                        borderWidth="2"
+                        onPress={onAddContactPressed}
+                        loading={publicLoading}
+                        loadingColor={Colors.yeetPurple}
+                        disabled={publicLoading}
+                      />
+                    </View>
+                  ) : null
+                ) : null}
+              </View>
+            </>
           )}
-          keyExtractor={(item) => item.lnk_id}
+          keyExtractor={(item) => item.uln_id}
           // keyExtractor={(item, index) => index.toString()}
           data={isLoading == false ? userConnectionLinks : null}
           renderItem={({ item, index }) => {
@@ -290,7 +366,7 @@ export default function ViewConnectionScreen() {
                 // }}
                 onPress={() => {
                   addLinkTap(item.uln_id);
-                  console.log(item.uln_url);
+                  // console.log(item.uln_url);
                   if (
                     item.lnk_id == 23 ||
                     item.lnk_id == 24 ||
@@ -298,22 +374,23 @@ export default function ViewConnectionScreen() {
                   ) {
                     setLinkID(item.lnk_id);
                     setLinkImage(item.lnk_image);
+                    console.log(item.lnk_id);
                     setPaymentImage(item.uln_url);
                     setPaymentImageVisible(true);
                   } else if (item.lnk_id == 31) {
                     Linking.openURL(
                       `${BASE_URL}api/downloadFile/` + item.uln_file
-                      // `http://192.168.254.117:8000/api/download/` + item.uln_file
                     );
-                    // let url = `${BASE_URL}files/` + item.uln_file;
-                    // let fileName = item.uln_file;
-                    // downloadFile(url, fileName);
-
-                    // console.log(url);
-                    // console.log(item.uln_original_file_name);
                   } else {
+                    const url = item.uln_url;
+                    const parts = url.split("/");
+                    let userIdentifier = parts[parts.length - 1];
+                    if (userIdentifier === "") {
+                      userIdentifier = parts[parts.length - 2];
+                    }
                     console.log(item.uln_url);
-                    // Linking.openURL(`${item.uln_url}`);
+                    // console.log(item.uln_url);
+
                     Linking.canOpenURL(item.uln_url).then((supported) => {
                       if (supported) {
                         Linking.openURL(item.uln_url);

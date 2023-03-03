@@ -152,7 +152,7 @@ export default function MyYeetDevicesScreen() {
         // )}
         keyExtractor={(item) => item.nfc_id}
         // keyExtractor={(item, index) => index.toString()}
-        data={nfcDeviceLoading == false ? userNFCDevices : null}
+        data={ userNFCDevices}
         renderItem={({ item }) => {
           return (
             <View style={{ width: "100%", paddingHorizontal: width * 0.03 }}>

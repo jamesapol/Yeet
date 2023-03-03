@@ -10,7 +10,7 @@ import {
   Modal,
 } from "react-native";
 import { BASE_URL } from "../../../config";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { RFPercentage } from "react-native-responsive-fontsize";
 import { FontAwesome5, Feather } from "@expo/vector-icons";
@@ -60,6 +60,12 @@ export default function YeetScreen() {
     setShowModal(false);
   };
 
+  useEffect(() => {
+    if (!userActiveYeetDevice) {
+      getActiveYeetDevice();
+    }
+  }, []);
+
   return (
     <ScrollView
       style={GlobalStyles.root}
@@ -96,96 +102,98 @@ export default function YeetScreen() {
             <Text style={styles.welcomeText}> profile</Text>
           </View>
         </View>
-        {userActiveYeetDevice}
-        {userActiveYeetDevice ? (
-          <>
-            <QRCode
-              value={
-                userActiveYeetDevice
-                  ? `https://yeetapp.io/profile/${userActiveYeetDevice}`
-                  : "z"
-              }
-              enableLinearGradient
-              linearGradient={[Colors.yeetPurple, Colors.yeetPink]}
-              color={Colors.yeetPurple}
-              size={width * 0.6}
-              logoSize={width * 0.15}
-              logoBorderRadius={1000}
-              logoBackgroundColor="#FFF"
-              logoMargin={2}
-              logo={
-                tempUserProfilePhoto
-                  ? {
-                      uri: tempUserProfilePhoto,
-                    }
-                  : userProfilePhoto
-                  ? {
-                      uri: `${BASE_URL}images/mobile/photos/${userProfilePhoto}`,
-                    }
-                  : null
-              }
-            />
-            <View
-              style={{
-                marginTop: "5%",
-                width: "100%",
-                // backgroundColor:'green',
-              }}
-            >
-              <Text
-                style={{
-                  fontSize: RFPercentage(4),
-                  fontWeight: "bold",
-                  textAlign: "center",
-                }}
-              >
-                {tempUserName ? tempUserName : userName ? userName : null}
-              </Text>
-            </View>
-
-            <Text
-              style={{ fontSize: RFPercentage(1.7), marginTop: "3%" }}
-              onPress={() => {
-                {
+        {!nfcDeviceLoading ? (
+          userActiveYeetDevice ? (
+            <>
+              <QRCode
+                value={
                   userActiveYeetDevice
-                    ? Linking.openURL(
-                        `https://yeetapp.io/profile/${userActiveYeetDevice}`
-                      )
-                    : null;
+                    ? `https://yeetapp.io/profile/${userActiveYeetDevice}`
+                    : "z"
                 }
-              }}
-            >
-              {userActiveYeetDevice
-                ? `yeetapp.io/profile/${userActiveYeetDevice}`
-                : null}
-            </Text>
-            <View
-              style={{
-                flexDirection: "row",
-                width: "100%",
-                marginTop: "7.5%",
-              }}
-            >
+                enableLinearGradient
+                linearGradient={[Colors.yeetPurple, Colors.yeetPink]}
+                color={Colors.yeetPurple}
+                size={width * 0.6}
+                logoSize={width * 0.15}
+                logoBorderRadius={1000}
+                logoBackgroundColor="#FFF"
+                logoMargin={2}
+                logo={
+                  tempUserProfilePhoto
+                    ? {
+                        uri: tempUserProfilePhoto,
+                      }
+                    : userProfilePhoto
+                    ? {
+                        uri: `${BASE_URL}images/mobile/photos/${userProfilePhoto}`,
+                      }
+                    : null
+                }
+              />
               <View
                 style={{
-                  flex: 1,
+                  marginTop: "5%",
+                  width: "100%",
+                  // backgroundColor:'green',
                 }}
               >
-                <TouchableOpacity
+                <Text
                   style={{
-                    ...styles.buttonStyle,
+                    fontSize: RFPercentage(4),
+                    fontWeight: "bold",
+                    textAlign: "center",
                   }}
-                  onPress={copyToClipboard}
                 >
-                  <FontAwesome5
-                    name="copy"
-                    size={RFPercentage(3)}
-                    color={Colors.yeetPurple}
-                  />
-                  <Text style={styles.buttonText}>Copy Link</Text>
-                </TouchableOpacity>
+                  {tempUserName ? tempUserName : userName ? userName : null}
+                </Text>
               </View>
-              {/* <View
+
+              <Text
+                style={{ fontSize: RFPercentage(1.7), marginTop: "3%" }}
+                onPress={() => {
+                  {
+                    nfcDeviceLoading
+                      ? userActiveYeetDevice
+                        ? Linking.openURL(
+                            `https://yeetapp.io/profile/${userActiveYeetDevice}`
+                          )
+                        : null
+                      : null;
+                  }
+                }}
+              >
+                {userActiveYeetDevice
+                  ? `yeetapp.io/profile/${userActiveYeetDevice}`
+                  : null}
+              </Text>
+              <View
+                style={{
+                  flexDirection: "row",
+                  width: "100%",
+                  marginTop: "7.5%",
+                }}
+              >
+                <View
+                  style={{
+                    flex: 1,
+                  }}
+                >
+                  <TouchableOpacity
+                    style={{
+                      ...styles.buttonStyle,
+                    }}
+                    onPress={copyToClipboard}
+                  >
+                    <FontAwesome5
+                      name="copy"
+                      size={RFPercentage(3)}
+                      color={Colors.yeetPurple}
+                    />
+                    <Text style={styles.buttonText}>Copy Link</Text>
+                  </TouchableOpacity>
+                </View>
+                {/* <View
                   style={{
                     // backgroundColor: "#00F5",
                     flex: 1,
@@ -205,26 +213,29 @@ export default function YeetScreen() {
                     <Text style={styles.buttonText}>Save to Gallery</Text>
                   </TouchableOpacity>
                 </View> */}
+              </View>
+            </>
+          ) : (
+            <View
+              style={{
+                backgroundColor: "white",
+                height: "75%",
+                width: "100%",
+                alignItems: "center",
+              }}
+            >
+              <Image
+                source={noDevicesImage}
+                style={{ height: "75%", width: "100%" }}
+                resizeMode="contain"
+              />
+              <Text style={{ fontSize: RFPercentage(3), textAlign: "center" }}>
+                Your profile is not yet connected to any Yeet Device.
+              </Text>
             </View>
-          </>
+          )
         ) : (
-          <View
-            style={{
-              backgroundColor: "white",
-              height: "75%",
-              width: "100%",
-              alignItems: "center",
-            }}
-          >
-            <Image
-              source={noDevicesImage}
-              style={{ height: "75%", width: "100%" }}
-              resizeMode="contain"
-            />
-            <Text style={{ fontSize: RFPercentage(3), textAlign: "center" }}>
-              Your profile is not yet connected to any Yeet Device.
-            </Text>
-          </View>
+          <LoadingResource />
         )}
       </View>
     </ScrollView>

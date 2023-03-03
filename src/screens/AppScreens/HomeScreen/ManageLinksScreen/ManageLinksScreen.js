@@ -240,27 +240,29 @@ export default function ManageLinksScreen() {
             ) : null}
           </View>
         )}
-        ListFooterComponent={() => (
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-              // width: "50%",
-            }}
-          >
-            <View style={{ width: "50%", marginTop: '5%' }}>
-              <CustomButton
-                bgColor="transparent"
-                fgColor="#562C73"
-                btnText="Back"
-                borderColor="#562C73"
-                borderWidth="2"
-                onPress={onBackPressed}
-              />
+        ListFooterComponent={() =>
+          userLinks.length > 0 ? (
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                marginBottom: "10%",
+              }}
+            >
+              <View style={{ width: "50%", marginTop: "15%" }}>
+                <CustomButton
+                  bgColor="transparent"
+                  fgColor="#562C73"
+                  btnText="Back"
+                  borderColor="#562C73"
+                  borderWidth="2"
+                  onPress={onBackPressed}
+                />
+              </View>
             </View>
-          </View>
-        )}
+          ) : null
+        }
         // keyExtractor={(item, index) => index.toString()}
         extraData={refreshFlatList}
         keyExtractor={(item, index) => index.toString()}

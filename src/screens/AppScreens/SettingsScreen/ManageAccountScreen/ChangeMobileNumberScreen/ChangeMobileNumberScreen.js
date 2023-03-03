@@ -70,6 +70,7 @@ export default function ChangeMobileNumberScreen() {
 
   const closeModal = () => {
     setUpdateAccountModalVisible(false);
+    navigation.goBack();
   };
 
   const onSavePressed = () => {

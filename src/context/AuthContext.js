@@ -20,7 +20,9 @@ export const AuthProvider = ({ children }) => {
 
   const [userInfo, setUserInfo] = useState({});
   const [userNFCDevices, setUserNFCDevices] = useState({});
-  const [userActiveYeetDevice, setUserActiveYeetDevice] = useState({});
+  const [userActiveYeetDevice, setUserActiveYeetDevice] = useState(null);
+  const [userNotificationCount, setUserNotificationCount] = useState();
+  const [userNotifications, setUserNotifications] = useState([]);
 
   //CACHED DATA
   const [userName, setUserName] = useState();
@@ -171,6 +173,7 @@ export const AuthProvider = ({ children }) => {
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [manageAccountLoading, setManageAccountLoading] = useState(false);
 
+  //REFACTORED
   const register = async (
     fileUri,
     fileName,
@@ -229,6 +232,7 @@ export const AuthProvider = ({ children }) => {
         setUserLinks([]);
         setUserProfilePhoto(userInfo.user_profile_photo);
         setUserCoverPhoto(null);
+        setUserActiveYeetDevice(null);
 
         SecureStore.setItemAsync("userUUID", userInfo.user.usr_uuid);
         SecureStore.setItemAsync("userToken", userInfo.token);
@@ -251,6 +255,7 @@ export const AuthProvider = ({ children }) => {
     // }
   };
 
+  //UNREFACTORED ON BACKEND
   const updateProfile = async (
     profilePhotoURI,
     profilePhotoName,
@@ -297,17 +302,18 @@ export const AuthProvider = ({ children }) => {
       },
     })
       .then((response) => {
+        let dataResponse = response.data.data;
         console.log(response.data);
-        if (response.data.profilePhotoError) {
+        if (dataResponse.profilePhotoError) {
           setUpdateErrorModalVisible(true);
           setModalHeader("Profile Photo Upload Error");
-          setModalMessage(response.data.profilePhotoError);
-        } else if (response.data.coverPhotoError) {
+          setModalMessage(dataResponse.profilePhotoError);
+        } else if (dataResponse.coverPhotoError) {
           setUpdateErrorModalVisible(true);
           setModalHeader("Cover Photo Upload Error");
-          setModalMessage(response.data.coverPhotoError);
+          setModalMessage(dataResponse.coverPhotoError);
         } else {
-          let userInfo = response.data.user;
+          let userInfo = dataResponse.user;
           setTempProfilePhoto(null);
           setTempCoverPhoto(null);
           setUserInfo(userInfo);
@@ -345,6 +351,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const updatePassword = async (oldPassword, newPassword) => {
     setIsLoading(true);
 
@@ -386,6 +393,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const updateMobileNumber = async (mobileNumber) => {
     setIsLoading(true);
 
@@ -438,6 +446,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //REFACTORED
   const resetPassword = async (email) => {
     setIsLoading(true);
 
@@ -454,16 +463,16 @@ export const AuthProvider = ({ children }) => {
         }
       )
       .then((response) => {
-        console.log(response.data);
-        if (response.data.emailError) {
+        let resetResponse = response.data.data;
+        if (resetResponse.emailError) {
           setValidEmail(false);
           setForgotEmailModalVisible(true);
           setModalHeader("Error");
-          setModalMessage(response.data.emailError);
-        } else if (response.data.coolDown) {
+          setModalMessage(resetResponse.emailError);
+        } else if (resetResponse.coolDown) {
           setForgotEmailModalVisible(true);
           setModalHeader("Password Reset Code");
-          setModalMessage(response.data.coolDown);
+          setModalMessage(resetResponse.coolDown);
         } else {
           setValidEmail(true);
         }
@@ -479,6 +488,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //REFACTORED
   const checkPasswordResetCode = async (code, email) => {
     setIsLoading(true);
 
@@ -488,15 +498,15 @@ export const AuthProvider = ({ children }) => {
         code: code,
       })
       .then((response) => {
-        if (response.data.code == 200) {
+        let resetResponse = response.data.data;
+        if (resetResponse.code == 200) {
           setValidCode(true);
-        } else if (response.data.code == 401) {
+        } else if (resetResponse.code == 401) {
           setValidCode(false);
           setResetCodeModalVisible(true);
           setModalHeader("Error");
-          setModalMessage(response.data.error);
+          setModalMessage(resetResponse.error);
         }
-        console.log(response.data);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -509,6 +519,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //REFACTORED
   const newPassword = async (password, email) => {
     setIsLoading(true);
 
@@ -518,23 +529,23 @@ export const AuthProvider = ({ children }) => {
         email: email,
       })
       .then((response) => {
-        if (response.data.emailError) {
+        let resetResponse = response.data.data;
+        if (resetResponse.emailError) {
           setErrorPasswordModalVisible(true);
           setModalHeader("Error");
-          setModalMessage(response.data.emailError);
+          setModalMessage(resetResponse.emailError);
           setValidPassword(false);
-        } else if (response.data.passwordError) {
+        } else if (resetResponse.passwordError) {
           setErrorPasswordModalVisible(true);
           setModalHeader("Error");
-          setModalMessage(response.data.passwordError);
+          setModalMessage(resetResponse.passwordError);
           setValidPassword(false);
-        } else if (response.data.success) {
+        } else if (resetResponse.success) {
           setSuccessPasswordModalVisible(true);
           setModalHeader("Success");
-          setModalMessage(response.data.success);
+          setModalMessage(resetResponse.success);
           setValidPassword(true);
         }
-        console.log(response.data);
         setIsLoading(false);
       })
       .catch((e) => {
@@ -547,6 +558,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //REFACTORED
   const deactivateAccount = async (password) => {
     setManageAccountLoading(true);
 
@@ -564,16 +576,17 @@ export const AuthProvider = ({ children }) => {
         }
       )
       .then((response) => {
-        if (response.data.passwordError) {
+        let deactivateResponse = response.data.data;
+        if (deactivateResponse.passwordError) {
           setInvalidPasswordModalVisible(true);
           setModalHeader("Invalid Password");
-          setModalMessage(response.data.passwordError);
-        } else if (response.data.success) {
+          setModalMessage(deactivateResponse.passwordError);
+        } else if (deactivateResponse.success) {
           setDeactivateModalVisible(true);
           setModalHeader("Account Deactivated");
-          setModalMessage(response.data.success);
+          setModalMessage(deactivateResponse.success);
         }
-        console.log(response.data);
+        console.log(deactivateResponse);
         setManageAccountLoading(false);
       })
       .catch((error) => {
@@ -582,6 +595,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //REFACTORED
   const deleteAccount = async () => {
     setManageAccountLoading(true);
 
@@ -597,11 +611,12 @@ export const AuthProvider = ({ children }) => {
         }
       )
       .then((response) => {
+        let deleteResponse = response.data.data;
         setDeleteAccountModalVisible(true);
         setModalHeader("Account Deleted");
-        setModalMessage(response.data.success);
+        setModalMessage(deleteResponse.success);
 
-        console.log(response.data);
+        console.log(deleteResponse);
         setManageAccountLoading(false);
       })
       .catch((error) => {
@@ -610,6 +625,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const toggleNotifications = async (status) => {
     setIsLoading(true);
 
@@ -639,6 +655,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const toggleAccountPrivacy = async (status) => {
     setIsLoading(true);
 
@@ -668,6 +685,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //REFACTORED
   const checkPassword = async (password) => {
     setManageAccountLoading(true);
     let userUUID = await SecureStore.getItemAsync("userUUID");
@@ -685,13 +703,14 @@ export const AuthProvider = ({ children }) => {
         }
       )
       .then((response) => {
-        if (response.data.passwordError) {
+        let passwordResponse = response.data.data;
+        if (passwordResponse.passwordError) {
           setPasswordMatched(false);
           setInvalidPasswordModalVisible(true);
           setModalHeader("Password Error");
           setModalMessage("You have entered an invalid password.");
-        } else if (response.data.success) {
-          console.log(response.data.success);
+        } else if (passwordResponse.success) {
+          console.log(passwordResponse.success);
           setPasswordMatched(true);
         }
         console.log(passwordMatched);
@@ -703,6 +722,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  // REFACTORED
   const login = async (email, password) => {
     // setUserLinksLoading(true);
     setUserInfoLoading(true);
@@ -751,6 +771,7 @@ export const AuthProvider = ({ children }) => {
           setUserDirectLinkID(userInfo.user.uln_id);
           setUserTheme(userInfo.user.thm_id);
           setUserLinks(userInfo.userLinks);
+          setUserNotificationCount(userInfo.notificationCount);
           console.log(userInfo);
 
           setUserName(userInfo.user.usr_name);
@@ -773,16 +794,16 @@ export const AuthProvider = ({ children }) => {
               JSON.stringify(userInfo.nfcDevices)
             );
           }
-          if(userInfo.user.usr_bio){
+          if (userInfo.user.usr_bio) {
             SecureStore.setItemAsync("userBio", userInfo.user.usr_bio);
           }
-          if(userInfo.user.usr_cover_photo_storage){
+          if (userInfo.user.usr_cover_photo_storage) {
             SecureStore.setItemAsync(
               "userCoverPhoto",
               userInfo.user.usr_cover_photo_storage
             );
           }
-          if(userInfo.user.usr_profile_photo_storage){
+          if (userInfo.user.usr_profile_photo_storage) {
             SecureStore.setItemAsync(
               "userProfilePhoto",
               userInfo.user.usr_profile_photo_storage
@@ -804,6 +825,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //REFACTORED
   const logout = async () => {
     setIsLoading(true);
     await axios
@@ -828,6 +850,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //DISCONTINUED
   const getUserLinks = async (uuid, token) => {
     setIsLoading(true);
     setUserLinksLoading(true);
@@ -856,6 +879,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED
   const getUserData = async () => {
     try {
       setUserInfoLoading(true);
@@ -918,9 +942,9 @@ export const AuthProvider = ({ children }) => {
                 "Oops! It seems your current login has expired. Please sign in again to continue."
               );
               clearAll();
-            } else if (response.data.userData) {
-              let userInfo = response.data.userData;
-              console.log(response.data.userData);
+            } else if (response.data.data) {
+              console.log(response.data);
+              let userInfo = response.data.data;
 
               setUserInfo(userInfo.user);
               setUserActiveYeetDevice(userInfo.user.nfc_device);
@@ -933,6 +957,7 @@ export const AuthProvider = ({ children }) => {
               setUserName(userInfo.user.usr_name);
               setUserCoverPhoto(userInfo.user.usr_cover_photo_storage);
               setUserProfilePhoto(userInfo.user.usr_profile_photo_storage);
+              setUserNotificationCount(userInfo.notificationCount);
 
               SecureStore.setItemAsync("userName", userInfo.user.usr_name);
 
@@ -966,7 +991,7 @@ export const AuthProvider = ({ children }) => {
             }
             setSplashLoading(false);
             setUserInfoLoading(false);
-            setPublicLoading(false);
+            // setPublicLoading(false);
             setAddLinkLoading(false);
             setUserLinksLoading(false);
             setNfcDeviceLoading(false);
@@ -1012,6 +1037,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // REFACTORED;
   const removeLink = async (userLinkID) => {
     // setUserLinksLoading(true);
 
@@ -1033,11 +1059,12 @@ export const AuthProvider = ({ children }) => {
         // setIsLoading(false);
       })
       .catch((error) => {
-        console.log(error.response);
+        console.log(error.response.data);
         setUserLinksLoading(false);
       });
   };
 
+  // REFACTORED
   const editYouTubeLink = async (
     userLinkIndex,
     youtubeLinkName,
@@ -1073,6 +1100,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  // REFACTORED
   const editFile = async (
     fileURI,
     fileName,
@@ -1118,6 +1146,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  // REFACTORED
   const editLink = async (userLinkIndex, userLinkURL) => {
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
@@ -1151,6 +1180,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  // REFACTORED
   const editCustomLink = async (userLinkIndex, userLinkName, userLinkURL) => {
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
@@ -1235,6 +1265,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  // REFACTORED
   const setDirectLink = async (linkIndex) => {
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
@@ -1249,7 +1280,7 @@ export const AuthProvider = ({ children }) => {
         }
       )
       .then((response) => {
-        console.log(response.data);
+        console.log(response.data.data);
         setUserDirectLink(1);
         setUserDirectLinkID(linkIndex);
       })
@@ -1259,6 +1290,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  // REFACTORED
   const removeDirectLink = async () => {
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
@@ -1278,6 +1310,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const addConnection = async (connectionUUID) => {
     setPublicLoading(true);
 
@@ -1314,6 +1347,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const unblockConnection = async (blockID) => {
     setIsLoading(true);
 
@@ -1342,6 +1376,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const showBlockedConnections = async () => {
     setIsLoading(true);
 
@@ -1364,6 +1399,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const showPublicProfile = async (code) => {
     setPublicProfileLoading(true);
 
@@ -1410,6 +1446,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND//UNFINISHED
   const getUserTheme = async () => {
     setIsLoading(true);
 
@@ -1428,6 +1465,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const activateYeetDevice = async (code) => {
     setNfcDeviceLoading(true);
 
@@ -1470,10 +1508,12 @@ export const AuthProvider = ({ children }) => {
           setShowModal(true);
           setModalHeader("Success");
           setModalMessage(responseData.devicesData.success);
-          setUserActiveYeetDevice(
-            responseData.devicesData.yeetDevices.nfc_code
-          );
+          // setUserActiveYeetDevice(responseData.activeYeetDevice)
+          // setUserActiveYeetDevice(
+          //   responseData.devicesData.yeetDevices.nfc_code
+          // );
           setUserNFCDevices(responseData.devicesData.yeetDevices);
+          // console.log(responseData.devicesData.yeetDevices.nfc_code)
         }
         setNfcDeviceLoading(false);
       })
@@ -1483,6 +1523,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const getYeetDevices = async () => {
     setNfcDeviceLoading(true);
 
@@ -1494,8 +1535,9 @@ export const AuthProvider = ({ children }) => {
         headers: { Authorization: `Bearer ${userToken}` },
       })
       .then((response) => {
-        console.log(response.data);
-        setUserNFCDevices(response.data);
+        let responseData = response.data.data;
+        console.log(responseData);
+        setUserNFCDevices(responseData);
         setNfcDeviceLoading(false);
       })
       .catch((error) => {
@@ -1504,6 +1546,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const getActiveYeetDevice = async () => {
     // setNfcDeviceLoading(true);
 
@@ -1530,9 +1573,9 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const displayYeetDevice = async (yeetID, yeetCode) => {
-    // setNfcDeviceLoading(true);
-    setIsLoading(true);
+    setNfcDeviceLoading(true);
 
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
@@ -1556,14 +1599,15 @@ export const AuthProvider = ({ children }) => {
         setShowSuccessModal(true);
         setModalHeader("Success");
         setModalMessage(response.data.success);
-        setIsLoading(false);
+        setNfcDeviceLoading(false);
       })
       .catch((error) => {
         console.log(error.response);
-        setIsLoading(false);
+        setNfcDeviceLoading(false);
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const disconnectYeetDevice = async (code) => {
     setNfcDeviceLoading(true);
 
@@ -1581,14 +1625,18 @@ export const AuthProvider = ({ children }) => {
         }
       )
       .then((response) => {
-        console.log(response.data);
-        let yeetDevices = response.data.yeetDevices;
+        let responseData = response.data.data;
+        console.log(responseData);
+        let yeetDevices = responseData.yeetDevices;
         setUserNFCDevices(yeetDevices);
 
         setShowSuccessModal(true);
         setModalHeader("Success");
-        setModalMessage(response.data.success);
+        setModalMessage(responseData.success);
         setNfcDeviceLoading(false);
+        if (code === userActiveYeetDevice) {
+          setUserActiveYeetDevice();
+        }
       })
       .catch((error) => {
         console.log(error.response);
@@ -1596,6 +1644,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND//DISCONTINUED
   const downloadVCF = async (
     // profilePhotoURI,
     // profilePhotoName,
@@ -1646,6 +1695,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const getInsights = async () => {
     setInsightsLoading(true);
     let userUUID = await SecureStore.getItemAsync("userUUID");
@@ -1682,6 +1732,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const addProfileTap = async (userUUID) => {
     // let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
@@ -1704,6 +1755,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const addProfileView = async (userUUID) => {
     // let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
@@ -1726,6 +1778,7 @@ export const AuthProvider = ({ children }) => {
       });
   };
 
+  //UNREFACTORED ON BACKEND
   const addLinkTap = async (userLinkID) => {
     let userUUID = await SecureStore.getItemAsync("userUUID");
     let userToken = await SecureStore.getItemAsync("userToken");
@@ -1764,7 +1817,7 @@ export const AuthProvider = ({ children }) => {
 
     setUserInfo({});
     setUserNFCDevices({});
-    setUserActiveYeetDevice({});
+    setUserActiveYeetDevice();
     setUserBlockedConnections({});
     setUserToken();
     setUserLinks({});
@@ -1889,6 +1942,10 @@ export const AuthProvider = ({ children }) => {
         //TOGGLE NOTIFICATIONS/ACCOUNT PRIVACY
         toggleNotifications,
         toggleAccountPrivacy,
+        userNotificationCount,
+        setUserNotificationCount,
+        userNotifications,
+        setUserNotifications,
 
         //SECOND OPTION
 

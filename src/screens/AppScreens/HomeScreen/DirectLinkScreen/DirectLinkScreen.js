@@ -137,7 +137,7 @@ export default function DirectLinkScreen() {
             <View
               style={{
                 width: "100%",
-                paddingHorizontal: width * 0.15,
+                paddingHorizontal: width * 0.25,
                 paddingVertical: height * 0.05,
                 // backgroundColor:'#FF3'
               }}

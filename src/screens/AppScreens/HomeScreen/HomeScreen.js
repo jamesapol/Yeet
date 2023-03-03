@@ -283,7 +283,12 @@ export default function HomeScreen() {
     if (!linkURLContent) {
       setError("flex");
     } else {
-      let newLinkURL = linkURLHeader + linkURLContent;
+      let newLinkURL;
+      if (!linkURLHeader) {
+        newLinkURL = linkURLContent;
+      } else {
+       newLinkURL = linkURLHeader + linkURLContent;
+      }
 
       if (linkURL == newLinkURL) {
         setErrorMessageModalVisible(true);
@@ -368,11 +373,11 @@ export default function HomeScreen() {
   };
 
   const onUploadFilePressed = () => {
-    console.log(linkIndex)
-    console.log(fileURI)
-    console.log(fileName)
-    console.log(fileType)
-    console.log(fileTitle)
+    console.log(linkIndex);
+    console.log(fileURI);
+    console.log(fileName);
+    console.log(fileType);
+    console.log(fileTitle);
 
     editFile(fileURI, fileName, fileType, fileTitle, linkIndex);
     setFileModalVisible(false);
@@ -420,6 +425,8 @@ export default function HomeScreen() {
         ) : (
           ""
         )}
+
+        {/* UPON REACTIVATION OF ACCOUNT */}
         <Modal
           transparent
           animationType="fade"
@@ -433,6 +440,7 @@ export default function HomeScreen() {
             onOKPressed={onCancelPressed}
           />
         </Modal>
+
         {/* SUCCESS MESSAGE MODAL */}
         <Modal
           transparent
@@ -447,6 +455,7 @@ export default function HomeScreen() {
             onOKPressed={onCancelPressed}
           />
         </Modal>
+
         {/* ERROR MESSAGE MODAL */}
         <Modal
           transparent
@@ -461,6 +470,7 @@ export default function HomeScreen() {
             onOKPressed={onCloseErrorPressed}
           />
         </Modal>
+
         {/* EDIT LINK MODAL */}
         <Modal
           transparent
@@ -495,6 +505,7 @@ export default function HomeScreen() {
             onSavePressed={onSavePressed}
           />
         </Modal>
+
         {/* EDIT CUSTOM LINK MODAL */}
         <Modal
           transparent
@@ -538,6 +549,7 @@ export default function HomeScreen() {
             warningVisible={error}
           />
         </Modal>
+
         {/* EDIT EMBED VIDEO MODAL */}
         <Modal
           transparent
@@ -581,6 +593,7 @@ export default function HomeScreen() {
             onSavePressed={onEmbedVideoSaved}
           />
         </Modal>
+
         {/* SHOW PAYMENT MODAL */}
         <Modal
           transparent
@@ -591,18 +604,16 @@ export default function HomeScreen() {
         >
           <ModalViewPaymentImage
             onChangePhotoPressed={pickImage}
-            image={image}
-            cancelText="Close"
-            onCancelPressed={onCancelPressed}
-            disabled={image ? false : true}
-            modalImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
-            defaultImage={
+            image={
               linkID == 23
                 ? `${BASE_URL}images/payments/gcash/${linkURL}`
                 : linkID == 24
                 ? `${BASE_URL}images/payments/paymaya/${linkURL}`
-                : `${BASE_URL}images/payments/paymongo/${linkURL}`
-            }
+                : `${BASE_URL}images/payments/paymongo/${linkURL}`}
+            cancelText="Close"
+            onCancelPressed={onCancelPressed}
+            modalImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
+            
           />
         </Modal>
         {/* SHOW PDF MODAL */}
@@ -624,6 +635,7 @@ export default function HomeScreen() {
             onUploadFilePressed={pickPDF}
           />
         </Modal>
+
         <FlatList
           onRefresh={onRefresh}
           refreshing={refreshing}
@@ -810,6 +822,15 @@ export default function HomeScreen() {
                       setLinkIndex(item.uln_id);
 
                       console.log(item.uln_id);
+                    } else if (item.lnk_id == 25 || item.lnk_id == 27) {
+                      setShowInputModal(true);
+                      console.log(item.uln_url);
+                      setLinkName(item.lnk_name);
+                      setLinkURLContent(item.uln_url);
+                      setLinkImage(item.lnk_image);
+                      setLinkIndex(item.uln_id);
+                      setLinkURLHeader();
+                      // let linkContent = item.uln_url.replace(item.lnk_url, "");
                     } else if (item.lnk_id == 30) {
                       setEmbedVideoModalVisible(true);
                       setLinkImage(item.uln_youtube_thumbnail);
@@ -818,7 +839,6 @@ export default function HomeScreen() {
                       setLinkIndex(item.uln_id);
                       setOldLink(item.uln_url);
                     } else if (item.lnk_id == 31) {
-                      
                       setFileTitle(item.uln_file_title);
                       setFileName(item.uln_original_file_name);
                       setFile(item.uln_file);
@@ -840,10 +860,9 @@ export default function HomeScreen() {
                       setLinkURLHeader(item.lnk_url);
 
                       let linkContent = item.uln_url.replace(item.lnk_url, "");
-
                       setLinkURLContent(linkContent);
                     }
-                    console.log(item.uln_id);
+                    // console.log(item.lnk_id);
                     // onLinkPressed
                   }}
                   // onPress={() => {

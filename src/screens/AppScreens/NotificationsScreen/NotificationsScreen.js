@@ -173,9 +173,6 @@ const NotificationsButton = ({
       style={{
         alignItems: "center",
         justifyContent: "center",
-        // justifyContent: "center",
-        // backgroundColor: "#562c7340",
-        // paddingTop: height * 0.02,
         paddingHorizontal: width * 0.02,
         marginRight: width * 0.03,
         marginVertical: height * 0.003,
@@ -189,11 +186,12 @@ const NotificationsButton = ({
 export default function NotificationsScreen() {
   const {
     refreshing,
-
     showSuccessModal,
     modalHeader,
     modalMessage,
-    // removeNotification,
+    setUserNotificationCount,
+    userNotifications,
+    setUserNotifications,
   } = useContext(AuthContext);
 
   const [refreshFlatList, setRefreshFlatList] = useState(false);
@@ -208,7 +206,7 @@ export default function NotificationsScreen() {
   const [notificationType, setNotificationType] = useState();
   const [connectionNotes, setConnectionNotes] = useState();
 
-  const [userNotifications, setUserNotifications] = useState({});
+  // const [userNotifications, setUserNotifications] = useState([]);
   const [userNotificationsLoading, setUserNotificationsLoading] =
     useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -237,7 +235,12 @@ export default function NotificationsScreen() {
   };
 
   useEffect(() => {
-    getUserNotifications();
+    console.log(userNotifications.length);
+    if (userNotifications.length === 0) {
+      getUserNotifications();
+    }
+    readNotifications();
+    setUserNotificationCount(0);
   }, []);
 
   const getUserNotifications = async () => {
@@ -260,6 +263,28 @@ export default function NotificationsScreen() {
       .catch((error) => {
         console.log(error.response);
         setUserNotificationsLoading(false);
+      });
+  };
+
+  const readNotifications = async () => {
+    let userUUID = await SecureStore.getItemAsync("userUUID");
+    let userToken = await SecureStore.getItemAsync("userToken");
+
+    await axios
+      .patch(
+        `${BASE_URL}api/readNotifications/${userUUID}`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${userToken}` },
+        }
+      )
+      .then((response) => {
+        console.log(response.data);
+        setUserNotificationCount(0);
+      })
+      .catch((error) => {
+        console.log(error);
+        // setUserNotificationsLoading(false);
       });
   };
 
@@ -286,20 +311,6 @@ export default function NotificationsScreen() {
         // setUserNotificationsLoading(false);
       });
   };
-
-  // const pageSize = 10;
-  // const [page, setPage] = useState(0);
-
-  // const handleLoadMore = () => {
-  // if(!userNotificationsLoading){
-  //   setUserNotificationsLoading(true);
-
-  //   setTimeout(() => {
-
-  //   })
-  // }
-  // setPage(page + 1);
-  // };
 
   return (
     <View style={GlobalStyles.root}>
