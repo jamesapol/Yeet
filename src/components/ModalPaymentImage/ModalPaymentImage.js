@@ -120,15 +120,17 @@ export default function ModalPaymentImage({
               </View> */}
           </View>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={onCancelPressed}
-              style={styles.cancelButtonContainer}
-              activeOpacity={0.4}
-            >
-              <Text style={[styles.buttonText, { color: "#562C73" }]}>
-                {cancelText}
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.confirmationButtonsContainer}>
+              <TouchableOpacity
+                onPress={onCancelPressed}
+                style={styles.confirmationButtons}
+                activeOpacity={0.4}
+              >
+                <Text style={[styles.buttonText, { color: "#562C73" }]}>
+                  {cancelText}
+                </Text>
+              </TouchableOpacity>
+            </View>
             <TouchableOpacity
               onPress={onSavePressed}
               style={styles.removeButtonContainer}
@@ -258,6 +260,21 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: RFPercentage(1.5),
     fontWeight: "bold",
+  },
+
+  confirmationButtonsContainer: {
+    width: "50%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  confirmationButtons: {
+    height: RFPercentage(5),
+    width: "90%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 15,
   },
 
   removeButtonContainer: {

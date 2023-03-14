@@ -188,7 +188,7 @@ export default function YeetScreen() {
                     <FontAwesome5
                       name="copy"
                       size={RFPercentage(3)}
-                      color={Colors.yeetPurple}
+                      color="#FFF"
                     />
                     <Text style={styles.buttonText}>Copy Link</Text>
                   </TouchableOpacity>
@@ -250,8 +250,8 @@ const styles = StyleSheet.create({
 
   buttonStyle: {
     marginTop: "10%",
-    backgroundColor: "Transparent",
-    borderColor: "#EFEFEF",
+    backgroundColor: Colors.yeetPurple,
+    borderColor: Colors.yeetPurple,
     // borderWidth: 2,
     paddingVertical: height * 0.01,
     flexDirection: "row",
@@ -259,7 +259,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
 
     // backgroundColor: Colors.yeetPurple,
-    borderRadius: 500,
+    borderRadius: 15,
     borderWidth: 2,
     borderColor: Colors.yeetPurple,
   },
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
 
   buttonText: {
     marginLeft: "5%",
-    color: Colors.yeetPurple,
+    color: '#FFF',
 
     fontSize: RFPercentage(1.5),
     textAlign: "center",

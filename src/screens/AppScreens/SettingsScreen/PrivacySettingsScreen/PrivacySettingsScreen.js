@@ -145,7 +145,7 @@ export default function PrivacySettingsScreen() {
           style={[
             styles.buttons,
             {
-              paddingVertical: height * 0.0028,
+              paddingVertical: height * 0.009,
             },
           ]}
           onPress={togglePrivateAccountSwitch}
@@ -206,22 +206,23 @@ const styles = StyleSheet.create({
     marginVertical: height * 0.006,
     backgroundColor: "#DEE0E2",
     width: "100%",
-    borderRadius: 1000,
+    borderRadius: 15,
     paddingHorizontal: width * 0.025,
     alignItems: "center",
-    height: RFPercentage(4.7),
+    // height: RFPercentage(4.7),
   },
 
   buttonText: {
     color: "#562C73",
 
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2),
     textAlign: "center",
     fontWeight: "bold",
   },
 
   switch: {
-    transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }],
+    // backgroundColor: 'teal',
+    transform: [{ scaleX: 1 }, { scaleY: 1 }],
   },
 
   footerButtons: {

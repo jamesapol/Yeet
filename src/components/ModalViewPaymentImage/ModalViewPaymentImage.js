@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import React from "react";
 import { RFPercentage } from "react-native-responsive-fontsize";
+import ExpoFastImage from "expo-fast-image";
 import * as ImagePicker from "expo-image-picker";
 
 import { MaterialCommunityIcons, FontAwesome } from "@expo/vector-icons";
@@ -21,8 +22,6 @@ var { height } = Dimensions.get("window");
 
 export default function ModalViewPaymentImage({
   modalImage,
-  modalHeaderText,
-  modalMessage,
   cancelText,
   saveText,
   onCancelPressed,
@@ -31,6 +30,7 @@ export default function ModalViewPaymentImage({
   image,
   onChangePhotoPressed,
   disabled = true,
+  key,
 }) {
   const [link, setLink] = useState(false);
 
@@ -38,42 +38,39 @@ export default function ModalViewPaymentImage({
     <View style={styles.centeredModal}>
       <View style={styles.modal}>
         <View style={styles.modalContent}>
+          <View
+            style={{
+              height: "10%",
+              justifyContent: "flex-end",
+              // backgroundColor: "red",
+            }}
+          >
+            <Image
+              source={modalImage}
+              resizeMode="stretch"
+              style={styles.modalLinkImage}
+              />
+              {/* <Text>
+                {image}
+              </Text> */}
+          </View>
           <View style={styles.modalHeaderContainer}>
-            <View style={{ height: "12%", justifyContent: "flex-end" }}>
+            <View style={styles.modalImage}>
+              {/* <ExpoFastImage
+                key={Date.now()}
+                uri={image}
+                style={{ height: "100%", width: "100%" }}
+              /> */}
               <Image
-                source={modalImage}
-                resizeMode="stretch"
-                style={styles.modalLinkImage}
+                source={{ uri: image, cache: "force-cache" }}
+                resizeMode="cover"
+                style={{
+                  height: "100%",
+                  width: "100%",
+                }}
               />
             </View>
-            <View style={styles.modalImageContainer}>
-              {/* <View
-                style={{
-                  position: "absolute",
-                  zIndex: 2,
-                  backgroundColor: Colors.yeetGray,
-                  borderRadius: 1000,
-                  padding: 25,
-                  top: '-3%',
-                  right: '-3%',
-                  borderColor: Colors.yeetPurple,
-                  borderWidth: 2.5,
-                }}   
-              >
-                <FontAwesome
-                  name="pencil"
-                  size={RFPercentage(2)}
-                  color={Colors.yeetPurple}
-                />
-              </View> */}
-              {image && (
-                <Image
-                  source={{ uri: image }}
-                  resizeMode="contain"
-                  style={styles.modalImage}
-                />
-              )}
-            </View>
+
             {/* <View
                 style={{
                   // backgroundColor: "#00f3",
@@ -92,34 +89,37 @@ export default function ModalViewPaymentImage({
                   }}
                 >
                   <TouchableOpacity
-                    onPress={onChangePhotoPressed}
+                    onPress={onUploadPhotoPressed}
                     style={{
                       width: "100%",
-                      height: "75%",
+                      height: "70%",
                       borderWidth: 2,
                       borderColor: Colors.yeetPurple,
-                      borderRadius: 1000,
+                      borderRadius: 7,
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                     activeOpacity={0.4}
                   >
                     <Text style={[styles.buttonText, { color: "#562C73" }]}>
-                      Change Photo
+                      {!image ? "Upload Image" : "Change Photo"}
                     </Text>
                   </TouchableOpacity>
                 </View>
               </View> */}
           </View>
-          <View style={styles.buttonContainer}>
+          <View style={styles.confirmationButtonsContainer}>
             <TouchableOpacity
               onPress={onCancelPressed}
-              style={styles.cancelButtonContainer}
+              style={{
+                ...styles.confirmationButtons,
+                borderColor: Colors.yeetPink,
+                backgroundColor: Colors.yeetPink,
+                borderWidth: 2,
+              }}
               activeOpacity={0.4}
             >
-              <Text style={[styles.buttonText, { color: "#562C73" }]}>
-                {cancelText}
-              </Text>
+              <Text style={styles.buttonText}>{cancelText}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -137,8 +137,8 @@ const styles = StyleSheet.create({
   },
 
   modal: {
-    width: "85%",
-    height: width,
+    width: RFPercentage(45),
+    height: RFPercentage(60),
     borderRadius: 25,
     backgroundColor: "#ECECEC",
   },
@@ -150,15 +150,15 @@ const styles = StyleSheet.create({
 
   modalHeaderContainer: {
     width: "100%",
-    height: "90%",
+    height: "79%",
     alignItems: "center",
     justifyContent: "center",
     // backgroundColor: "#f2f2",
   },
 
   modalLinkImage: {
-    width: height * 0.1,
-    height: height * 0.1,
+    width: RFPercentage(12),
+    height: RFPercentage(12),
     borderRadius: 1000,
     borderWidth: 1,
     borderColor: "#111111",
@@ -174,17 +174,16 @@ const styles = StyleSheet.create({
   },
 
   modalImage: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 1,
-  },
-
-  modalHeaderText: {
-    marginTop: "3%",
-    // backgroundColor: "#f2f2",
-    color: "#562C73",
-    fontWeight: "bold",
-    fontSize: RFPercentage(3),
+    // width: "100%",
+    // height: "100%",
+    // width: RFPercentage(43),
+    // height: RFPercentage(43),
+    width: "95%",
+    height: "95%",
+    borderWidth: 3,
+    borderColor: Colors.yeetPurple,
+    borderRadius: 15,
+    overflow: "hidden",
   },
 
   modalMessage: {
@@ -217,12 +216,22 @@ const styles = StyleSheet.create({
   },
 
   buttonContainer: {
-    flexDirection: "row",
     width: "100%",
     height: "10%",
-    borderTopWidth: 1,
-    borderTopColor: "#948E8E",
+    justifyContent: "center",
+    alignItems: "center",
+    // borderTopWidth: 1,
+    // borderTopColor: "#948E8E",
     // backgroundColor: "#f002",
+  },
+
+  closeButton: {
+    width: "90%",
+    height: "70%",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 15,
+    backgroundColor: "red",
   },
 
   cancelButtonContainer: {
@@ -240,6 +249,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: RFPercentage(1.5),
     fontWeight: "bold",
+    color: "#FFF",
   },
 
   removeButtonContainer: {
@@ -250,5 +260,20 @@ const styles = StyleSheet.create({
     borderLeftWidth: 0.5,
     justifyContent: "center",
     alignItems: "center",
+  },
+
+  confirmationButtonsContainer: {
+    width: "100%",
+    height: "10%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  confirmationButtons: {
+    height: RFPercentage(5),
+    width: "95%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 15,
   },
 });

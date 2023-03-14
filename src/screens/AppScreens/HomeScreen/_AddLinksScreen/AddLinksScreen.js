@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import React, { useContext, useEffect, useState } from "react";
 
+import * as ImageManipulator from "expo-image-manipulator";
+
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 import { BASE_URL } from "../../../../config";
@@ -66,15 +68,15 @@ const LinkButton = ({ linkName, linkImage, linkIndex, linkID, onPress }) => (
       <Image
         source={linkImage}
         style={{
-          height: RFPercentage(3),
-          width: RFPercentage(3),
+          height: RFPercentage(3.5),
+          width: RFPercentage(3.5),
           borderRadius: 1000,
           marginRight: width * 0.02,
         }}
       />
       <Text
         style={{
-          fontSize: RFPercentage(1.5),
+          fontSize: RFPercentage(2.3),
           fontWeight: "bold",
           color: "#562C73",
         }}
@@ -159,6 +161,8 @@ export default function AddLinksScreen() {
   const [linkName, setLinkName] = useState();
   const [linkImage, setLinkImage] = useState();
 
+  const [linkError, setLinkError] = useState(false);
+
   const [customLinkName, setCustomLinkName] = useState();
   const [customLinkNameErrorVisible, setCustomLinkNameErrorVisible] =
     useState("none");
@@ -196,8 +200,6 @@ export default function AddLinksScreen() {
   const [embedVideoURLError, setEmbedVideoURLError] = useState(false);
   const [embedVideoURLErrorMessage, setEmbedVideoURLErrorMessage] = useState();
 
-  const [error, setError] = useState("none");
-
   const [linkID, setLinkID] = useState();
   const [linkURL, setLinkURL] = useState();
   const [linkURLHeader, setLinkURLHeader] = useState();
@@ -211,9 +213,9 @@ export default function AddLinksScreen() {
       if (Platform.OS !== "web") {
         const { status } =
           await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== "granted") {
-          alert("Sorry, we need library permissions to make this work!");
-        }
+        // if (status !== "granted") {
+        //   alert("Sorry, we need library permissions to make this work!");
+        // }
       }
     })();
   }, []);
@@ -274,8 +276,17 @@ export default function AddLinksScreen() {
         setFileSizeErrorModalVisible(true);
       } else {
         setShowUploadPaymentModalVisible(true);
-        let fileUri = result.uri;
-
+        const manipResult = await ImageManipulator.manipulateAsync(
+          result.uri,
+          [{ resize: { width: 250, height: 250 } }],
+          { compress: 0, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        // console.log(manipResult.uri);
+        
+        const fileInfo = await FileSystem.getInfoAsync(manipResult.uri);
+        console.log(fileInfo.size);
+        
+        let fileUri = manipResult.uri;
         let fileName = fileUri.split("/").pop();
 
         const extArr = /\.(\w+)$/.exec(fileName);
@@ -298,7 +309,7 @@ export default function AddLinksScreen() {
   };
 
   const onCancelPressed = () => {
-    setError("none");
+    setLinkError(false);
     setShowNewLinkModal(false);
     setAddLinksModalVisible(false);
     setShowUploadPaymentModalVisible(false);
@@ -336,13 +347,13 @@ export default function AddLinksScreen() {
 
   const onSavePressed = () => {
     if (!linkURL) {
-      setError("flex");
+      setLinkError(true);
     } else {
-      addLink(linkID, linkURLHeader, linkURL);
+      addLink(linkID);
       console.log(linkURLHeader + linkURL);
 
       setShowNewLinkModal(false);
-      setError("none");
+      setLinkError(false);
       setLinkURL();
     }
   };
@@ -578,7 +589,6 @@ export default function AddLinksScreen() {
           {
             userUUID: userUUID,
             userLinkID: linkID,
-            userLinkURLHeader: linkURLHeader,
             userLinkURL: linkURL,
           },
           {
@@ -614,8 +624,8 @@ export default function AddLinksScreen() {
 
   return (
     <View style={GlobalStyles.root}>
-      {/* <Spinner visible={isLoading} animation="fade" overlayColor="transparent" /> */}
       {isLoading == true || addLinkLoading == true ? <LoadingScreen /> : null}
+
       {/* SUCCESS MESSAGE MODAL */}
       <Modal
         transparent
@@ -655,17 +665,23 @@ export default function AddLinksScreen() {
         onRequestClose={onCancelPressed}
       >
         <ModalTextInput
-          // placeholder={"Enter " + linkName + " link"}
-          placeholder={"Enter link here"}
+          placeholder={"Paste your link here..."}
           value={linkURL}
           onChangeText={(text) => {
-            if (text.includes(" ")) {
-              setLinkURL(text.trim());
+            if (!text) {
+              setLinkError(true);
+              setLinkURL(null);
             } else {
-              setLinkURL(text);
+              setLinkError(false);
+              if (text.includes(" ")) {
+                setLinkURL(text.trim());
+              } else {
+                // setLinkError(false);
+                setLinkURL(text);
+              }
             }
           }}
-          warningVisible={error}
+          warningVisible={linkError}
           defaultValue={linkURLHeader}
           linkName={linkName}
           linkImage={linkImage}
@@ -843,6 +859,7 @@ export default function AddLinksScreen() {
         onPress={onBackPressed}
       />
       <SectionList
+        stickySectionHeadersEnabled={false}
         overScrollMode="never"
         showsVerticalScrollIndicator={false}
         sections={linksData}
@@ -859,7 +876,6 @@ export default function AddLinksScreen() {
                 setLinkName(item.lnk_name);
                 setLinkImage(item.lnk_image);
                 setLinkID(item.lnk_id);
-                setLinkURLHeader(item.lnk_url);
               } else if (item.lnk_id == 30) {
                 setYoutubeLinkModalVisible(true);
                 setLinkImage();
@@ -896,7 +912,7 @@ export default function AddLinksScreen() {
             <Text
               style={{
                 color: "#562C73",
-                fontSize: RFPercentage(2.5),
+                fontSize: RFPercentage(3),
                 fontWeight: "bold",
               }}
             >

@@ -232,6 +232,8 @@ export default function LoginScreen() {
           <CustomButton
             fgColor="#FFF"
             bgColor={validFields ? Colors.yeetPurple : Colors.yeetGray}
+            borderColor={validFields ? Colors.yeetPurple : Colors.yeetBorderGray}
+            borderWidth="2"
             btnText="Continue"
             onPress={onLogIn}
             loading={userInfoLoading}
@@ -271,7 +273,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     // backgroundColor: "#000",
     backgroundColor: "#DEE0E2",
-    borderRadius: 30,
+    borderRadius: 15,
 
     // paddingLeft: width * 0.04,
     paddingVertical: height * 0.002,
@@ -283,7 +285,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderRadius: 1000,
+    borderRadius: 15,
     backgroundColor: "#DEE0E2",
 
     paddingHorizontal: width * 0.03,
@@ -293,7 +295,7 @@ const styles = StyleSheet.create({
 
   inputLabel: {
     color: "#562C73",
-    fontSize: RFPercentage(1.7),
+    fontSize: RFPercentage(2),
     fontWeight: "bold",
   },
 
@@ -312,7 +314,7 @@ const styles = StyleSheet.create({
   footerText: {
     marginTop: height * 0.015,
     color: Colors.yeetPurple,
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2),
     textAlign: "center",
   },
 });

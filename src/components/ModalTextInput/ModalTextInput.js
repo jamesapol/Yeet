@@ -12,6 +12,7 @@ import React from "react";
 import { RFPercentage } from "react-native-responsive-fontsize";
 
 import { useState } from "react";
+import { Colors } from "../../styles/GlobalStyles";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -25,8 +26,8 @@ export default function ModalTextInput({
   placeholder,
   value,
   onChangeText,
-  textInputVisible = "flex",
-  warningVisible = "none",
+  warningVisible = false,
+  saveDisabled,
   defaultValue,
 }) {
   const [link, setLink] = useState(false);
@@ -46,16 +47,16 @@ export default function ModalTextInput({
           <View style={styles.inputContainer}>
             <View
               style={{
-                flexDirection: "row",
-                justifyContent: "center",
-                width: '80%',
-                maxWidth: '80%',
-                // // backgroundColor: '#9c33',
+                // flexDirection: "row",
+                // justifyContent: "center",
+                width: "95%",
+                // backgroundColor: '#9c33',
+
                 // borderBottomWidth: 1,
                 // borderBottomColor: "#948E8E",
               }}
             >
-              <TextInput
+              {/* <TextInput
                 style={{
                   ...styles.linkHeader,
                   display: defaultValue ? "flex" : "none",
@@ -63,15 +64,15 @@ export default function ModalTextInput({
                 defaultValue={defaultValue}
                 value={linkURLHeader}
                 editable={false}
-              />
+              /> */}
               <TextInput
                 placeholder={placeholder}
                 value={value}
                 onChangeText={onChangeText}
                 style={{
-                  ...styles.link,
-                  display: textInputVisible,
-                  textAlign: !defaultValue ? "center" : "left",
+                  ...styles.linkInput,
+                  // display: textInputVisible,
+                  // textAlign: !defaultValue ? "center" : "left",
                 }}
                 multiline={false}
                 numberOfLines={1}
@@ -85,31 +86,46 @@ export default function ModalTextInput({
               style={{
                 fontSize: RFPercentage(1.5),
                 color: "#D81D4C",
-                display: warningVisible,
+                display: warningVisible ? "flex" : "none",
               }}
             >
               PLEASE ENTER A LINK
             </Text>
           </View>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={onCancelPressed}
-              style={styles.cancelButtonContainer}
-              activeOpacity={0.4}
-            >
-              <Text style={[styles.buttonText, { color: "#D81D4C" }]}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={onSavePressed}
-              style={styles.saveButtonContainer}
-              activeOpacity={0.4}
-            >
-              <Text style={[styles.buttonText, { color: "#562C73" }]}>
-                Save
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.confirmationButtonsContainer}>
+              <TouchableOpacity
+                disabled={saveDisabled}
+                onPress={onSavePressed}
+                style={{
+                  ...styles.confirmationButtons,
+                  backgroundColor: saveDisabled
+                    ? Colors.yeetGray
+                    : Colors.yeetPurple,
+                  borderColor: saveDisabled
+                    ? Colors.yeetBorderGray
+                    : Colors.yeetPurple,
+                  borderWidth: 2,
+                }}
+                activeOpacity={0.4}
+              >
+                <Text style={styles.buttonText}>Save</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.confirmationButtonsContainer}>
+              <TouchableOpacity
+                onPress={onCancelPressed}
+                style={{
+                  ...styles.confirmationButtons,
+                  borderColor: Colors.yeetPink,
+                  backgroundColor: Colors.yeetPink,
+                  borderWidth: 2,
+                }}
+                activeOpacity={0.4}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
@@ -126,8 +142,8 @@ const styles = StyleSheet.create({
   },
 
   modal: {
-    width: "80%",
-    height: RFPercentage(25),
+    width: RFPercentage(37),
+    height: RFPercentage(27),
     borderRadius: 25,
     backgroundColor: "#ECECEC",
   },
@@ -137,31 +153,33 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
   },
-  
+
   modalHeaderContainer: {
     width: "100%",
-    height: "55%",
+    height: "50%",
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-evenly",
+    justifyContent: "center",
     // backgroundColor: "#f2f2",
   },
-  
+
   linkImage: {
     width: RFPercentage(8),
     height: RFPercentage(8),
+    marginHorizontal: "2.5%",
   },
-  
+
   linkName: {
     color: "#562C73",
     fontWeight: "300",
     fontSize: RFPercentage(4.5),
+    marginHorizontal: "2.5%",
   },
-  
+
   inputContainer: {
     alignItems: "center",
     maxWidth: "100%",
-    width: '100%',
+    width: "100%",
     height: "25%",
   },
 
@@ -177,40 +195,59 @@ const styles = StyleSheet.create({
     borderBottomColor: "#948E8E",
   },
 
-  link: {
-    maxWidth: "50%",
-    marginBottom: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: "#948E8E",
-    fontSize: RFPercentage(1.7),
-    paddingRight: 2,
+  linkInput: {
+    borderWidth: 2,
+    borderColor: "#562C73",
+    paddingVertical: "3%",
+    paddingHorizontal: "3%",
+    borderRadius: 15,
+    fontSize: RFPercentage(1.75),
     alignItems: "center",
+    // backgroundColor: '#f566'
+  },
+
+  link: {
+    // maxWidth: "50%",
+    // marginBottom: 2,
+    // borderBottomWidth: 1,
+    // borderBottomColor: "#948E8E",
+    // paddingRight: 2,
   },
 
   buttonContainer: {
     flexDirection: "row",
     width: "100%",
-    height: "20%",
-    borderTopWidth: 1,
-    borderTopColor: "#948E8E",
+    height: "25%",
+
+    // borderTopWidth: 1,
     // backgroundColor: "#f002",
   },
 
-  cancelButtonContainer: {
+  confirmationButtonsContainer: {
     // backgroundColor: "#f002",
     // borderTopWidth: 1,
     // borderTopColor: "#948E8E",
     height: "100%",
     width: "50%",
-    borderRightColor: "#948E8E",
-    borderRightWidth: 0.5,
+    // padding: '5%',
+    // borderRightColor: "#948E8E",
+    // borderRightWidth: 0.5,
     justifyContent: "center",
     alignItems: "center",
   },
 
+  confirmationButtons: {
+    height: RFPercentage(5),
+    width: "90%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 15,
+  },
+
   buttonText: {
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2),
     fontWeight: "bold",
+    color: "#FFF",
   },
 
   saveButtonContainer: {

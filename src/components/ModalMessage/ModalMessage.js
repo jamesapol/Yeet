@@ -47,8 +47,8 @@ const styles = StyleSheet.create({
   },
 
   modal: {
-    width: width * 0.7,
-    height: RFPercentage(17),
+    width: RFPercentage(35),
+    height: RFPercentage(25),
     borderRadius: 25,
     backgroundColor: "#ECECEC",
     alignItems: "center",
@@ -56,9 +56,9 @@ const styles = StyleSheet.create({
   },
 
   modalHeaderContainer: {
-    marginTop: '3%',
+    marginTop: "3%",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "center",
     paddingBottom: "1%",
     height: "20%",
     // backgroundColor: "#F222",
@@ -66,41 +66,47 @@ const styles = StyleSheet.create({
 
   modalHeader: {
     fontWeight: "900",
-    fontSize: RFPercentage(2.5),
+    fontSize: RFPercentage(2.75),
   },
 
   modalContent: {
-    height: "55%",
+    height: "50%",
     width: "75%",
     justifyContent: "center",
+    // paddingBottom: "7.5%",
     alignItems: "center",
   },
 
   modalMessage: {
-    fontSize: RFPercentage(1.7),
+    fontSize: RFPercentage(2),
     textAlign: "center",
   },
 
   modalButtonContainer: {
-    height: "25%",
-    width: "100%",
-    // backgroundColor:'#00f5',
-    borderTopColor: Colors.yeetBorderGray,
-    borderTopWidth: 1,
-  },
-
-  modalButton: {
-    height: "100%",
+    height: "30%",
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
     // backgroundColor:'#00f5',
+    // borderTopColor: Colors.yeetBorderGray,
+    // borderTopWidth: 1,
+  },
+
+  modalButton: {
+    height: RFPercentage(5),
+    width: "90%",
+    borderColor: Colors.yeetPurple,
+    backgroundColor: Colors.yeetPurple,
+    borderWidth: 2,
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   modalButtonText: {
     fontSize: RFPercentage(2),
     textAlign: "center",
     fontWeight: "bold",
-    color: Colors.yeetPurple,
+    color: "#FFF",
   },
 });

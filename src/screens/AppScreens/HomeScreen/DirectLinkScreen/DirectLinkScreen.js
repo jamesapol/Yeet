@@ -24,7 +24,7 @@ import { useNavigation, useScrollToTop } from "@react-navigation/native";
 import ModalMessage from "../../../../components/ModalMessage/ModalMessage";
 import PageHeader from "../../../../components/PageHeader";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
-import { Colors, GlobalStyles } from "../../../../styles/GlobalStyles";
+import { ButtonStyles, Colors, GlobalStyles, socialMediaButtonImages } from "../../../../styles/GlobalStyles";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -103,6 +103,12 @@ export default function DirectLinkScreen() {
 
       {/* NEW LINK MODAL */}
 
+      <PageHeader
+        headerText="Direct Link"
+        onPress={onBackPressed}
+        iconColor="#562C73"
+        textColor="#562C73"
+      />
       <FlatList
         ref={ref}
         overScrollMode="never"
@@ -111,12 +117,6 @@ export default function DirectLinkScreen() {
         style={{ backgroundColor: "#fff" }}
         ListHeaderComponent={() => (
           <View style={styles.mainContainer}>
-            <PageHeader
-              headerText="Direct Link"
-              onPress={onBackPressed}
-              iconColor="#562C73"
-              textColor="#562C73"
-            />
             <View style={styles.textContainer}>
               <View style={styles.tipsContainer}>
                 <Text style={styles.tipsHeader}>What is Direct Link?</Text>
@@ -187,10 +187,12 @@ export default function DirectLinkScreen() {
               activeOpacity={0.3}
               style={[
                 {
-                  marginLeft: index % 3 == 0 ? width * 0.15 : width * 0.025,
-                  marginRight: index % 3 == 2 ? width * 0.15 : width * 0.025,
+                  marginLeft:
+                  index % 3 == 0 ? width * 0.05 : 0,
+                marginRight:
+                  index % 3 == 2 ? width * 0.05 : 0,
                 },
-                styles.socialMediaButtons,
+                ButtonStyles.socialMediaButtons,
               ]}
               onPress={() => {
                 if(item.lnk_id === 23) {
@@ -208,15 +210,14 @@ export default function DirectLinkScreen() {
               <Image
                 source={
                   item.lnk_id == 30
-                    ? { uri: item.uln_youtube_thumbnail }
+                    ? { uri: item.uln_youtube_thumbnail, cache:true }
                     : {
                         uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
+                        cache: true
                       }
                 }
                 style={{
-                  borderRadius: item.lnk_id == 30 ? 20 : null,
-                  width: width * 0.13,
-                  height: width * 0.13,
+                  ...socialMediaButtonImages(item.lnk_id),
                   opacity:
                     userDirectLink == 1
                       ? directLinkID == item.uln_id
@@ -234,7 +235,9 @@ export default function DirectLinkScreen() {
                         <Text>{item.lnk_id}</Text> */}
               <Text
                 style={{
-                  fontSize: RFPercentage(1.3),
+                  marginTop: "3%",
+                  textAlign: "center",
+                  fontSize: RFPercentage(1.75),
                 }}
               >
                 {/* {item.lnk_id} */}
@@ -271,7 +274,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     textAlign: "center",
     width: "100%",
-    height: height * 0.2,
+    height: height * 0.3,
     // backgroundColor: "#0004",
   },
 
@@ -282,20 +285,20 @@ const styles = StyleSheet.create({
 
   tipsHeader: {
     fontWeight: "900",
-    fontSize: RFPercentage(3),
+    fontSize: RFPercentage(3.75),
     marginBottom: "5%",
     textAlign: "center",
   },
 
   tipsContent: {
     textAlign: "center",
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2),
   },
 
   tipsFooter: {
     marginTop: height * 0.02,
     textAlign: "center",
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(1.75),
   },
 
   socialMediaButtons: {

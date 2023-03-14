@@ -10,6 +10,7 @@ import {
   Modal,
   Linking,
 } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import React, { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { RFPercentage } from "react-native-responsive-fontsize";
@@ -53,15 +54,23 @@ const ConnectionsButton = ({
   onLongPress,
   onPress,
 }) => (
-  <View style={{ flexDirection: "row" }}>
+  <View
+    style={{
+      flexDirection: "row",
+      // backgroundColor: "green",
+      marginVertical: "0.5%",
+      paddingVertical: "0.5%",
+    }}
+  >
     <TouchableOpacity
       delayLongPress={250}
       onLongPress={onLongPress}
       onPress={onPress}
       style={{
+        // backgroundColor: 'red',
         flex: 1,
-        marginLeft: width * 0.03,
-        marginVertical: height * 0.003,
+        marginLeft: width * 0.02,
+        marginVertical: height * 0.004,
         height: height * 0.075,
 
         paddingHorizontal: width * 0.03,
@@ -74,22 +83,29 @@ const ConnectionsButton = ({
       <View
         style={{
           flexDirection: "row",
-          alignItems: "flex-start",
+          alignItems: "center",
           flex: 1,
         }}
       >
         <Image
+          resizeMode="contain"
           source={
             connectionImage
-              ? { uri: `${BASE_URL}images/mobile/photos/${connectionImage}` }
-              : { uri: `${BASE_URL}images/profile/photos/default-profile.png` }
+              ? {
+                  uri: `${BASE_URL}images/mobile/photos/${connectionImage}`,
+                  cache: true,
+                }
+              : {
+                  uri: `${BASE_URL}images/profile/photos/default-profile.png`,
+                  cache: true,
+                }
           }
           style={{
             borderWidth: 0.1,
             borderRadius: 1000,
             borderColor: "#111111",
-            height: RFPercentage(6),
-            width: RFPercentage(6),
+            height: RFPercentage(7),
+            width: RFPercentage(7),
             marginRight: width * 0.035,
           }}
         />
@@ -105,13 +121,18 @@ const ConnectionsButton = ({
               fontSize: RFPercentage(2.5),
               fontWeight: "bold",
               color: Colors.yeetPurple,
+              letterSpacing: -0.5,
+              overflow: "scroll",
             }}
-          >
+            >
             {connectionName}
           </Text>
           <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
             style={{
-              fontSize: RFPercentage(1.3),
+              letterSpacing: -0.5,
+              fontSize: RFPercentage(1.5),
               color: Colors.yeetPurple,
               paddingRight: width * 0.03,
             }}
@@ -120,23 +141,25 @@ const ConnectionsButton = ({
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
-
-    <TouchableOpacity
-      onPress={onOptionsPressed}
-      style={{
-        alignItems: "center",
-        justifyContent: "center",
-        paddingHorizontal: width * 0.02,
-        marginRight: width * 0.03,
-        marginVertical: height * 0.003,
-      }}
-    >
-      <Ionicons
-        name="ellipsis-horizontal"
-        size={RFPercentage(3)}
-        color={Colors.yeetPink}
-      />
+      <TouchableOpacity
+        onPress={onOptionsPressed}
+        style={{
+          height: "100%",
+          // backgroundColor:'teal',
+          alignItems: "center",
+          justifyContent: "center",
+          paddingHorizontal: width * 0.03,
+          // paddingVertical: '5%',
+          // marginRight: width * 0.03,
+          // marginVertical: height * 0.003,
+        }}
+      >
+        <Ionicons
+          name="ellipsis-horizontal"
+          size={RFPercentage(3)}
+          color={Colors.yeetPink}
+        />
+      </TouchableOpacity>
     </TouchableOpacity>
   </View>
 );
@@ -184,7 +207,7 @@ export default function ConnectionsScreen() {
   const [note, setNote] = useState();
   const [report, setReport] = useState();
 
-  const [searchKey, setSearchKey] = useState("");
+  const [searchKey, setSearchKey] = useState();
   useFocusEffect(
     React.useCallback(() => {
       return () => refRBSheet.current?.close();
@@ -475,20 +498,36 @@ export default function ConnectionsScreen() {
       });
   };
 
+  const handleSearch = (text) => {
+    setSearchKey(text);
+    const newData = userConnections.filter((item) => {
+      const itemData = item.usr_name.toLowerCase();
+      const textData = text.toLowerCase();
+      return itemData.indexOf(textData) > -1;
+    });
+    setSearchResults(newData);
+    console.log(newData);
+    if (newData.length === 0) {
+      setResultsEmpty(true);
+    } else {
+      setResultsEmpty(false);
+    }
+  };
+
   /**
    * 1 SECOND DELAY IN SEARCH
    */
-  useEffect(() => {
-    if (searchKey) {
-      const timer = setTimeout(() => {
-        searchUserConnections(searchKey);
-      }, 500);
-      return () => clearTimeout(timer);
-    } else if (!searchKey || searchKey.length === 0) {
-      setResultsEmpty(false);
-      setSearchResults(null);
-    }
-  }, [searchKey]);
+  // useEffect(() => {
+  //   if (searchKey) {
+  //     const timer = setTimeout(() => {
+  //       searchUserConnections(searchKey);
+  //     }, 500);
+  //     return () => clearTimeout(timer);
+  //   } else if (!searchKey || searchKey.length === 0) {
+  //     setResultsEmpty(false);
+  //     setSearchResults(null);
+  //   }
+  // }, [searchKey]);
 
   useEffect(() => {
     if (Object.keys(userConnections).length === 0) {
@@ -527,7 +566,9 @@ export default function ConnectionsScreen() {
               ? { uri: `${BASE_URL}images/mobile/photos/${connectionImage}` }
               : require("../../../../assets/UXMaterials/defaults/default-profile.png")
           }
-          placeholder={connectionNotes}
+          placeholder={
+            connectionNotes ? connectionNotes : "Place your note here"
+          }
           value={note}
           onChangeText={(text) => setNote(text)}
           userName={connectionName}
@@ -627,13 +668,7 @@ export default function ConnectionsScreen() {
         <CustomInput
           placeholder="Search. . ."
           style={styles.searchBar}
-          onChangeText={(text) => {
-            if (text.trim() === "") {
-              setSearchKey("");
-            } else {
-              setSearchKey(text);
-            }
-          }}
+          onChangeText={handleSearch}
           autoCapitalize
           value={searchKey}
         />
@@ -644,11 +679,12 @@ export default function ConnectionsScreen() {
             display: searchKey ? "flex" : "none",
             width: "15%",
             height: "100%",
-            borderTopRightRadius: 25,
-            borderBottomRightRadius: 25,
+            borderTopRightRadius: 15,
+            borderBottomRightRadius: 15,
             flexDirection: "row",
             justifyContent: "center",
             alignItems: "center",
+            // backgroundColor:'black'
           }}
         >
           <MaterialCommunityIcons
@@ -799,17 +835,22 @@ export default function ConnectionsScreen() {
               <Text style={styles.drawerNotesText}>{connectionNotes}</Text>
             </View>
           </View>
+
           <View style={styles.drawerSeparator} />
           <View style={styles.drawerButtonsContainer}>
             <View style={styles.drawerButtonColumn}>
               <TouchableOpacity
-                style={styles.drawerButtonStyle}
+                style={{
+                  ...styles.drawerButtonStyle,
+                  backgroundColor: Colors.yeetPurple,
+                  borderColor: Colors.yeetPurple,
+                }}
                 onPress={() => setShowLeaveNoteModal(true)}
               >
                 <FontAwesome
                   name="pencil-square"
                   size={RFPercentage(3)}
-                  color={Colors.yeetPurple}
+                  color="#FFF"
                 />
                 <Text style={styles.drawerButtonText}>Leave a note</Text>
               </TouchableOpacity>
@@ -818,11 +859,7 @@ export default function ConnectionsScreen() {
                 style={styles.drawerButtonStyle}
                 onPress={() => setShowReportModal(true)}
               >
-                <FontAwesome
-                  name="flag"
-                  size={RFPercentage(3)}
-                  color={Colors.yeetPurple}
-                />
+                <FontAwesome name="flag" size={RFPercentage(3)} color="#FFF" />
                 <Text style={styles.drawerButtonText}>Report Name</Text>
               </TouchableOpacity>
             </View>
@@ -832,11 +869,7 @@ export default function ConnectionsScreen() {
                 style={styles.drawerButtonStyle}
                 onPress={() => setShowDeleteContactModal(true)}
               >
-                <FontAwesome
-                  name="trash"
-                  size={RFPercentage(3)}
-                  color={Colors.yeetPurple}
-                />
+                <FontAwesome name="trash" size={RFPercentage(3)} color="#FFF" />
                 <Text style={styles.drawerButtonText}>Delete Contact</Text>
               </TouchableOpacity>
 
@@ -847,7 +880,7 @@ export default function ConnectionsScreen() {
                 <FontAwesome
                   name="user-times"
                   size={RFPercentage(3)}
-                  color={Colors.yeetPurple}
+                  color="#FFF"
                 />
                 <Text style={styles.drawerButtonText}>Block Contact</Text>
               </TouchableOpacity>
@@ -874,7 +907,7 @@ const styles = StyleSheet.create({
 
   mainDrawerContainer: {
     width: "100%",
-    paddingHorizontal: width * 0.1,
+    // paddingHorizontal: width * 0.1,
     paddingVertical: height * 0.01,
     alignItems: "center",
     justifyContent: "center",
@@ -913,7 +946,8 @@ const styles = StyleSheet.create({
   },
 
   drawerBioContainer: {
-    width: "50%",
+    // backgroundColor:'red',
+    width: "75%",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -927,13 +961,13 @@ const styles = StyleSheet.create({
 
   drawerBioText: {
     textAlign: "center",
-    fontSize: RFPercentage(1.3),
+    fontSize: RFPercentage(1.75),
     color: Colors.yeetPurple,
   },
 
   drawerNotesText: {
     textAlign: "center",
-    fontSize: RFPercentage(1.3),
+    fontSize: RFPercentage(1.75),
     color: Colors.yeetPurple,
     fontWeight: "bold",
   },
@@ -946,6 +980,7 @@ const styles = StyleSheet.create({
   },
 
   drawerButtonsContainer: {
+    // backgroundColor:'maroon',
     width: "100%",
     flexDirection: "row",
     height: "35%",
@@ -956,24 +991,29 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-evenly",
     marginHorizontal: "2%",
+    // backgroundColor:'green',
   },
 
   drawerButtonStyle: {
-    backgroundColor: "Transparent",
-    borderColor: Colors.yeetPurple,
+    backgroundColor: Colors.yeetPink,
+    // borderColor: Colors.yeetPink,
+    borderColor: Colors.yeetPink,
     borderWidth: 2,
-    borderRadius: 1000,
+    borderRadius: 15,
     paddingVertical: height * 0.0075,
     flexDirection: "row",
+    // backgroundColor:'teal',
     alignItems: "center",
     justifyContent: "center",
   },
 
   drawerButtonText: {
     marginLeft: width * 0.04,
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2),
     fontWeight: "bold",
-    color: Colors.yeetPink,
+    // color: Colors.yeetPink,
+    color: "#FFF",
+    letterSpacing: -0.5,
   },
 
   searchBarContainer: {
@@ -981,7 +1021,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     backgroundColor: "#EFF0E2",
-    borderRadius: 30,
+    borderRadius: 15,
 
     paddingLeft: width * 0.03,
     marginVertical: height * 0.008,

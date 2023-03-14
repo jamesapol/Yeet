@@ -25,24 +25,42 @@ export default function ModalPhotoOptions({
         <View style={styles.modalHeaderContainer}>
           <Text style={styles.modalHeader}>{modalHeader}</Text>
         </View>
-        <View style={styles.modalContent}>
-          <View style={styles.modalButton}>
-            <TouchableOpacity onPress={onUploadImagePressed}>
-              <Text style={styles.modalMessage}>Upload Image</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.modalButton}>
-            <TouchableOpacity onPress={onTakePhotoPressed}>
-              <Text style={styles.modalMessage}>Take a Photo</Text>
-            </TouchableOpacity>
-          </View>
+
+        <View style={styles.modalContentContainer}>
+          <TouchableOpacity
+            onPress={onUploadImagePressed}
+            style={{
+              ...styles.buttons,
+              backgroundColor: Colors.yeetPurple,
+              borderColor: Colors.yeetPurple,
+              marginVertical: "2.5%",
+            }}
+          >
+            <Text style={styles.buttonText}>Upload Image</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={onTakePhotoPressed}
+            style={{
+              ...styles.buttons,
+              backgroundColor: Colors.yeetPurple,
+              borderColor: Colors.yeetPurple,
+              marginVertical: "2.5%",
+            }}
+          >
+            <Text style={styles.buttonText}>Take a Photo</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.modalCancelContainer}>
+
+        <View style={styles.cancelButtonContainer}>
           <TouchableOpacity
             onPress={onCancelPressed}
-            style={styles.cancelButtonContainer}
+            style={{
+              ...styles.buttons,
+              backgroundColor: Colors.yeetPink,
+              borderColor: Colors.yeetPink,
+            }}
           >
-            <Text style={styles.cancelButton}>Cancel</Text>
+            <Text style={styles.buttonText}>Cancel</Text>
           </TouchableOpacity>
         </View>
 
@@ -65,20 +83,21 @@ const styles = StyleSheet.create({
   },
 
   modal: {
-    width: width * 0.7,
-    height: RFPercentage(25),
+    width: RFPercentage(35),
+    height: RFPercentage(35),
     borderRadius: 25,
     backgroundColor: "#ECECEC",
     alignItems: "center",
-    justifyContent: "space-around",
+    // justifyContent: "space-around",
   },
 
   modalHeaderContainer: {
     alignItems: "center",
-    justifyContent: "flex-end",
-    paddingBottom: "1%",
+    justifyContent: "center",
+    // paddingBottom: "1%",
     height: "20%",
-    //   backgroundColor: "#F222",
+    width: "100%",
+    // backgroundColor: "#0222",
   },
 
   modalHeader: {
@@ -86,48 +105,42 @@ const styles = StyleSheet.create({
     fontSize: RFPercentage(2.5),
   },
 
-  modalContent: {
+  modalContentContainer: {
     height: "60%",
+    width: "100%",
+    justifyContent: "flex-start",
+    alignItems: "center",
+    // justifyContent: "center",
+    // alignItems: "center",
+    // backgroundColor: "#5FFF",
+  },
+
+  buttonContainer: {
     width: "100%",
     justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "#F222",
-  },
-
-  modalMessage: {
-    // backgroundColor: "#F222",
-    fontSize: RFPercentage(2),
-    textAlign: "center",
-    marginVertical: "5%",
-  },
-
-  modalButton: {
-    width: "100%",
-    // borderTopWidth: 0.28,
-    // borderTopColor: Colors.yeetBorderGray,
-    // borderBottomWidth: 0.28,
-    // borderBottomColor: Colors.yeetBorderGray,
-  },
-
-  modalCancelContainer: {
-    width: "100%",
-    height: "20%",
-    borderTopColor: Colors.yeetBorderGray,
-    borderTopWidth: 1,
-    // justifyContent: "center",
-    // backgroundColor: "#F222",
   },
 
   cancelButtonContainer: {
-    height: "100%",
-    // backgroundColor: "#F222",
+    width: "100%",
     justifyContent: "center",
     alignItems: "center",
-},
+    height: "20%",
+  },
 
-cancelButton: {
-    fontSize: RFPercentage(1.5),
-    textAlign: "center",
+  buttons: {
+    // backgroundColor:'green',
+    height: RFPercentage(5),
+    width: "90%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 15,
+    borderWidth: 2,
+  },
+
+  buttonText: {
+    fontSize: RFPercentage(2),
     fontWeight: "bold",
+    color: "#FFF",
   },
 });

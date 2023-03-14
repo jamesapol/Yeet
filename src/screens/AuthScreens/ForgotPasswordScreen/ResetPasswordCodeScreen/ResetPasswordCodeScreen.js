@@ -12,6 +12,7 @@ import {
   Keyboard,
 } from "react-native";
 
+import axios from "axios";
 import React from "react";
 import CustomButton from "../../../../components/CustomButton/CustomButton";
 import { useContext } from "react";
@@ -25,6 +26,7 @@ import SectionHeader from "../../../../components/SectionHeader";
 import { useRef } from "react";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
 import { GlobalStyles } from "../../../../styles/GlobalStyles";
+import { BASE_URL } from "../../../../config";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -43,7 +45,8 @@ export default function ResetPasswordCodeScreen({ route }) {
 
     resetCodeModalVisible,
     setResetCodeModalVisible,
-    checkPasswordResetCode,
+    setIsLoading,
+    // checkPasswordResetCode,
   } = useContext(AuthContext);
 
   const { email } = route.params;
@@ -51,6 +54,7 @@ export default function ResetPasswordCodeScreen({ route }) {
   const navigation = useNavigation();
 
   useEffect(() => {
+    console.log(validCode)
     if (validCode) {
       navigation.push("ResetPasswordScreen", { email: email });
       setValidCode(false);
@@ -118,6 +122,50 @@ export default function ResetPasswordCodeScreen({ route }) {
       Keyboard.dismiss();
       checkPasswordResetCode(code, email);
     }
+  };
+
+  const checkPasswordResetCode = async (code, email) => {
+    console.log("object")
+    setIsLoading(true);
+
+    await axios
+      .post(`${BASE_URL}api/checkPasswordResetCode`, {
+        email: email,
+        code: code,
+      })
+      .then((response) => {
+        console.log(response.data)
+        let resetResponse = response.data.data;
+
+        if(resetResponse.invalidCode){
+          setValidCode(false)
+          setResetCodeModalVisible(true);
+          setModalHeader("Error");
+          setModalMessage("You have entered an invalid reset code!");
+        } else if (resetResponse.expiredCode) {
+          setValidCode(false)
+          setResetCodeModalVisible(true);
+          setModalHeader("Error");
+          setModalMessage("This confirmation code is already expired!");
+        } else if (resetResponse.success){
+          setValidCode(true);
+          // setResetCodeModalVisible(true);
+          // setModalHeader("Error");
+          // setModalMessage("This confirmation code is already expired!");
+        }
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        // setResetCodeModalVisible(true);
+        // setModalHeader("Error");
+        // setModalMessage(error.response.data);
+        console.log(error.response.data);
+        // setResetCodeModalVisible(true);
+        // setModalHeader("Error")
+        // setModalMessage("You have entered an");
+        setValidCode(false);
+        setIsLoading(false);
+      });
   };
   return (
     <View style={GlobalStyles.root}>
@@ -239,8 +287,11 @@ export default function ResetPasswordCodeScreen({ route }) {
               setPin6(pin6);
 
               let code = pin1 + pin2 + pin3 + pin4 + pin5 + pin6;
-              Keyboard.dismiss();
-              checkPasswordResetCode(code, email);
+
+              if (pin1 && pin2 && pin3 && pin4 && pin5 && pin6) {
+                Keyboard.dismiss();
+                checkPasswordResetCode(code, email);
+              }
             }}
           />
         </View>

@@ -152,7 +152,7 @@ export default function MyYeetDevicesScreen() {
         // )}
         keyExtractor={(item) => item.nfc_id}
         // keyExtractor={(item, index) => index.toString()}
-        data={ userNFCDevices}
+        data={userNFCDevices}
         renderItem={({ item }) => {
           return (
             <View style={{ width: "100%", paddingHorizontal: width * 0.03 }}>
@@ -176,6 +176,7 @@ export default function MyYeetDevicesScreen() {
                 titleStyle={{
                   color: Colors.yeetPurple,
                   fontWeight: "bold",
+                  fontSize: RFPercentage(2.5),
                 }}
                 descriptionStyle={{ color: "#FFF" }}
                 title={`${item.nfc_code}`}
@@ -209,7 +210,7 @@ export default function MyYeetDevicesScreen() {
                   />
 
                   <Text
-                    style={{ fontSize: RFPercentage(1.3), marginTop: "3%" }}
+                    style={{ fontSize: RFPercentage(1.75), marginTop: "3%" }}
                     onPress={() => {
                       {
                         item
@@ -238,7 +239,7 @@ export default function MyYeetDevicesScreen() {
                     style={{
                       marginTop: "5%",
                       flexDirection: "row",
-                      width: "75%",
+                      width: "100%",
                       justifyContent: "center",
                       alignItems: "center",
                       // backgroundColor: 'red',
@@ -248,22 +249,26 @@ export default function MyYeetDevicesScreen() {
                     <View
                       style={{
                         // backgroundColor: "#0F05",
-                        borderRightWidth: 0.5,
+                        // borderRightWidth: 0.5,
                         justifyContent: "center",
                         alignItems: "center",
                         flex: 1,
                       }}
                     >
                       <TouchableOpacity
-                        style={{ ...styles.buttonStyle }}
+                        style={{
+                          ...styles.buttonStyle,
+                          borderColor: Colors.yeetPurple,
+                          backgroundColor: Colors.yeetPurple
+                        }}
                         onPress={() => {
                           displayYeetDevice(item.nfc_id, item.nfc_code);
                         }}
                       >
                         <MaterialCommunityIcons
                           name="account-eye"
-                          size={RFPercentage(2)}
-                          color="#562C73"
+                          size={RFPercentage(2.5)}
+                          color="#FFF"
                         />
                         <Text style={styles.buttonText}>
                           Display to Profile
@@ -273,7 +278,7 @@ export default function MyYeetDevicesScreen() {
                     <View
                       style={{
                         // backgroundColor: "#00F5",
-                        borderLeftWidth: 0.5,
+                        // borderLeftWidth: 0.5,
                         flex: 1,
                         justifyContent: "center",
                         alignItems: "center",
@@ -282,6 +287,8 @@ export default function MyYeetDevicesScreen() {
                       <TouchableOpacity
                         style={{
                           ...styles.buttonStyle,
+                          borderColor: Colors.yeetPink,
+                          backgroundColor: Colors.yeetPink
                         }}
                         onPress={() => {
                           setYeetCode(item.nfc_code);
@@ -290,8 +297,8 @@ export default function MyYeetDevicesScreen() {
                       >
                         <AntDesign
                           name="disconnect"
-                          size={RFPercentage(2)}
-                          color="#562C73"
+                          size={RFPercentage(2.5)}
+                          color="#FFF"
                         />
                         <Text style={styles.buttonText}>Disconnect</Text>
                       </TouchableOpacity>
@@ -309,13 +316,17 @@ export default function MyYeetDevicesScreen() {
 
 const styles = StyleSheet.create({
   buttonStyle: {
-    backgroundColor: "Transparent",
-    borderColor: "#EFEFEF",
+    // backgroundColor: "Transparent",
+    // borderColor: "#EFEFEF",
     // borderWidth: 2,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: "2.5%",
+    width: "90%",
+    height: RFPercentage(5),
+    borderRadius: 15,
+    borderWidth: 2,
   },
 
   buttons: {
@@ -332,9 +343,9 @@ const styles = StyleSheet.create({
 
   buttonText: {
     marginLeft: "5%",
-    color: "#562C73",
+    color: "#FFF",
 
-    fontSize: RFPercentage(1.4),
+    fontSize: RFPercentage(1.5),
     textAlign: "center",
     fontWeight: "bold",
   },

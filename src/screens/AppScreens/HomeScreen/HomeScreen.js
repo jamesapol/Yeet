@@ -11,6 +11,7 @@ import {
 import React, { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system";
 
 import aboutIcon from "../../../../assets/UXMaterials/icons/flatIcons/purpleIcons/about.png";
 import plusIcon from "../../../../assets/UXMaterials/icons/flatIcons/purpleIcons/plus.png";
@@ -38,6 +39,7 @@ import UserTheme, {
   ButtonStyles,
   Colors,
   GlobalStyles,
+  socialMediaButtonImages,
   TestStyle,
   updateTheme,
 } from "../../../styles/GlobalStyles";
@@ -51,6 +53,8 @@ import { themes } from "../../../../themes/themes";
 import ModalEmbedVideo from "../../../components/ModalEmbedVideo/ModalEmbedVideo";
 import LinksLoadingScreen from "../../../components/LinksLoadingScreen/LinksLoadingScreen";
 import UserProfileComponents from "../../../components/UserProfileComponents/UserProfileComponents";
+
+import { imageRadius } from "../../../styles/GlobalStyles";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -117,25 +121,34 @@ export default function HomeScreen() {
   //     }
   //   }
   // }, [userTheme])
-  const [error, setError] = useState("none");
 
   const [oldLink, setOldLink] = useState();
+  const [oldFile, setOldFile] = useState();
+  const [oldFileTitle, setOldFileTitle] = useState();
   const [linkID, setLinkID] = useState();
   const [linkIndex, setLinkIndex] = useState();
   const [linkName, setLinkName] = useState();
   const [linkURL, setLinkURL] = useState();
   const [linkImage, setLinkImage] = useState();
 
-  const [linkURLHeader, setLinkURLHeader] = useState();
-  const [linkURLContent, setLinkURLContent] = useState();
+  const [linkError, setLinkError] = useState(false);
+
+  // NEW LINK AND LINK NAME THAT USER IS ABOUT TO PLACE
+  const [newLinkName, setNewLinkName] = useState();
+  const [newLink, setNewLink] = useState();
+
+  const [oldLinkName, setOldLinkName] = useState();
+  // const [oldLink, setOldLink] = useState();
 
   const [paymentModalVisible, setPaymentModalVisible] = useState(false);
   const [fileModalVisible, setFileModalVisible] = useState(false);
   const [customLinkModalVisible, setCustomLinkModalVisible] = useState(false);
   const [customLinkNameErrorVisible, setCustomLinkNameErrorVisible] =
-    useState("none");
+    useState(false);
   const [customLinkURLErrorVisible, setCustomLinkURLErrorVisible] =
-    useState("none");
+    useState(false);
+  const [customLinkNameError, setCustomLinkNameError] = useState();
+  const [customLinkError, setCustomLinkError] = useState();
 
   const [embedVideoModalVisible, setEmbedVideoModalVisible] = useState(false);
   const [embedVideoURL, setEmbedVideoURL] = useState();
@@ -218,11 +231,17 @@ export default function HomeScreen() {
     });
     console.log(result);
     if (result.uri) {
-      setFileURI(result.uri);
-      setFileSize(result.size);
-      setFileName(result.name);
-      setFileType(result.mimeType);
-
+      const fileInfo = await FileSystem.getInfoAsync(result.uri);
+      if (fileInfo.size >= 5000000) {
+        setErrorMessageModalVisible(true);
+        setModalHeader("Error");
+        setModalMessage("File Size exceeds 5MB!");
+      } else {
+        setFileURI(result.uri);
+        setFileSize(result.size);
+        setFileName(result.name);
+        setFileType(result.mimeType);
+      }
       // setShowEmbedModal(true);
     }
   };
@@ -258,14 +277,15 @@ export default function HomeScreen() {
     setCustomLinkModalVisible(false);
     setEditLinkMessageModalVisible(false);
     setErrorMessageModalVisible(false);
-    setCustomLinkNameErrorVisible("none");
-    setCustomLinkURLErrorVisible("none");
+    setCustomLinkNameErrorVisible(false);
+    setCustomLinkURLErrorVisible(false);
     setImage();
     setFileURI();
     setFileName();
     setFileTitle();
     setFileType();
-    setError("none");
+
+    setLinkError(false);
     setEmbedVideoModalVisible(false);
     setEmbedVideoTitleErrorVisible("none");
     setEmbedVideoURLErrorVisible("none");
@@ -280,47 +300,35 @@ export default function HomeScreen() {
   };
 
   const onSavePressed = () => {
-    if (!linkURLContent) {
-      setError("flex");
+    if (!linkURL) {
+      setLinkError(true);
     } else {
-      let newLinkURL;
-      if (!linkURLHeader) {
-        newLinkURL = linkURLContent;
-      } else {
-       newLinkURL = linkURLHeader + linkURLContent;
-      }
-
-      if (linkURL == newLinkURL) {
-        setErrorMessageModalVisible(true);
-        setModalHeader("Error");
-        setModalMessage("You have entered a duplicate link!");
-      } else {
+      {
         console.log(linkIndex);
-        console.log(newLinkURL);
-        // let linkURL = linkURLHeader + linkURLContent;
-        // console.log(linkURL);
-        editLink(linkIndex, newLinkURL);
+        editLink(linkIndex, linkURL);
         setShowModal(false);
         setShowInputModal(false);
         setEditLinkMessageModalVisible(false);
-        setError("none");
+
+        setLinkError(false);
       }
     }
   };
 
   const onCustomLinkSavePressed = () => {
     if (!customLinkName) {
-      setCustomLinkNameErrorVisible("flex");
+      setCustomLinkNameErrorVisible(true);
+      setCustomLinkNameError("PLEASE ENTER A LINK NAME!");
     }
     if (!customLinkURL) {
-      setCustomLinkURLErrorVisible("flex");
-    }
-    if (customLinkName && customLinkURL) {
+      setCustomLinkURLErrorVisible(true);
+      setCustomLinkError("PLEASE ENTER A LINK!");
+    } else {
       editCustomLink(linkIndex, customLinkName, customLinkURL);
 
       setCustomLinkModalVisible(false);
-      setCustomLinkNameErrorVisible("none");
-      setCustomLinkURLErrorVisible("none");
+      setCustomLinkNameErrorVisible(false);
+      setCustomLinkURLErrorVisible(false);
       setCustomLinkName();
       setCustomLinkURL();
     }
@@ -403,10 +411,10 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.root}>
-      {/* {userInfoLoading == true ? <LoadingScreen /> : null} */}
-      {/* {userLinksLoading == true ? <LinksLoadingScreen /> : null} */}
-
       <View>
+        {/* FOR CHECKING ICONS IF CENTERED OR NOT */}
+        {/* <View style={styles.line} /> */}
+
         {/* FOR FIRST TIME REGISTRATION */}
         {registered ? (
           <Modal
@@ -422,9 +430,7 @@ export default function HomeScreen() {
               onOKPressed={closeRegistrationModal}
             />
           </Modal>
-        ) : (
-          ""
-        )}
+        ) : null}
 
         {/* UPON REACTIVATION OF ACCOUNT */}
         <Modal
@@ -480,25 +486,24 @@ export default function HomeScreen() {
           onRequestClose={onCancelPressed}
         >
           <ModalTextInput
-            value={linkURLContent}
-            // onChangeText={setLinkURLContent}
+            value={linkURL}
             onChangeText={(text) => {
               if (!text) {
-                setError("flex");
-                setLinkURLContent();
+                setLinkError(true);
+                setLinkURL();
               } else {
                 if (text.includes(" ")) {
-                  setLinkURLContent(text.trim());
+                  setLinkURL(text.trim());
                 } else {
-                  setError("none");
+                  setLinkError(false);
                   // if (){}
-                  // console.log(text);
-                  setLinkURLContent(text);
+                  console.log(text);
+                  setLinkURL(text);
                 }
               }
             }}
-            warningVisible={error}
-            defaultValue={linkURLHeader}
+            saveDisabled={!linkURL || linkURL === oldLink ? true : false}
+            warningVisible={linkError}
             linkName={linkName}
             linkImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
             onCancelPressed={onCancelPressed}
@@ -518,35 +523,51 @@ export default function HomeScreen() {
             // placeholder={linkURL}
             customLinkNameValue={customLinkName}
             customLinkURLValue={customLinkURL}
+            linkNameErrorMessage={customLinkNameError}
             // linkName={linkName}
             linkImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
             onLinkNameChangeText={(text) => {
               if (!text) {
-                setCustomLinkNameErrorVisible("flex");
+                setCustomLinkNameErrorVisible(true);
+                setCustomLinkNameError("PLEASE ENTER A LINK NAME!");
+                // setNewLinkName();
                 setCustomLinkName();
               } else {
-                setCustomLinkNameErrorVisible("none");
+                setCustomLinkNameErrorVisible(false);
                 setCustomLinkName(text);
+                // setNewLinkName(text);
               }
             }}
+            linkURLErrorMessage={customLinkError}
             onLinkURLChangeText={(text) => {
               if (!text) {
-                setCustomLinkURLErrorVisible("flex");
+                setCustomLinkURLErrorVisible(true);
+                setCustomLinkError("PLEASE ENTER A LINK!");
                 setCustomLinkURL();
+                // setNewLink();
               } else {
-                setCustomLinkURLErrorVisible("none");
                 if (text.includes(" ")) {
                   setCustomLinkURL(text.trim());
+                  // setNewLink(text.trim());
                 } else {
+                  setCustomLinkURLErrorVisible(false);
                   setCustomLinkURL(text);
+                  setCustomLinkError();
+
+                  // setNewLink(text)
                 }
               }
             }}
             linkNameWarningVisible={customLinkNameErrorVisible}
             linkURLWarningVisible={customLinkURLErrorVisible}
+            saveDisabled={
+              (customLinkName === oldLinkName && customLinkURL === oldLink) ||
+              !customLinkName | !customLinkURL
+                ? true
+                : false
+            }
             onCancelPressed={onCancelPressed}
             onSavePressed={onCustomLinkSavePressed}
-            warningVisible={error}
           />
         </Modal>
 
@@ -591,13 +612,20 @@ export default function HomeScreen() {
             embedVideoURLErrorMessage={embedVideoURLErrorMessage}
             onCancelPressed={onCancelPressed}
             onSavePressed={onEmbedVideoSaved}
+            saveDisabled={
+              !embedVideoURL ||
+              !embedVideoTitle ||
+              (oldLink === embedVideoURL && oldLinkName === embedVideoTitle)
+                ? true
+                : false
+            }
           />
         </Modal>
 
         {/* SHOW PAYMENT MODAL */}
         <Modal
           transparent
-          animationType="fade"
+          animationType="none"
           hardwareAccelerated
           visible={paymentModalVisible}
           onRequestClose={onCancelPressed}
@@ -609,13 +637,14 @@ export default function HomeScreen() {
                 ? `${BASE_URL}images/payments/gcash/${linkURL}`
                 : linkID == 24
                 ? `${BASE_URL}images/payments/paymaya/${linkURL}`
-                : `${BASE_URL}images/payments/paymongo/${linkURL}`}
+                : `${BASE_URL}images/payments/paymongo/${linkURL}`
+            }
             cancelText="Close"
             onCancelPressed={onCancelPressed}
             modalImage={{ uri: `${BASE_URL}images/social-logo/${linkImage}` }}
-            
           />
         </Modal>
+
         {/* SHOW PDF MODAL */}
         <Modal
           transparent
@@ -633,6 +662,11 @@ export default function HomeScreen() {
             fileName={fileName}
             onChangeText={(text) => setFileTitle(text)}
             onUploadFilePressed={pickPDF}
+            saveDisabled={
+              (oldFileTitle === fileTitle && !fileURI) || !fileTitle
+                ? true
+                : false
+            }
           />
         </Modal>
 
@@ -659,15 +693,16 @@ export default function HomeScreen() {
               />
               {userInfoLoading == false ? (
                 <View style={styles.mainContentContainer}>
-                  <CustomButton
-                    bgColor="transparent"
-                    fgColor="#562C73"
-                    btnText="Edit Profile"
-                    borderColor={Colors.yeetPurple}
-                    borderWidth="2"
-                    onPress={onEditProfilePressed}
-                  />
-
+                  <View style={styles.editProfileContainer}>
+                    <CustomButton
+                      bgColor="transparent"
+                      fgColor="#562C73"
+                      btnText="Edit Profile"
+                      borderColor={Colors.yeetPurple}
+                      borderWidth="2"
+                      onPress={onEditProfilePressed}
+                    />
+                  </View>
                   <View
                     style={{ flexDirection: "row", justifyContent: "center" }}
                   >
@@ -695,7 +730,7 @@ export default function HomeScreen() {
                       />
                       <Text style={styles.buttonText}>Direct Link</Text>
                       <Switch
-                        style={{ height: RFPercentage(2.5) }}
+                        style={{ height: RFPercentage(2) }}
                         disabled={userDirectLink == 0 ? true : false}
                         trackColor={{ false: "#767577", true: "#D81D4C55" }}
                         thumbColor={userDirectLink == 1 ? "#D81D4C" : "#F4F3F4"}
@@ -711,15 +746,25 @@ export default function HomeScreen() {
                         width: "100%",
                         justifyContent: "center",
                         alignItems: "center",
+                        marginBottom: "10%",
                       }}
                     >
+                      <Text
+                        style={{
+                          fontSize: RFPercentage(3),
+                          marginVertical: "5%",
+                        }}
+                      >
+                        You have no links yet.
+                      </Text>
                       <Image
                         source={noLinks}
                         resizeMode="center"
                         style={{
-                          marginVertical: "5%",
-                          height: RFPercentage(20),
-                          width: RFPercentage(30),
+                          // backgroundColor:'red',
+                          marginVertical: "2.5%",
+                          height: height * 0.32,
+                          width: width * 0.65,
                         }}
                       />
                       <View
@@ -749,7 +794,9 @@ export default function HomeScreen() {
               <View>
                 <LoadingResource />
               </View>
-            ) : null
+            ) : (
+              <View style={{ marginBottom: "5%" }}></View>
+            )
           }
           keyExtractor={(item) => item.uln_id}
           data={
@@ -759,7 +806,6 @@ export default function HomeScreen() {
                 : null
               : null
           }
-          // data={userInfoLoading == false ? userLinks : null}
           renderItem={({ item, index }) => {
             if (userInfoLoading == false) {
               if (item.addLinks) {
@@ -767,10 +813,8 @@ export default function HomeScreen() {
                   <TouchableOpacity
                     style={[
                       {
-                        marginLeft:
-                          index % 3 == 0 ? width * 0.15 : width * 0.025,
-                        marginRight:
-                          index % 3 == 2 ? width * 0.15 : width * 0.025,
+                        marginLeft: index % 3 == 0 ? width * 0.05 : 0,
+                        marginRight: index % 3 == 2 ? width * 0.05 : 0,
                         display: userLinks.length == 0 ? "none" : "flex",
                       },
 
@@ -785,30 +829,33 @@ export default function HomeScreen() {
                         height: width * 0.13,
                         opacity: 1,
                       }}
-                      resizeMode="stretch"
+                      resizeMode="contain"
                     />
-                    <Text
+                    {/* <Text
                       style={{
-                        fontSize: RFPercentage(1.3),
+                        marginTop: "3%",
+                        textAlign: "center",
+                        fontSize: RFPercentage(1.75),
                       }}
                     >
                       Add Link
-                    </Text>
+                    </Text> */}
                   </TouchableOpacity>
                 );
                 // }
               }
+
               return (
                 <TouchableOpacity
                   style={[
                     {
-                      marginLeft: index % 3 == 0 ? width * 0.15 : width * 0.025,
-                      marginRight:
-                        index % 3 == 2 ? width * 0.15 : width * 0.025,
+                      marginLeft: index % 3 == 0 ? width * 0.05 : 0,
+                      marginRight: index % 3 == 2 ? width * 0.05 : 0,
                     },
                     ButtonStyles.socialMediaButtons,
                   ]}
                   onPress={() => {
+                    // FOR PAYMENT
                     if (
                       item.lnk_id == 23 ||
                       item.lnk_id == 24 ||
@@ -820,47 +867,45 @@ export default function HomeScreen() {
                       setLinkURL(item.uln_url);
                       setLinkImage(item.lnk_image);
                       setLinkIndex(item.uln_id);
-
-                      console.log(item.uln_id);
-                    } else if (item.lnk_id == 25 || item.lnk_id == 27) {
-                      setShowInputModal(true);
-                      console.log(item.uln_url);
-                      setLinkName(item.lnk_name);
-                      setLinkURLContent(item.uln_url);
-                      setLinkImage(item.lnk_image);
-                      setLinkIndex(item.uln_id);
-                      setLinkURLHeader();
-                      // let linkContent = item.uln_url.replace(item.lnk_url, "");
-                    } else if (item.lnk_id == 30) {
+                    }
+                    // FOR YOUTUBE LINK
+                    else if (item.lnk_id == 30) {
                       setEmbedVideoModalVisible(true);
                       setLinkImage(item.uln_youtube_thumbnail);
                       setEmbedVideoTitle(item.uln_custom_link_name);
                       setEmbedVideoURL(item.uln_url);
                       setLinkIndex(item.uln_id);
+                      setOldLinkName(item.uln_custom_link_name);
                       setOldLink(item.uln_url);
-                    } else if (item.lnk_id == 31) {
+                    }
+                    // FOR FILES/PDF
+                    else if (item.lnk_id == 31) {
                       setFileTitle(item.uln_file_title);
+                      setOldFileTitle(item.uln_file_title);
                       setFileName(item.uln_original_file_name);
-                      setFile(item.uln_file);
+                      setFile(item.uln_url);
+                      setOldFile(item.uln_url);
                       setLinkIndex(item.uln_id);
                       setFileModalVisible(true);
-                    } else if (item.lnk_id == 32) {
+                    }
+                    // FOR CUSTOM LINK
+                    else if (item.lnk_id == 32) {
                       setCustomLinkModalVisible(true);
                       setCustomLinkName(item.uln_custom_link_name);
                       setCustomLinkURL(item.uln_url);
+                      setOldLink(item.uln_url);
+                      setOldLinkName(item.uln_custom_link_name);
                       setLinkImage(item.lnk_image);
                       setLinkIndex(item.uln_id);
-                      console.log(item.uln_id);
-                    } else {
+                    }
+                    // FOR THE FUCKING REST
+                    else {
                       setShowInputModal(true);
                       setLinkName(item.lnk_name);
                       setLinkURL(item.uln_url);
                       setLinkImage(item.lnk_image);
                       setLinkIndex(item.uln_id);
-                      setLinkURLHeader(item.lnk_url);
-
-                      let linkContent = item.uln_url.replace(item.lnk_url, "");
-                      setLinkURLContent(linkContent);
+                      setOldLink(item.uln_url);
                     }
                     // console.log(item.lnk_id);
                     // onLinkPressed
@@ -870,18 +915,17 @@ export default function HomeScreen() {
                   // }}
                 >
                   <Image
-                    prefetch
                     source={
                       item.lnk_id == 30
-                        ? { uri: item.uln_youtube_thumbnail }
+                        ? { uri: item.uln_youtube_thumbnail, cache: true }
                         : {
                             uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
+                            cache: true,
                           }
                     }
                     style={{
-                      borderRadius: item.lnk_id == 30 ? 20 : null,
-                      width: width * 0.13,
-                      height: width * 0.13,
+                      ...socialMediaButtonImages(item.lnk_id),
+
                       opacity:
                         userDirectLink == 1
                           ? userDirectLinkID == item.uln_id
@@ -893,11 +937,7 @@ export default function HomeScreen() {
                   />
                   {/* <Text>{item.uln_id}</Text>
                         <Text>{item.lnk_id}</Text> */}
-                  <Text
-                    style={{
-                      fontSize: RFPercentage(1.5),
-                    }}
-                  >
+                  <Text style={ButtonStyles.socialMediaButtonText}>
                     {item.lnk_id == 30
                       ? item.uln_custom_link_name
                       : item.lnk_id == 31
@@ -928,19 +968,25 @@ let styles = StyleSheet.create({
     paddingBottom: height * 0.5,
   },
 
+  editProfileContainer: {
+    width: "80%",
+  },
+
   fontColor: {
     color: bgTest,
   },
 
   mainContainer: {
     flex: 1,
+    // justifyContent:'center',
     alignItems: "center",
   },
 
   mainContentContainer: {
     // backgroundColor: "#00f4",
+    alignItems: "center",
     marginBottom: "2.5%",
-    width: "70%",
+    width: "100%",
     flex: 1,
   },
 
@@ -963,6 +1009,17 @@ let styles = StyleSheet.create({
   },
 
   buttonText: {
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(1.75),
+    letterSpacing: -0.5,
+  },
+
+  line: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    height: "100%",
+    width: 1,
+    backgroundColor: "black",
+    zIndex: 1,
   },
 });

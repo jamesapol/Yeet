@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#562C73",
 
-    fontSize: RFPercentage(2),
+    fontSize: RFPercentage(1.75),
     textAlign: "center",
     fontWeight: "bold",
     height: "30%",
@@ -294,14 +294,14 @@ const styles = StyleSheet.create({
   socialMediaText: {
     color: "#562C73",
     fontWeight: "900",
-    fontSize: RFPercentage(2),
+    fontSize: RFPercentage(2.3),
   },
 
   socialMediaLinkText: {
     color: "#D81D4C",
     // maxWidth: '100%',
     fontWeight: "400",
-    fontSize: RFPercentage(1.3),
+    fontSize: RFPercentage(1.25),
     // backgroundColor: 'green'
   },
 

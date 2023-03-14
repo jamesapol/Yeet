@@ -136,7 +136,7 @@ export default function AddConnectionQRScreen() {
             { alignItems: "center", justifyContent: "center" },
           ]}
         >
-          <View
+          {/* <View
             style={[
               {
                 backgroundColor: "#fff0",
@@ -187,7 +187,7 @@ export default function AddConnectionQRScreen() {
                   bottom: -5,
                 }}
               />
-          </View>
+          </View> */}
         </View>
       </View>
     </View>

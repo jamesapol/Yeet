@@ -63,6 +63,7 @@ export default function ResetPasswordScreen({ route }) {
 
   const togglePasswordHidden = () =>
     setPasswordHidden((previousState) => !previousState);
+    // console.log(email)
   const toggleConfirmPasswordHidden = () =>
     setConfirmPasswordHidden((previousState) => !previousState);
 
@@ -271,24 +272,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: width * 0.05,
   },
 
-  emailInputContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    // backgroundColor: "#000",
-    backgroundColor: "#DEE0E2",
-    borderRadius: 30,
-
-    paddingLeft: width * 0.04,
-    paddingVertical: height * 0.002,
-    marginVertical: height * 0.008,
-  },
-
   inputContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderRadius: 1000,
+    borderRadius: 15,
     backgroundColor: "#DEE0E2",
 
     paddingHorizontal: width * 0.03,
@@ -298,7 +286,7 @@ const styles = StyleSheet.create({
 
   inputLabel: {
     color: "#562C73",
-    fontSize: RFPercentage(1.7),
+    fontSize: RFPercentage(2),
     fontWeight: "900",
   },
 
@@ -312,13 +300,6 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingHorizontal: width * 0.1,
     alignSelf: "center",
-  },
-
-  footerText: {
-    marginTop: height * 0.015,
-    color: Colors.yeetPurple,
-    fontSize: RFPercentage(1.5),
-    textAlign: "center",
   },
 
   errorContainer: {

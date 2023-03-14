@@ -14,6 +14,7 @@ import {
   TextInput,
   Button,
 } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import React, { useState } from "react";
 
 import * as SecureStore from "expo-secure-store";
@@ -61,6 +62,7 @@ function getLastName(name) {
 
 export default function PublicProfileScreen({ route }) {
   const {
+    userInfo,
     showPublicProfile,
     publicProfileLoading,
     setShowModal,
@@ -79,6 +81,9 @@ export default function PublicProfileScreen({ route }) {
     setPublicProfileLoading,
     addLinkTap,
     addProfileTap,
+
+    addConnectionModalVisible,
+    setAddConnectionModalVisible,
 
     userNotFound,
     setUserNotFound,
@@ -131,10 +136,20 @@ export default function PublicProfileScreen({ route }) {
     setPaymentImageVisible(false);
     setShowModal(false);
     setErrorURLModalVisible(false);
+    setAddConnectionModalVisible(false);
   };
 
   const onRefresh = () => {};
 
+  const handleOpenLink = async (link) => {
+    try {
+      await WebBrowser.openBrowserAsync(link);
+    } catch (error) {
+      setErrorURLModalVisible(true);
+      setModalHeader("Error");
+      setModalMessage("This link cannot be opened and may be broken.");
+    }
+  };
   return (
     // <View style={{flex: 1, justifyContent:'center', alignItems:'center'}}>
     //   <Text>{id}</Text>
@@ -180,9 +195,12 @@ export default function PublicProfileScreen({ route }) {
           }}
           // onPress={pageAction}
           onPress={() => {
-            Linking.openURL(
-              `${BASE_URL}api/saveContact/${publicProfileInfo.usr_id}`
+            handleOpenLink(
+              `${BASE_URL}api/saveContact/${publicProfileInfo.usr_uuid}`
             );
+            // Linking.openURL(
+            //   `${BASE_URL}api/saveContact/${publicProfileInfo.usr_uuid}`
+            // );
           }}
         >
           <FontAwesome5
@@ -214,6 +232,7 @@ export default function PublicProfileScreen({ route }) {
         </View>
       ) : (
         <>
+          {/* VIEW PAYMENT QR MODAL */}
           <Modal
             transparent
             animationType="fade"
@@ -244,6 +263,21 @@ export default function PublicProfileScreen({ route }) {
             animationType="fade"
             hardwareAccelerated
             visible={errorURLModalVisible}
+            onRequestClose={closeModal}
+          >
+            <ModalMessage
+              modalHeader={modalHeader}
+              modalMessage={modalMessage}
+              onOKPressed={closeModal}
+            />
+          </Modal>
+
+          {/* SUCCESS MODAL */}
+          <Modal
+            transparent
+            animationType="fade"
+            hardwareAccelerated
+            visible={addConnectionModalVisible}
             onRequestClose={closeModal}
           >
             <ModalMessage
@@ -316,10 +350,9 @@ export default function PublicProfileScreen({ route }) {
                     <View style={GlobalStyles.userNameContainer}>
                       <Text style={GlobalStyles.userNameText}>
                         {publicProfileLoading == false
-                          ? userPrivateStatus == 1
-                            ? publicProfileInfo.usr_uuid
-                            : publicProfileInfo.usr_name
+                          ? publicProfileInfo.usr_name
                           : null}
+                        {/* // {publicProfileInfo.usr_uuid != userUUID ? "true" : "False"} */}
                       </Text>
                     </View>
                     <View style={GlobalStyles.userBioContainer}>
@@ -327,13 +360,16 @@ export default function PublicProfileScreen({ route }) {
                         {publicProfileLoading == false
                           ? publicProfileInfo.usr_bio
                           : null}
+                        {/* {userUUID} */}
+                        {/* {publicConnectionStatus} */}
                       </Text>
                     </View>
                   </View>
 
                   {publicProfileLoading == false ? (
                     userUUID ? (
-                      !publicConnectionStatus == 1 ? (
+                      publicConnectionStatus == 0 &&
+                      publicProfileInfo.usr_uuid != userUUID ? (
                         <View style={styles.addContactContainer}>
                           <CustomButton
                             bgColor="transparent"
@@ -362,10 +398,8 @@ export default function PublicProfileScreen({ route }) {
                   <TouchableOpacity
                     style={[
                       {
-                        marginLeft:
-                          index % 3 == 0 ? width * 0.15 : width * 0.025,
-                        marginRight:
-                          index % 3 == 2 ? width * 0.15 : width * 0.025,
+                        marginLeft: index % 3 == 0 ? width * 0.05 : 0,
+                        marginRight: index % 3 == 2 ? width * 0.05 : 0,
                       },
                       ButtonStyles.socialMediaButtons,
                     ]}
@@ -387,22 +421,23 @@ export default function PublicProfileScreen({ route }) {
                         setPaymentImageVisible(true);
                       } else if (item.lnk_id == 31) {
                         Linking.openURL(
-                          `${BASE_URL}api/downloadFile/` + item.uln_file
+                          `${BASE_URL}api/downloadFile/` + item.uln_url
                         );
-                        console.log(item.uln_file);
-                        console.log(item.uln_original_file_name);
+                        // console.log(item.uln_file);
+                        // console.log(item.uln_original_file_name);
                       } else {
-                        Linking.canOpenURL(item.uln_url).then((supported) => {
-                          if (supported) {
-                            Linking.openURL(item.uln_url);
-                          } else {
-                            setErrorURLModalVisible(true);
-                            setModalHeader("Error");
-                            setModalMessage(
-                              "This link cannot be opened and may be broken."
-                            );
-                          }
-                        });
+                        handleOpenLink(item.uln_url);
+                        // Linking.canOpenURL(item.uln_url).then((supported) => {
+                        //   if (supported) {
+                        //     Linking.openURL(item.uln_url);
+                        //   } else {
+                        //     setErrorURLModalVisible(true);
+                        //     setModalHeader("Error");
+                        //     setModalMessage(
+                        //       "This link cannot be opened and may be broken."
+                        //     );
+                        //   }
+                        // });
                       }
                     }}
                   >
@@ -415,7 +450,27 @@ export default function PublicProfileScreen({ route }) {
                             }
                       }
                       style={{
-                        borderRadius: item.lnk_id == 30 ? 20 : null,
+                        borderWidth:
+                          item.lnk_id == 8 ||
+                          item.lnk_id == 16 ||
+                          item.lnk_id == 24 ||
+                          item.lnk_id == 25 ||
+                          item.lnk_id == 31 ||
+                          item.lnk_id == 32
+                            ? 2
+                            : 0,
+                        borderColor: Colors.yeetGray,
+                        borderRadius:
+                          item.lnk_id == 30
+                            ? 20
+                            : item.lnk_id == 8 ||
+                              item.lnk_id == 16 ||
+                              item.lnk_id == 24 ||
+                              item.lnk_id == 25 ||
+                              item.lnk_id == 31 ||
+                              item.lnk_id == 32
+                            ? 5000
+                            : null,
                         width: width * 0.13,
                         height: width * 0.13,
                       }}
@@ -425,7 +480,9 @@ export default function PublicProfileScreen({ route }) {
               <Text>{item.lnk_id}</Text> */}
                     <Text
                       style={{
-                        fontSize: RFPercentage(1.3),
+                        marginTop: "3%",
+                        textAlign: "center",
+                        fontSize: RFPercentage(2),
                       }}
                     >
                       {item.lnk_id == 30
@@ -457,6 +514,7 @@ const styles = StyleSheet.create({
   addContactContainer: {
     width: "50%",
     flex: 1,
+    marginBottom: "5%",
   },
 
   textInputHeaderText: {

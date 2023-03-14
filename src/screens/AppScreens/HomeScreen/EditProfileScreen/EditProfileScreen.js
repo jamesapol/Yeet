@@ -291,7 +291,7 @@ export default function HomeScreen() {
   };
 
   const onSavePressed = () => {
-    console.log(!userBio)
+    console.log(!userBio);
     // let bio = userBio;
     // if(bio === null){
     //   bio == null;
@@ -548,15 +548,12 @@ export default function HomeScreen() {
           <View style={styles.mainContentContainer}>
             <View style={styles.userInfoContainer}>
               <Text
-                style={{
-                  marginLeft: "5%",
-                  marginBottom: "1%",
-                  fontSize: RFPercentage(1.5),
-                }}
+                style={styles.labelText}
               >
                 Full Name
               </Text>
               <TextInput
+                maxLength={35}
                 autoCapitalize="words"
                 value={_userName}
                 onChangeText={(text) => {
@@ -586,11 +583,7 @@ export default function HomeScreen() {
               </Text>
 
               <Text
-                style={{
-                  marginLeft: "5%",
-                  marginBottom: "1%",
-                  fontSize: RFPercentage(1.5),
-                }}
+                style={styles.labelText}
               >
                 Bio
               </Text>
@@ -603,7 +596,7 @@ export default function HomeScreen() {
                 onChangeText={(text) => {
                   // console.log(text)
                   if (!text) {
-                    _setUserBio("")
+                    _setUserBio("");
                     // setUserBio("");
                   } else {
                     _setUserBio(text);
@@ -663,6 +656,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     width: "100%",
+    marginBottom: '10%'
     // marginBottom: hp("7%"),
   },
 
@@ -679,23 +673,32 @@ const styles = StyleSheet.create({
     // backgroundColor: "#00f3",
   },
 
+  labelText: {
+    marginLeft: "5%",
+    marginBottom: "1%",
+    fontSize: RFPercentage(2),
+    fontWeight: 'bold',
+    letterSpacing: -0.5,
+  },
+
   editInput: {
     width: "100%",
     borderColor: "#562C73",
     borderWidth: 2,
     borderRadius: 15,
-    fontSize: RFPercentage(1.75),
+    fontSize: RFPercentage(2),
     paddingHorizontal: width * 0.03,
-    paddingVertical: height * 0.01,
+    paddingVertical: height * 0.015,
     // marginBottom: height * 0.015,
     backgroundColor: "#EFF1F0",
+    letterSpacing: -0.5,
   },
 
   warningText: {
     marginLeft: "5%",
     marginTop: "1%",
     marginBottom: "5%",
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(1.75),
     fontWeight: "bold",
     color: Colors.yeetPink,
   },
@@ -718,12 +721,13 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    marginBottom: height * 0.01,
+    // marginBottom: height * 0.01,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 50,
     // paddingHorizontal: width * 0.1,
     paddingVertical: height * 0.013,
+    marginBottom: '5%',
   },
 });

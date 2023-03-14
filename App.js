@@ -92,33 +92,6 @@ export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
   const [expoPushToken, setExpoPushToken] = useState("");
 
-  const getNotificationPushToken = async (userLinkID) => {
-    let userUUID = await SecureStore.getItemAsync("userUUID");
-    let userToken = await SecureStore.getItemAsync("userToken");
-
-    await axios
-      .post(
-        `${BASE_URL}api/removeLink`,
-        {
-          userUUID: userUUID,
-          userLinkID: userLinkID,
-        },
-        {
-          headers: { Authorization: `Bearer ${userToken}` },
-        }
-      )
-      .then((response) => {
-        console.log(response.data);
-
-        // getUserLinks(userUUID, userToken);
-        // setIsLoading(false);
-      })
-      .catch((error) => {
-        console(error.response);
-        setUserLinksLoading(false);
-      });
-  };
-
   useEffect(() => {
     // (async () => {
     //   let { status } = await Location.requestForegroundPermissionsAsync();
@@ -135,9 +108,9 @@ export default function App() {
       if (Platform.OS !== "web") {
         const { status } =
           await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== "granted") {
-          alert("Sorry, we need camera roll permissions to make this work!");
-        }
+        // if (status !== "granted") {
+        //   alert("Sorry, we need camera roll permissions to make this work!");
+        // }
       }
     })();
 

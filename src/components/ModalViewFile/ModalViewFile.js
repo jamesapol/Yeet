@@ -35,6 +35,7 @@ export default function ModalViewFile({
   fileTitle,
   onChangeText,
   onUploadFilePressed,
+  saveDisabled,
   disabled = true,
 }) {
   const [link, setLink] = useState(false);
@@ -44,104 +45,71 @@ export default function ModalViewFile({
       <View style={styles.modal}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeaderContainer}>
-            {/* {fileType == "application/pdf" ? ( */}
+            <Image
+              source={pdfIcon}
+              resizeMode="cover"
+              style={{ height: RFPercentage(6), width: RFPercentage(6), marginVertical: '3%' }}
+            />
+
             <View
               style={{
-                ...styles.fileContainer,
+                // backgroundColor: "#5623",
+                justifyContent: "center",
+                width: "50%",
               }}
             >
-              <View
-                style={{
-                  height: "100%",
-                  width: "25%",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  // display: file ? "flex" : "none",
-                    // backgroundColor: "blue",
-                }}
-              >
-                <Image
-                  source={pdfIcon}
-                  resizeMode="cover"
-                  style={{ height: RFPercentage(5), width: RFPercentage(5) }}
-                />
-              </View>
-              <View
-                style={{
-                  //   backgroundColor: "blue",
-                  maxWidth: "50%",
-                  minWidth: "20%",
-                  //   width:'30%',
-                  //   marginBottom: "5%",
-                }}
-              >
-                <TextInput
-                  style={styles.link}
-                  value={fileTitle}
-                  onChangeText={onChangeText}
-                  numberOfLines={1}
-                  multiline={true}
-                  maxLength={64}
-                  autoFocus
-                  placeholder="PDF"
-                  //   placeholder={
-                  //     fileType == "application/pdf" ? "PDF Title" : "Image Title"
-                  //   }
-                />
-              </View>
-              
-            </View>
-            <Text
-              style={{
-                ...styles.buttonText,
-                // display: fileSize > 10000000 ? "flex" : "none",
-                // display: fileSize > 1000000 ? "flex" : "none",
-                color: Colors.yeetPurple,
-              }}
-            >
-                {fileName}
-            </Text>
-            {/* ) : (
-              <Image
-                source={{ uri: fileUri }}
-                resizeMode="cover"
-                style={{
-                  ...styles.modalImage,
-                  display: !file ? "none" : "flex",
-                }}
+              <TextInput
+                style={styles.link}
+                value={fileTitle}
+                onChangeText={onChangeText}
+                numberOfLines={1}
+                multiline={true}
+                maxLength={20}
+                autoFocus
+                placeholder="PDF"
               />
-            )} */}
-
-            {/* {file ? ( */}
-
-            {/* ) : null} */}
+            </View>  
             <Text
               style={{
-                ...styles.buttonText,
-                display: fileSize > 10000000 ? "flex" : "none",
-                // display: fileSize > 1000000 ? "flex" : "none",
-                color: Colors.yeetPink,
+                fontSize: RFPercentage(1.5),
+                color: "#D81D4C",
+                display: !fileTitle ? "flex" : "none",
               }}
             >
-              File size exceeds 10 MB.
+              PLEASE ENTER A FILE NAME
             </Text>
-            <View
+          </View>
+
+          <View style={styles.fileContainer}>
+            <View style={{ width: "90%" }}>
+              <Text
+                style={{
+                  textAlign: "center",
+                  fontSize: RFPercentage(1.8),
+                  color: Colors.yeetPurple,
+                }}
+              >
+                {fileName}
+              </Text>
+            </View>
+            {/* <View
               style={{
-                // backgroundColor: "#00f3",
                 width: "50%",
                 height: "20%",
                 alignItems: "center",
                 justifyContent: "center",
               }}
-            >
+            > */}
+            <View style={{ width: "50%" }}>
               <TouchableOpacity
                 onPress={onUploadFilePressed}
                 style={{
                   width: "100%",
-                  height: RFPercentage(4.5),
+                  height: RFPercentage(5),
                   borderWidth: 2,
                   borderColor: Colors.yeetPurple,
-                  borderRadius: 1000,
+                  // backgroundColor: Colors.yeetPurple,
+                  borderRadius: 15,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
@@ -154,27 +122,43 @@ export default function ModalViewFile({
                 </Text>
               </TouchableOpacity>
             </View>
+            {/* </View> */}
           </View>
+
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={onCancelPressed}
-              style={styles.cancelButtonContainer}
-              activeOpacity={0.4}
-            >
-              <Text style={[styles.buttonText, { color: Colors.yeetPurple }]}>
-                {cancelText}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={onSavePressed}
-              style={styles.saveButtonContainer}
-              activeOpacity={0.4}
-              disabled={fileSize > 10000000 ? true : false}
-            >
-              <Text style={[styles.buttonText, { color: Colors.yeetPink }]}>
-                {saveText}
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.confirmationButtonsContainer}>
+              <TouchableOpacity
+                onPress={onSavePressed}
+                style={{
+                  ...styles.confirmationButtons,
+                  borderColor: saveDisabled
+                    ? Colors.yeetBorderGray
+                    : Colors.yeetPurple,
+                  backgroundColor: saveDisabled
+                    ? Colors.yeetGray
+                    : Colors.yeetPurple,
+                  borderWidth: 2,
+                }}
+                activeOpacity={0.4}
+                disabled={saveDisabled}
+              >
+                <Text style={styles.buttonText}>{saveText}</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.confirmationButtonsContainer}>
+              <TouchableOpacity
+                onPress={onCancelPressed}
+                style={{
+                  ...styles.confirmationButtons,
+                  borderColor: Colors.yeetPink,
+                  backgroundColor: Colors.yeetPink,
+                  borderWidth: 2,
+                }}
+                activeOpacity={0.4}
+              >
+                <Text style={styles.buttonText}>{cancelText}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
@@ -191,20 +175,20 @@ const styles = StyleSheet.create({
   },
 
   modal: {
-    width: "75%",
-    // height: height * 0.3,
+    width: RFPercentage(38),
+    height: RFPercentage(38),
     borderRadius: 25,
     backgroundColor: "#ECECEC",
   },
 
   modalContent: {
-    height: height * 0.275,
+    height: "100%",
     alignItems: "center",
   },
 
   modalHeaderContainer: {
     width: "100%",
-    height: "83%",
+    height: "35%",
     alignItems: "center",
     justifyContent: "space-evenly",
     // backgroundColor: "#02f2",
@@ -219,18 +203,18 @@ const styles = StyleSheet.create({
   },
 
   fileContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    height: "50%",
-    width: "80%",
-    paddingHorizontal: 25,
+    // flexDirection: "row",
+    justifyContent: "space-evenly",
+    height: "45%",
+    width: "100%",
+    // paddingHorizontal: 25,
     borderColor: Colors.yeetPurple,
     // borderWidth: 2,
     // borderRadius: 5,
 
-    justifyContent: "center",
+    // justifyContent: "center",
     alignItems: "center",
-    // backgroundColor: "#f2f2",
+    // backgroundColor: "#ff02",
   },
 
   modalImage: {
@@ -250,9 +234,9 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     width: "100%",
-    height: "17%",
-    borderTopWidth: 1,
-    borderTopColor: "#948E8E",
+    height: "20%",
+    // borderTopWidth: 1,
+    // borderTopColor: "#948E8E",
     // backgroundColor: "#f002",
   },
 
@@ -268,11 +252,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  buttonText: {
-    fontSize: RFPercentage(1.5),
-    fontWeight: "bold",
-  },
-
   saveButtonContainer: {
     // backgroundColor: "#00f2",
     height: "100%",
@@ -283,22 +262,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  inputContainer: {
-    alignItems: "center",
-    justifyContent: "flex-start",
-    // backgroundColor: "#02f2",
-    width: "100%",
-    height: "25%",
-  },
-
   link: {
     marginBottom: 5,
-    flexWrap: "wrap",
-    // borderBottomWidth: 1,
-    // borderBottomColor: "#948E8E",
-    fontSize: RFPercentage(1.75),
+    fontSize: RFPercentage(2.5),
     fontWeight: "bold",
-    // textAlign: "center",
-    // alignItems: "center",
+    color: Colors.yeetPurple,
+    textAlign: "center",
+  },
+
+  confirmationButtonsContainer: {
+    height: "100%",
+    width: "50%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  confirmationButtons: {
+    height: RFPercentage(5),
+    width: "90%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 15,
+  },
+
+  buttonText: {
+    fontSize: RFPercentage(2),
+    fontWeight: "bold",
+    color: "#FFF",
   },
 });

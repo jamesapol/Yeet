@@ -14,7 +14,11 @@ import { AuthContext } from "../../../../context/AuthContext";
 
 import { RFPercentage } from "react-native-responsive-fontsize";
 
-import { ButtonStyles, GlobalStyles } from "../../../../styles/GlobalStyles";
+import {
+  ButtonStyles,
+  Colors,
+  GlobalStyles,
+} from "../../../../styles/GlobalStyles";
 import CustomButton from "../../../../components/CustomButton/CustomButton";
 import ModalPassword from "../../../../components/ModalPassword/ModalPassword";
 import ModalMessage from "../../../../components/ModalMessage/ModalMessage";
@@ -304,8 +308,30 @@ export default function ManageAccountScreen() {
             <Text style={styles.buttonText}>Change Email</Text>
             <Text style={styles.buttonText}>{userInfo.usr_email}</Text>
           </TouchableOpacity> */}
+        <CustomButton
+          // bgColor="#FFF"
+          bgColor="#DEE0E2"
+          fgColor={Colors.yeetPurple}
+          borderColor="#DEE0E2"
+          borderWidth="2"
+          justifyContent="center"
+          btnText="Change Password"
+          style={styles.buttons}
+          onPress={onChangePasswordPressed}
+        />
+        <CustomButton
+          // bgColor="#FFF"
+          bgColor="#DEE0E2"
+          fgColor={Colors.yeetPurple}
+          borderColor="#DEE0E2"
+          borderWidth="2"
+          justifyContent="center"
+          btnText="Change Mobile Number"
+          style={styles.buttons}
+          onPress={onChangePhoneNumberPressed}
+        />
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.buttons}
           onPress={onChangePasswordPressed}
         >
@@ -319,21 +345,26 @@ export default function ManageAccountScreen() {
         >
           <Text style={styles.buttonText}>Change Mobile Number</Text>
           <Text style={styles.buttonText}>{userInfo.usr_mobile}</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <View style={styles.footerButtons}>
           <CustomButton
+            // bgColor={Colors.yeetPink}
             bgColor="#DEE0E2"
-            fgColor="#D81D4C"
-            justifyContent="center"
+            fgColor={Colors.yeetPink}
+            borderColor={Colors.yeetPink}
+            borderWidth="2"
+            // justifyContent="center"
             btnText="Deactivate Account"
             style={styles.buttons}
             onPress={confirmDeactivate}
           />
           <CustomButton
-            bgColor="#DEE0E2"
-            fgColor="#D81D4C"
-            justifyContent="center"
+            bgColor={Colors.yeetPink}
+            fgColor="#FFF"
+            borderColor={Colors.yeetPink}
+            borderWidth="2"
+            // justifyContent="center"
             btnText="Delete Account"
             style={ButtonStyles.buttons}
             onPress={confirmDelete}
@@ -349,9 +380,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginVertical: height * 0.006,
-    backgroundColor: "#DEE0E2",
+    // backgroundColor: "#DEE0E2",
     width: "100%",
-    borderRadius: 1000,
+    borderRadius: 15,
     paddingHorizontal: width * 0.025,
     paddingVertical: height * 0.013,
   },

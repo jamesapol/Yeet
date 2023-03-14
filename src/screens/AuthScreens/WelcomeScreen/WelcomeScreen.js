@@ -34,6 +34,7 @@ import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 import { Colors } from "../../../styles/GlobalStyles";
 
+import { useFonts } from "expo-font";
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
 
@@ -54,10 +55,12 @@ export default function WelcomeScreen() {
     }, [])
   );
 
+  
   const window = useWindowDimensions();
   const screenHeight = Dimensions.get("screen").height;
+  const screenWidth = Dimensions.get("screen").width;
   const windowHeight = Dimensions.get("window").height;
-  const navbarHeight = screenHeight - windowHeight; 
+  const navbarHeight = screenHeight - windowHeight;
 
   const navbar = screenHeight - windowHeight;
 
@@ -83,13 +86,13 @@ export default function WelcomeScreen() {
 
   const onGooglePressed = () => {
     // console.log(userInfo);
-    console.log(screenHeight);
-    console.log(windowHeight);
-    console.log(navbarHeight);
+    console.log(screenWidth);
+    // console.log(windowHeight);
+    // console.log(navbarHeight);
   };
-
+  
   const onApplePressed = () => {};
-
+  
   return (
     <View style={styles.root}>
       <ImageBackground
@@ -118,10 +121,28 @@ export default function WelcomeScreen() {
             onPress={onCreateAccountPressed}
             style={styles.createAccountButton}
             bgColor={Colors.yeetPurple}
+            borderWidth="2"
+            borderColor={Colors.yeetPurple}
             btnText="Create an Account"
             fgColor="#fff"
+            />
+          <Text style={styles.footerText}>
+            Already have an account?
+          </Text>
+          <CustomButton
+            onPress={onEmailPressed}
+            style={styles.createAccountButton}
+            bgColor="#FFF"
+            borderWidth="2"
+            fgColor={Colors.yeetPurple}
+            borderColor={Colors.yeetPurple}
+            btnText="Sign In"
+            // fgColor="#fff"
           />
-          <Text style={styles.footerText}>Already have an account?</Text>
+          {/* 
+          <Text style={{ ...styles.footerText, fontFamily: "Montserrat" }}>
+            Already have an account?
+          </Text>
           <Text
             style={[
               styles.footerText,
@@ -130,7 +151,7 @@ export default function WelcomeScreen() {
             onPress={onSignInPressed}
           >
             Sign In
-          </Text>
+          </Text> */}
         </View>
 
         <RBSheet
@@ -232,7 +253,8 @@ const styles = StyleSheet.create({
   footerText: {
     color: Colors.yeetPurple,
     textAlign: "center",
-    fontSize: RFPercentage(1.5),
+    fontWeight: '900',
+    fontSize: RFPercentage(1.75),
 
     textTransform: "uppercase",
   },

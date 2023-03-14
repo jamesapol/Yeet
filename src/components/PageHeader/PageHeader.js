@@ -36,7 +36,7 @@ export default function PageHeader({
       >
         <FontAwesome5
           name="arrow-left"
-          size={RFPercentage(2.5)}
+          size={RFPercentage(3)}
           color={Colors.yeetPurple}
         />
       </TouchableOpacity>
@@ -51,14 +51,14 @@ export default function PageHeader({
         {iconType == "FontAwesome5" && (
           <FontAwesome5
             name={pageActionIcon}
-            size={RFPercentage(2.5)}
+            size={RFPercentage(3)}
             color={pageActionColor}
           />
         )}
         {iconType == "MaterialCommunityIcons" && (
           <MaterialCommunityIcons
             name={pageActionIcon}
-            size={RFPercentage(2.5)}
+            size={RFPercentage(3)}
             color={pageActionColor}
           />
         )}
@@ -81,19 +81,22 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: width * 0.03,
     padding: RFPercentage(1),
+    paddingRight: 30,
     // backgroundColor:'blue'
     // left: '3%',
   },
 
   headerText: {
     fontWeight: "700",
-    fontSize: RFPercentage(2),
+    fontSize: RFPercentage(2.5),
+    letterSpacing: -0.5,
   },
 
   pageActionIcon: {
     position: "absolute",
     right: width * 0.03,
     padding: RFPercentage(1),
+    paddingLeft: 30,
     // backgroundColor:'blue'
   },
 });

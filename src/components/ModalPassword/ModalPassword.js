@@ -24,6 +24,7 @@ export default function ModalPassword({
   value,
   onChangeText,
   warningVisible = "none",
+  saveDisabled,
 }) {
   const [link, setLink] = useState(false);
 
@@ -53,7 +54,7 @@ export default function ModalPassword({
                   style={styles.icon}
                   onPress={onShowPasswordPressed}
                   name={visible == true ? "eye-off" : "eye"}
-                  size={RFPercentage(2)}
+                  size={RFPercentage(2.5)}
                   color="#562C73"
                 />
               </View>
@@ -70,24 +71,39 @@ export default function ModalPassword({
             </Text>
           </View>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={onSavePressed}
-              style={styles.saveButtonContainer}
-              activeOpacity={0.4}
-            >
-              <Text style={[styles.buttonText, { color: "#562C73" }]}>
-                Continue
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={onCancelPressed}
-              style={styles.cancelButtonContainer}
-              activeOpacity={0.4}
-            >
-              <Text style={[styles.buttonText, { color: "#D81D4C" }]}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.confirmationButtonsContainer}>
+              <TouchableOpacity
+                onPress={onSavePressed}
+                style={{
+                  ...styles.confirmationButtons,
+                  borderColor: value ? Colors.yeetPurple : Colors.yeetBorderGray,
+                  backgroundColor: value ? Colors.yeetPurple : Colors.yeetGray,
+                  borderWidth: 2,
+                }}
+                activeOpacity={0.4}
+                disabled={value ? false : true}
+              >
+                <Text style={styles.buttonText}>
+                  Continue
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.confirmationButtonsContainer}>
+              <TouchableOpacity
+                onPress={onCancelPressed}
+                style={{
+                  ...styles.confirmationButtons,
+                  borderColor: Colors.yeetPink,
+                  backgroundColor: Colors.yeetPink,
+                  borderWidth: 2,
+                }}
+                activeOpacity={0.4}
+              >
+                <Text style={styles.buttonText}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
@@ -105,8 +121,8 @@ const styles = StyleSheet.create({
   },
 
   modal: {
-    width: "70%",
-    height: height * 0.18,
+    width: RFPercentage(35),
+    height: RFPercentage(25),
     borderRadius: 25,
     backgroundColor: "#ECECEC",
   },
@@ -117,16 +133,17 @@ const styles = StyleSheet.create({
   },
 
   modalHeaderContainer: {
-    width: "100%",
+    width: "90%",
     height: "35%",
     alignItems: "center",
     justifyContent: "space-evenly",
   },
-
+  
   headerText: {
     color: "#562C73",
     fontWeight: "bold",
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2),
+    textAlign:'center'
   },
 
   modalHeader: {
@@ -136,9 +153,10 @@ const styles = StyleSheet.create({
 
   inputContainer: {
     alignItems: "center",
-    justifyContent: "flex-start",
+    justifyContent: "center",
     width: "100%",
     height: "40%",
+    // backgroundColor:'teal'
   },
 
   passwordInput: {
@@ -148,20 +166,21 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     borderColor: Colors.yeetPurple,
     paddingHorizontal: width * 0.03,
+    paddingVertical: '1%',
   },
 
   input: {
     width: "70%",
     paddingVertical: height * 0.006,
-    fontSize: RFPercentage(1.7),
+    fontSize: RFPercentage(2),
   },
 
   buttonContainer: {
     flexDirection: "row",
     width: "100%",
     height: "25%",
-    borderTopWidth: 1,
-    borderTopColor: "#948E8E",
+    // borderTopWidth: 1,
+    // borderTopColor: "#948E8E",
   },
 
   cancelButtonContainer: {
@@ -174,8 +193,9 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2),
     fontWeight: "bold",
+    color: "#FFF",
   },
 
   saveButtonContainer: {
@@ -186,4 +206,26 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+
+  confirmationButtonsContainer: {
+    // backgroundColor: "#f002",
+    // borderTopWidth: 1,
+    // borderTopColor: "#948E8E",
+    height: "100%",
+    width: "50%",
+    // padding: '5%',
+    // borderRightColor: "#948E8E",
+    // borderRightWidth: 0.5,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  confirmationButtons: {
+    height: RFPercentage(5),
+    width: "90%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 15,
+  },
+
 });

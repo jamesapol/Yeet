@@ -112,11 +112,13 @@ export default function ConfirmationScreen({ route }) {
           btnText="Confirm"
           style={styles.confirmButton}
           onPress={onConfirmPressed}
+          borderWidth="2"
+          borderColor={Colors.yeetPurple}
         />
         <CustomButton
-          bgColor="#FFF"
-          fgColor={Colors.yeetPink}
-          borderColor={Colors.yeetPurple}
+          bgColor={Colors.yeetPink}
+          fgColor="#FFF"
+          borderColor={Colors.yeetPink}
           borderWidth="2"
           btnText="Cancel"
           // style={styles.cancelButton}

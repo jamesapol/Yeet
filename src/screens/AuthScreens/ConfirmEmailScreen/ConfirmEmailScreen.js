@@ -131,9 +131,9 @@ export default function ConfirmEmailScreen({ route }) {
       })
       .catch((e) => {
         console.log(e.response.data);
-        setConfirmEmailModalVisible(true);
-        setModalHeader("Error");
-        setModalMessage(e.response.data.errors);
+        // setConfirmEmailModalVisible(true);
+        // setModalHeader("Error");
+        // setModalMessage(e.response.data.errors);
         setConfirmEmailLoading(false);
       });
     // console.log(code)

@@ -30,12 +30,26 @@ export default function ModalLockedAccount({
           <Text style={styles.modalMessage}>{modalMessage}</Text>
         </View>
         <View style={styles.modalLink}>
-          <Text style={styles.modalLinkText} onPress={onResetPasswordPressed}>
-            Reset Password
-          </Text>
+          <TouchableOpacity
+            style={{
+              ...styles.modalButton,
+              backgroundColor: Colors.yeetPurple,
+              borderColor: Colors.yeetPurple,
+            }}
+            onPress={onResetPasswordPressed}
+          >
+            <Text style={styles.modalButtonText}>Reset Password</Text>
+          </TouchableOpacity>
         </View>
         <View style={styles.modalButtonContainer}>
-          <TouchableOpacity style={styles.modalButton} onPress={onOKPressed}>
+          <TouchableOpacity
+            style={{
+              ...styles.modalButton,
+              borderColor: Colors.yeetPink,
+              backgroundColor: Colors.yeetPink,
+            }}
+            onPress={onOKPressed}
+          >
             <Text style={styles.modalButtonText}>OK</Text>
           </TouchableOpacity>
         </View>
@@ -53,8 +67,8 @@ const styles = StyleSheet.create({
   },
 
   modal: {
-    width: width * 0.7,
-    height: height * 0.23,
+    width: RFPercentage(40),
+    height: RFPercentage(35),
     borderRadius: 25,
     backgroundColor: "#ECECEC",
     alignItems: "center",
@@ -62,41 +76,44 @@ const styles = StyleSheet.create({
   },
 
   modalHeaderContainer: {
-    flexDirection:'row',
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingBottom: "1%",
+    paddingVertical: "5%",
     height: "20%",
+    width: "100%",
     // backgroundColor: "#F222",
   },
 
   modalHeader: {
     fontWeight: "900",
-    fontSize: RFPercentage(2.3),
-    paddingLeft: '3%'
+    fontSize: RFPercentage(2.5),
+    paddingLeft: "3%",
   },
 
   modalContent: {
-    height: "35%",
-    width: "75%",
+    height: "45%",
+    width: "85%",
     justifyContent: "center",
     alignItems: "center",
+    // backgroundColor: 'green',
   },
 
   modalMessage: {
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2),
     textAlign: "center",
   },
 
   modalLink: {
-    height: "25%",
-    width: "75%",
+    height: "15%",
+    width: "100%",
     justifyContent: "center",
     alignItems: "center",
+    // backgroundColor:'teal',
   },
 
   modalLinkText: {
-    fontSize: RFPercentage(1.8),
+    fontSize: RFPercentage(2),
     textAlign: "center",
     fontWeight: "bold",
     textDecorationLine: "underline",
@@ -107,15 +124,19 @@ const styles = StyleSheet.create({
     height: "20%",
     width: "100%",
     // backgroundColor:'#00f5',
-    borderTopColor: Colors.yeetBorderGray,
-    borderTopWidth: 2,
+    // borderTopColor: Colors.yeetBorderGray,
+    // borderTopWidth: 2,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   modalButton: {
-    height: "100%",
-    width: "100%",
+    height: RFPercentage(5),
+    width: "90%",
     justifyContent: "center",
     alignItems: "center",
+    borderRadius: 15,
+    borderWidth: 1,
     // backgroundColor:'#00f5',
   },
 
@@ -123,6 +144,6 @@ const styles = StyleSheet.create({
     fontSize: RFPercentage(2),
     textAlign: "center",
     fontWeight: "bold",
-    color: Colors.yeetPurple,
+    color: "#FFF",
   },
 });

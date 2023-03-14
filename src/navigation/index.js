@@ -70,6 +70,8 @@ import { ScreenStackHeaderBackButtonImage } from "react-native-screens";
 import MobileNumberScreen from "../screens/AuthScreens/MobileNumberScreen/MobileNumberScreen";
 import AddConnectionQRScreen from "../screens/AppScreens/AddConnectionQRScreen/AddConnectionQRScreen";
 import ChangeMobileNumberScreen from "../screens/AppScreens/SettingsScreen/ManageAccountScreen/ChangeMobileNumberScreen/ChangeMobileNumberScreen";
+import { Colors } from "../styles/GlobalStyles";
+import AppLoading from 'expo-app-loading'
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
 
@@ -190,12 +192,14 @@ const AppScreens = () => {
 
   return (
     <Tab.Navigator
+
       tabBarPosition="bottom"
       screenOptions={({ route }) => ({
+        
         headerShown: false,
         tabBarActiveTintColor: "#562C73",
         tabBarInactiveTintColor: "#aaa",
-        tabBarStyle: { height: height * 0.06, backgroundColor: "#FFF" },
+        tabBarStyle: { height: height * 0.065, backgroundColor: "#FFF" },
         tabBarLabelStyle: {
           fontSize: 10,
           color: "#D81D4C",
@@ -209,7 +213,11 @@ const AppScreens = () => {
         component={HomeNavigation}
         options={{
           unmountOnBlur: "true",
-          title: "HOME",
+          tabBarLabel: "",
+
+          tabBarLabelStyle: {
+            display: "none",
+          },
           tabBarIcon: ({ focused, color, size }) => {
             return focused ? (
               <Image
@@ -236,22 +244,26 @@ const AppScreens = () => {
         component={ConnectionsNavigation}
         options={{
           unmountOnBlur: "true",
-          title: "CONNECTIONS",
+          tabBarLabel: "",
+
+          tabBarLabelStyle: {
+            display: "none",
+          },
           tabBarIcon: ({ focused, color, size }) => {
             return focused ? (
               <Image
                 source={focusedConnectionsIcon}
                 style={{
-                  height: RFPercentage(4.5),
-                  width: RFPercentage(4.5),
+                  height: RFPercentage(5),
+                  width: RFPercentage(5),
                 }}
               />
             ) : (
               <Image
                 source={connectionsIcon}
                 style={{
-                  height: RFPercentage(3.5),
-                  width: RFPercentage(3.5),
+                  height: RFPercentage(3.7),
+                  width: RFPercentage(3.7),
                 }}
               />
             );
@@ -277,8 +289,8 @@ const AppScreens = () => {
               <Image
                 source={yeetButton}
                 style={{
-                  height: RFPercentage(12),
-                  width: RFPercentage(12),
+                  height: RFPercentage(11),
+                  width: RFPercentage(11),
                   bottom: "50%",
                   // marginBottom: height * 0.03,
                 }}
@@ -289,7 +301,7 @@ const AppScreens = () => {
                 style={{
                   height: RFPercentage(10),
                   width: RFPercentage(10),
-                  bottom: "70%",
+                  bottom: "50%",
                   // marginBottom: height * 0.03,
                 }}
               />
@@ -308,17 +320,21 @@ const AppScreens = () => {
         options={{
           unmountOnBlur: "true",
           tabBarBadge: userNotificationCount ? userNotificationCount : null,
-          title: "NOTIFICATIONS",
+          tabBarLabel: "",
+
+          tabBarLabelStyle: {
+            display: "none",
+          },
           tabBarIcon: ({ focused, color, size }) => {
             return focused ? (
               <Image
                 source={focusedNotificationsIcon}
-                style={{ height: RFPercentage(3), width: RFPercentage(3) }}
+                style={{ height: RFPercentage(3.5), width: RFPercentage(3.5) }}
               />
             ) : (
               <Image
                 source={notificationsIcon}
-                style={{ height: RFPercentage(2), width: RFPercentage(2) }}
+                style={{ height: RFPercentage(2.5), width: RFPercentage(2.5) }}
               />
             );
           },
@@ -329,20 +345,25 @@ const AppScreens = () => {
         component={SettingsNavigation}
         options={{
           unmountOnBlur: "true",
-          title: "SETTINGS",
+          // title: "SETTINGS",
+          tabBarLabel: "",
+
+          tabBarLabelStyle: {
+            display: "none",
+          },
           tabBarIcon: ({ focused, color, size }) => {
             return focused ? (
               <Image
                 source={focusedSettingsIcon}
                 style={{
-                  height: RFPercentage(5.5),
-                  width: RFPercentage(5.5),
+                  height: RFPercentage(7),
+                  width: RFPercentage(7),
                 }}
               />
             ) : (
               <Image
                 source={settingsIcon}
-                style={{ height: RFPercentage(4), width: RFPercentage(4) }}
+                style={{ height: RFPercentage(5.5), width: RFPercentage(5.5) }}
               />
             );
           },

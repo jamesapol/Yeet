@@ -40,13 +40,13 @@ export default function ActivateYeetDeviceScreen() {
   } = useContext(AuthContext);
   const [code, setCode] = useState();
 
-  const navigation = useNavigation();
+const navigation = useNavigation();
   const onBackPressed = () => {
     navigation.goBack();
   };
 
   const onMyYeetDevicesPressed = () => {
-    if (Object.keys(userNFCDevices).length == 0) {
+    if (!userNFCDevices) {
       getYeetDevices();
     }
     navigation.navigate("MyYeetDevicesScreen");
@@ -60,6 +60,8 @@ export default function ActivateYeetDeviceScreen() {
 
   const closeModal = () => {
     setShowModal(false);
+    setCode();
+    
   };
 
   return (
@@ -162,7 +164,7 @@ const styles = StyleSheet.create({
 
   inputLabel: {
     color: "#562C73",
-    fontSize: 17,
+    fontSize: RFPercentage(2),
     fontWeight: "bold",
   },
 
@@ -181,7 +183,7 @@ const styles = StyleSheet.create({
     marginTop: "10%",
     marginBottom: "3%",
     color: "#562C73",
-    fontSize: 15,
+    fontSize: RFPercentage(2),
     fontWeight: "bold",
     alignSelf: "flex-start",
   },

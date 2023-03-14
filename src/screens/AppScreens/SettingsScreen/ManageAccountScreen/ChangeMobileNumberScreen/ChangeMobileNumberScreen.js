@@ -51,7 +51,7 @@ export default function ChangeMobileNumberScreen() {
   };
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
-  const [mobileNumber, setMobileNumber] = useState(null);
+  const [mobileNumber, setMobileNumber] = useState(userInfo.usr_mobile);
   const [passwordHidden, setPasswordHidden] = useState(true);
   const [password, setPassword] = useState(null);
   const [_errorMessage, _setErrorMessage] = useState();
@@ -119,16 +119,16 @@ export default function ChangeMobileNumberScreen() {
       </Modal>
 
       <View style={GlobalStyles.mainContainer}>
-        <View style={[styles.inputContainer]}>
+        {/* <View style={[styles.inputContainer]}>
           <Text style={styles.inputLabel}>Current Mobile Number</Text>
           <CustomInput
             value={userInfo.usr_mobile}
             style={styles.input}
             editable={false}
           />
-        </View>
+        </View> */}
         <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>New Mobile Number</Text>
+          <Text style={styles.inputLabel}>Mobile Number</Text>
           <CustomInput
             placeholder="Enter your mobile number here"
             style={styles.input}
@@ -161,11 +161,11 @@ export default function ChangeMobileNumberScreen() {
         <View style={styles.footerButtons}>
           <CustomButton
             loading={isLoading}
-            disabled={isLoading || validMobileNumber ? false : true}
+            disabled={!isLoading ? false : true}
             fgColor="#FFF"
-            bgColor={validMobileNumber ? Colors.yeetPurple : Colors.yeetGray}
+            bgColor={!isLoading ? Colors.yeetPurple : Colors.yeetGray}
             borderColor={
-              validMobileNumber ? Colors.yeetPurple : Colors.yeetBorderGray
+              !isLoading ? Colors.yeetPurple : Colors.yeetBorderGray
             }
             btnText="Save"
             justifyContent="center"
@@ -176,11 +176,11 @@ export default function ChangeMobileNumberScreen() {
           <CustomButton
             disabled={isLoading}
             onPress={onBackPressed}
-            bgColor="#DEE0E2"
-            fgColor={Colors.yeetPink}
+            fgColor="#DEE0E2"
+            bgColor={Colors.yeetPink}
             justifyContent="center"
             btnText="Cancel"
-            borderColor="#DEE0E2"
+            borderColor={Colors.yeetPink}
             borderWidth="2"
             style={ButtonStyles.buttons}
           />
@@ -208,14 +208,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 2,
     borderColor: "#562C73",
-    borderRadius: 1000,
+    borderRadius: 15,
     paddingHorizontal: width * 0.025,
     marginBottom: "2%",
   },
 
   inputLabel: {
     color: "#562C73",
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2),
     fontWeight: "bold",
   },
 

@@ -12,6 +12,7 @@ import React from "react";
 import { RFPercentage } from "react-native-responsive-fontsize";
 
 import { useState } from "react";
+import { Colors } from "../../styles/GlobalStyles";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -34,38 +35,52 @@ export default function ModalWithButtons({
           <View style={styles.modalHeaderContainer}>
             {modalImage && (
               <Image
-                // source={{uri : modalImage}} 
-                source={modalImage} 
+                // source={{uri : modalImage}}
+                source={modalImage}
                 resizeMode="stretch"
                 style={styles.modalImage}
               />
             )}
-            {modalHeaderText && (
-              <Text style={styles.modalHeaderText}>{modalHeaderText}</Text>
-            )}
-            {modalMessage && (
-              <Text style={styles.modalMessage}>{modalMessage}</Text>
-            )}
+            <View style={styles.modalHeaderTextContainer}>
+              {modalHeaderText && (
+                <Text style={styles.modalHeaderText}>{modalHeaderText}</Text>
+              )}
+            </View>
+            <View style={styles.modalMessageContainer}>
+              {modalMessage && (
+                <Text style={styles.modalMessage}>{modalMessage}</Text>
+              )}
+            </View>
           </View>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              onPress={onRemovePressed}
-              style={styles.removeButtonContainer}
-              activeOpacity={0.4}
-            >
-              <Text style={[styles.buttonText, { color: "#D81D4C" }]}>
-                {saveText}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={onCancelPressed}
-              style={styles.cancelButtonContainer}
-              activeOpacity={0.4}
-            >
-              <Text style={[styles.buttonText, { color: "#562C73" }]}>
-                {cancelText}
-              </Text>
-            </TouchableOpacity>
+            <View style={styles.confirmationButtonsContainer}>
+              <TouchableOpacity
+                onPress={onRemovePressed}
+                style={{
+                  ...styles.confirmationButtons,
+                  borderColor: Colors.yeetPink,
+                  backgroundColor: Colors.yeetPink,
+                  borderWidth: 2,
+                }}
+                activeOpacity={0.4}
+              >
+                <Text style={styles.buttonText}>{saveText}</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.confirmationButtonsContainer}>
+              <TouchableOpacity
+                onPress={onCancelPressed}
+                style={{
+                  ...styles.confirmationButtons,
+                  borderColor: Colors.yeetPurple,
+                  backgroundColor: Colors.yeetPurple,
+                  borderWidth: 2,
+                }}
+                activeOpacity={0.4}
+              >
+                <Text style={styles.buttonText}>{cancelText}</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
@@ -83,7 +98,7 @@ const styles = StyleSheet.create({
 
   modal: {
     width: "70%",
-    height: height * 0.2,
+    height: height * 0.3,
     borderRadius: 25,
     backgroundColor: "#ECECEC",
   },
@@ -103,24 +118,34 @@ const styles = StyleSheet.create({
 
   modalImage: {
     marginTop: "3%",
-    width: height * 0.075,
-    height: height * 0.075,
-    borderRadius: 20,
+    width: RFPercentage(11),
+    height: RFPercentage(11),
+    borderRadius: 1000,
     //   borderRadius: 1000,
     //   borderWidth: 0.1,
     borderColor: "#111111",
   },
 
+  modalHeaderTextContainer: {
+    marginVertical: "1%",
+    width: "75%",
+  },
+
   modalHeaderText: {
     color: "#562C73",
     fontWeight: "bold",
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2.5),
+    textAlign: "center",
+  },
+  modalMessageContainer: {
+    width: "80%",
   },
 
   modalMessage: {
     color: "#D81D4C",
     fontWeight: "300",
-    fontSize: RFPercentage(1.3),
+    fontSize: RFPercentage(1.5),
+    textAlign: "center",
   },
 
   modalHeader: {
@@ -150,26 +175,37 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     width: "100%",
     height: "20%",
-    borderTopWidth: 1,
-    borderTopColor: "#948E8E",
+    // borderTopWidth: 1,
+    // borderTopColor: "#948E8E",
     // backgroundColor: "#f002",
   },
 
-  cancelButtonContainer: {
+  confirmationButtonsContainer: {
     // backgroundColor: "#f002",
     // borderTopWidth: 1,
     // borderTopColor: "#948E8E",
     height: "100%",
     width: "50%",
-    borderLeftColor: "#948E8E",
-    borderLeftWidth: 0.5,
+    // borderLeftColor: "#948E8E",
+    // borderLeftWidth: 0.5,
     justifyContent: "center",
     alignItems: "center",
   },
 
+  confirmationButtons: {
+    height: RFPercentage(5),
+    width: "90%",
+    borderWidth: 1,
+    borderColor: Colors.yeetBorderGray,
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 15,
+  },
+
   buttonText: {
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2),
     fontWeight: "bold",
+    color: "#FFF",
   },
 
   removeButtonContainer: {

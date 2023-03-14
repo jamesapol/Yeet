@@ -60,15 +60,15 @@ export default function ChangePasswordScreen() {
     setUpdatePasswordErrorModalVisible(false);
     setUpdatePasswordSuccessModalVisible(false);
   };
-  
+
   const closeErrorModal = () => {
     setUpdatePasswordErrorModalVisible(false);
-  }
-  
+  };
+
   const closeSuccessModal = () => {
     setUpdatePasswordSuccessModalVisible(false);
     navigation.goBack();
-  }
+  };
 
   const containsNumber = (text) => {
     return /\d/.test(text);
@@ -226,22 +226,20 @@ export default function ChangePasswordScreen() {
             onChangeText={(text) => setCurrentPassword(text)}
             autoCapitalize={false}
           />
-          <View>
+          <TouchableOpacity style={styles.icon} onPress={toggleHidden}>
             <MaterialCommunityIcons
-              style={styles.icon}
-              onPress={toggleHidden}
               name={hidden == true ? "eye-off" : "eye"}
-              size={RFPercentage(2)}
+              size={RFPercentage(2.5)}
               color={Colors.yeetPurple}
             />
-          </View>
+          </TouchableOpacity>
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.inputLabel}>New Password</Text>
           <CustomInput
             selectTextOnFocus={true}
             onFocus={(text) => {
-              if(!validPassword){
+              if (!validPassword) {
                 setErrorText("Password must be at least 8 characters");
                 setErrorTextVisible(true);
               }
@@ -256,15 +254,13 @@ export default function ChangePasswordScreen() {
             }}
             autoCapitalize={false}
           />
-          <View>
+          <TouchableOpacity style={styles.icon} onPress={toggleHiddenNew}>
             <MaterialCommunityIcons
-              style={styles.icon}
-              onPress={toggleHiddenNew}
               name={hiddenNew == true ? "eye-off" : "eye"}
-              size={RFPercentage(2)}
+              size={RFPercentage(2.5)}
               color={Colors.yeetPurple}
             />
-          </View>
+          </TouchableOpacity>
         </View>
         <View style={styles.inputContainer}>
           <Text style={styles.inputLabel}>Confirm Password</Text>
@@ -280,15 +276,13 @@ export default function ChangePasswordScreen() {
             }}
             autoCapitalize={false}
           />
-          <View>
+          <TouchableOpacity style={styles.icon} onPress={toggleHiddenConfirm}>
             <MaterialCommunityIcons
-              style={styles.icon}
-              onPress={toggleHiddenConfirm}
               name={hiddenConfirm == true ? "eye-off" : "eye"}
-              size={RFPercentage(2)}
+              size={RFPercentage(2.5)}
               color={Colors.yeetPurple}
             />
-          </View>
+          </TouchableOpacity>
         </View>
         <View style={styles.errorContainer}>
           <Text
@@ -317,13 +311,13 @@ export default function ChangePasswordScreen() {
           />
           <CustomButton
             onPress={onBackPressed}
-            bgColor="#DEE0E2"
-            fgColor="#D81D4C"
+            fgColor="#FFF"
+            bgColor={Colors.yeetPink}
             justifyContent="center"
             btnText="Cancel"
             style={styles.buttons}
             borderWidth={2}
-            borderColor="#DEE0E2"
+            borderColor={Colors.yeetPink}
             disabled={isLoading}
           />
         </View>
@@ -350,11 +344,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderRadius: 1000,
+    borderRadius: 15,
     borderWidth: 2,
     borderColor: Colors.yeetPurple,
 
-    paddingHorizontal: width * 0.025,
+    paddingLeft: width * 0.025,
     marginBottom: "2%",
   },
 
@@ -364,14 +358,14 @@ const styles = StyleSheet.create({
   },
 
   errorText: {
-    fontSize: RFPercentage(1.3),
+    fontSize: RFPercentage(1.5),
     fontWeight: "bold",
     color: Colors.yeetPink,
   },
 
   inputLabel: {
     color: Colors.yeetPurple,
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2),
     fontWeight: "bold",
   },
 
@@ -393,5 +387,14 @@ const styles = StyleSheet.create({
   input: {
     textAlign: "right",
     borderColor: "black",
+  },
+
+  icon: {
+    // backgroundColor: "red",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: "2.5%",
+    paddingVertical: "2.5%",
+    // height: "100%",
   },
 });

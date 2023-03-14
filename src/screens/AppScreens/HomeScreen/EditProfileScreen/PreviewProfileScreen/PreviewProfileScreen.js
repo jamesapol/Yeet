@@ -9,6 +9,10 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 
+
+import DefaultCoverPhoto from "../../../../../../assets/UXMaterials/defaults/default-cover.jpg";
+import DefaultProfilePhoto from "../../../../../../assets/UXMaterials/defaults/default-profile.png";
+
 import { RFPercentage, RFValue } from "react-native-responsive-fontsize";
 
 import { useContext } from "react";
@@ -18,7 +22,12 @@ import { BASE_URL } from "../../../../../config";
 import { Avatar } from "react-native-paper";
 import { useNavigation, useScrollToTop } from "@react-navigation/native";
 import PageHeader from "../../../../../components/PageHeader";
-import { ButtonStyles, GlobalStyles } from "../../../../../styles/GlobalStyles";
+import {
+  ButtonStyles,
+  Colors,
+  GlobalStyles,
+  socialMediaButtonImages,
+} from "../../../../../styles/GlobalStyles";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -66,12 +75,13 @@ export default function HomeScreen({ route }) {
                   previewCoverPhotoURI
                     ? {
                         uri: previewCoverPhotoURI,
+                        cache: "force-cache"
                       }
                     : userInfo.usr_cover_photo_storage
                     ? {
                         uri: `${BASE_URL}images/mobile/cover/${userInfo.usr_cover_photo_storage}`,
                       }
-                    : null
+                    : DefaultCoverPhoto
                 }
                 resizeMode="stretch"
                 style={GlobalStyles.coverPhoto}
@@ -91,11 +101,9 @@ export default function HomeScreen({ route }) {
                       : userInfo.usr_profile_photo_storage
                       ? {
                           uri: `${BASE_URL}images/mobile/photos/${userInfo.usr_profile_photo_storage}`,
-                          cache: "reload",
+                          cache: true,
                         }
-                      : {
-                          uri: `${BASE_URL}images/profile/photos/default-profile.png`,
-                        }
+                      : DefaultProfilePhoto
                   }
                 />
               </View>
@@ -123,8 +131,8 @@ export default function HomeScreen({ route }) {
             <TouchableOpacity
               style={[
                 {
-                  marginLeft: index % 3 == 0 ? width * 0.15 : width * 0.025,
-                  marginRight: index % 3 == 2 ? width * 0.15 : width * 0.025,
+                  marginLeft: index % 3 == 0 ? width * 0.05 : 0,
+                  marginRight: index % 3 == 2 ? width * 0.05 : 0,
                 },
                 ButtonStyles.socialMediaButtons,
               ]}
@@ -138,23 +146,11 @@ export default function HomeScreen({ route }) {
                         uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
                       }
                 }
-                style={{
-                  borderRadius: item.lnk_id == 30 ? 20 : null,
-                  width: width * 0.13,
-                  height: width * 0.13,
-                  // opacity:
-                  //   userInfo.usr_direct_link_active == 1
-                  //     ? userInfo.uln_id == item.uln_id
-                  //       ? 1
-                  //       : 0.3
-                  //     : 1,
-                }}
+                style={socialMediaButtonImages(item.lnk_id)}
                 resizeMode="stretch"
               />
               <Text
-                style={{
-                  fontSize: RFPercentage(1.3),
-                }}
+                style={ButtonStyles.socialMediaButtonText}
               >
                 {item.lnk_id == 30
                   ? item.uln_custom_link_name

@@ -22,6 +22,8 @@ import CustomButton from "../../../../components/CustomButton/CustomButton";
 import { useNavigation } from "@react-navigation/native";
 
 import noLinks from "../../../../../assets/UXMaterials/placeholders/no-links.png";
+import DefaultCoverPhoto from "../../../../../assets/UXMaterials/defaults/default-cover.jpg";
+import DefaultProfilePhoto from "../../../../../assets/UXMaterials/defaults/default-profile.png";
 
 import ModalWithButtons from "../../../../components/ModalWithButtons/ModalWithButtons";
 import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen";
@@ -32,6 +34,7 @@ import {
   ButtonStyles,
   Colors,
   GlobalStyles,
+  socialMediaButtonImages,
 } from "../../../../styles/GlobalStyles";
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -112,7 +115,7 @@ export default function ManageLinksScreen() {
       </Modal>
 
       {/* SUCCESS MESSAGE MODAL */}
-      <Modal
+      {/* <Modal
         transparent
         animationType="fade"
         hardwareAccelerated
@@ -124,7 +127,7 @@ export default function ManageLinksScreen() {
           modalMessage="Link successfully removed!"
           onOKPressed={closeDeleteSuccessModal}
         />
-      </Modal>
+      </Modal> */}
       <FlatList
         numColumns={3}
         overScrollMode="never"
@@ -137,23 +140,25 @@ export default function ManageLinksScreen() {
                 <Image
                   source={{
                     uri: tempCoverPhoto,
+                    cache: true,
                   }}
                   resizeMode="stretch"
                   style={GlobalStyles.coverPhoto}
                 />
-              ) : userCoverPhoto ? (
+              ) : (
                 <Image
                   source={
-                    userCoverPhoto
-                      ? {
+                    !userCoverPhoto
+                      ? DefaultCoverPhoto
+                      : {
                           uri: `${BASE_URL}images/mobile/cover/${userCoverPhoto}`,
+                          cache:true
                         }
-                      : null
                   }
                   resizeMode="stretch"
                   style={GlobalStyles.coverPhoto}
                 />
-              ) : null}
+              )}
             </View>
             {/* PROFILE PHOTO */}
             <View style={GlobalStyles.profilePhotoContainer}>
@@ -164,23 +169,23 @@ export default function ManageLinksScreen() {
                     size={RFPercentage(15)}
                     source={{
                       uri: tempProfilePhoto,
+                      cache: true
                     }}
                   />
-                ) : userProfilePhoto ? (
+                ) : (
                   <Avatar.Image
                     backgroundColor="#DEDEDE"
                     size={RFPercentage(15)}
                     source={
-                      userProfilePhoto
-                        ? {
-                            uri: `${BASE_URL}images/mobile/photos/${userProfilePhoto}`,
-                          }
+                      !userProfilePhoto
+                        ? DefaultProfilePhoto
                         : {
-                            uri: `${BASE_URL}images/profile/photos/default-profile.png`,
+                            uri: `${BASE_URL}images/mobile/photos/${userProfilePhoto}`,
+                            cache: true
                           }
                     }
                   />
-                ) : null}
+                )}
               </View>
             </View>
 
@@ -202,21 +207,21 @@ export default function ManageLinksScreen() {
                   alignItems: "center",
                 }}
               >
-                {/* <Text
+                <Text
                       style={{
                         fontSize: RFPercentage(3),
                         marginVertical: "5%",
                       }}
                     >
                       You have no links yet.
-                    </Text> */}
+                    </Text>
                 <Image
                   source={noLinks}
                   resizeMode="center"
                   style={{
                     marginVertical: "5%",
-                    height: RFPercentage(20),
-                    width: RFPercentage(30),
+                    height: height * 0.32,
+                    width: width * 0.65,
                     // backgroundColor: "red",
                   }}
                 />
@@ -225,6 +230,7 @@ export default function ManageLinksScreen() {
                     justifyContent: "center",
                     alignItems: "center",
                     width: "50%",
+                    marginBottom: '10%'
                   }}
                 >
                   <CustomButton
@@ -274,9 +280,8 @@ export default function ManageLinksScreen() {
                 activeOpacity={1}
                 style={[
                   {
-                    marginLeft: index % 3 == 0 ? width * 0.15 : width * 0.025,
-                    marginRight: index % 3 == 2 ? width * 0.15 : width * 0.025,
-                    // backgroundColor: "#f2f3",
+                    marginLeft: index % 3 == 0 ? width * 0.05 : 0,
+                    marginRight: index % 3 == 2 ? width * 0.05 : 0,
                   },
                   ButtonStyles.socialMediaButtons,
                 ]}
@@ -323,26 +328,20 @@ export default function ManageLinksScreen() {
                   <Image
                     source={
                       item.lnk_id == 30
-                        ? { uri: item.uln_youtube_thumbnail }
+                        ? { uri: item.uln_youtube_thumbnail, cache: true }
                         : {
                             uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
+                            cache: true
                           }
                     }
-                    style={{
-                      borderRadius: item.lnk_id == 30 ? 20 : null,
-                      width: width * 0.13,
-                      height: width * 0.13,
-                      //   backgroundColor: "#22F3",
-                    }}
-                    resizeMode="stretch"
+                    style={socialMediaButtonImages(item.lnk_id)}
+                    resizeMode="contain"
                   />
                 </View>
                 {/* <Text>{item.uln_id}</Text>
                   <Text>{index}</Text> */}
                 <Text
-                  style={{
-                    fontSize: RFPercentage(1.3),
-                  }}
+                  style={ButtonStyles.socialMediaButtonText}
                 >
                   {item.lnk_id == 30
                     ? item.uln_custom_link_name

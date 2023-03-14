@@ -10,7 +10,7 @@ import {
   View,
 } from "react-native";
 import React, { useState, useContext } from "react";
-
+import axios from "axios";
 import PageHeader from "../../../components/PageHeader";
 import SectionHeader from "../../../components/SectionHeader";
 import CustomInput from "../../../components/CustomInput/CustomInput";
@@ -24,6 +24,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Colors, GlobalStyles } from "../../../styles/GlobalStyles";
 import { useEffect } from "react";
 import { RFPercentage } from "react-native-responsive-fontsize";
+import { BASE_URL } from "../../../config";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
@@ -31,31 +32,19 @@ var { height } = Dimensions.get("window");
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState("");
   const {
-    forgotEmailModalVisible,
-    setForgotEmailModalVisible,
-
-    validEmail,
-    setValidEmail,
-    resetPassword,
-
     modalHeader,
     modalMessage,
     setModalHeader,
     setModalMessage,
 
     isLoading,
+    setIsLoading,
   } = useContext(AuthContext);
 
   const navigation = useNavigation();
-  
 
-  useEffect(() => {
-    if (validEmail) {
-      navigation.navigate("ResetPasswordCodeScreen", { email: email });
-      setEmail(null);
-      setValidEmail(false);
-    }
-  });
+    const [errorModalVisible, setErrorModalVisible] = useState(false);
+    const [successModalVisible, setSuccessModalVisible] = useState(false);
 
   const validateEmail = (text) => {
     // console.log(text);
@@ -68,14 +57,15 @@ export default function ForgotPasswordScreen() {
   const onSendEmail = () => {
     Keyboard.dismiss();
     if (!email) {
-      setForgotEmailModalVisible(true);
+      setErrorModalVisible(true);
       setModalHeader("Error");
       setModalMessage("Please enter your email!");
     } else if (validateEmail(email) === false) {
-      setForgotEmailModalVisible(true);
+      setErrorModalVisible(true);
       setModalHeader("Error");
       setModalMessage("Please enter a valid email address!");
     } else {
+      console.log("nice")
       resetPassword(email);
     }
   };
@@ -84,31 +74,74 @@ export default function ForgotPasswordScreen() {
     navigation.goBack();
   };
 
-  const closeModal = () => {
-    setForgotEmailModalVisible(false);
-  };
-  
-  const closeCodeSentModal = () => {
-    navigation.navigate("ResetPasswordCodeScreen", { email: email });
-    setForgotEmailModalVisible(false);
+  const closeErrorModal = () => {
+    setErrorModalVisible(false);
     setEmail(null);
-    setValidEmail(false);
+  };
+
+  const closeSuccessModal = () => {
+    navigation.navigate("ResetPasswordCodeScreen", { email: email });
+    setSuccessModalVisible(false);
+    setEmail(null);
+  };
+
+  //REFACTORED
+  const resetPassword = async (email) => {
+    setIsLoading(true);
+    axios
+      .post(
+        `${BASE_URL}api/resetPassword`,
+        {
+          email: email,
+        },
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      )
+      .then((response) => {
+        let resetResponse = response.data.data;
+        if (resetResponse.emailError) {
+          setErrorModalVisible(true);
+          setModalHeader("Error");
+          setModalMessage(resetResponse.emailError);
+        } else if (resetResponse.coolDown) {
+          setErrorModalVisible(true);
+          setModalHeader("Password Reset Code");
+          setModalMessage(resetResponse.coolDown);
+        } else {
+          setSuccessModalVisible(true);
+          setModalHeader("Success");
+          setModalMessage(resetResponse.success);
+        }
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.log("Error: " + error);
+        // setErrorModalVisible(true);
+        // setModalHeader("Error");
+        // setModalMessage(error.response.data);
+        // setValidEmail(false);
+        setIsLoading(false);
+      });
   };
 
   return (
     <View style={GlobalStyles.root}>
+
       {/* ERROR MESSAGE MODAL */}
       <Modal
         transparent
         animationType="fade"
         hardwareAccelerated
-        visible={forgotEmailModalVisible}
-        onRequestClose={closeModal}
+        visible={errorModalVisible}
+        onRequestClose={closeErrorModal}
       >
         <ModalMessage
           modalHeader={modalHeader}
           modalMessage={modalMessage}
-          onOKPressed={closeModal}
+          onOKPressed={closeErrorModal}
         />
       </Modal>
 
@@ -117,13 +150,13 @@ export default function ForgotPasswordScreen() {
         transparent
         animationType="fade"
         hardwareAccelerated
-        visible={forgotEmailModalVisible}
-        onRequestClose={closeCodeSentModal}
+        visible={successModalVisible}
+        onRequestClose={closeSuccessModal}
       >
         <ModalMessage
           modalHeader={modalHeader}
           modalMessage={modalMessage}
-          onOKPressed={closeCodeSentModal}
+          onOKPressed={closeSuccessModal}
         />
       </Modal>
 
@@ -148,6 +181,8 @@ export default function ForgotPasswordScreen() {
           <CustomButton
             fgColor="#FFF"
             bgColor="#562C73"
+            borderColor={Colors.yeetPurple}
+            borderWidth="2"
             btnText="Continue"
             onPress={onSendEmail}
             disabled={isLoading}
@@ -180,7 +215,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     // backgroundColor: "#000",
     backgroundColor: "#DEE0E2",
-    borderRadius: 30,
+    borderRadius: 15,
 
     paddingLeft: width * 0.04,
     paddingVertical: height * 0.002,
@@ -201,7 +236,7 @@ const styles = StyleSheet.create({
 
   inputLabel: {
     color: "#562C73",
-    fontSize: RFPercentage(1.7),
+    fontSize: RFPercentage(2),
     fontWeight: "bold",
   },
 

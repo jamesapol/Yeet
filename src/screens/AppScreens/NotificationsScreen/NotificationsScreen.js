@@ -35,6 +35,8 @@ import ModalMessage from "../../../components/ModalMessage/ModalMessage";
 import ModalWithButtons from "../../../components/ModalWithButtons/ModalWithButtons";
 import CustomButton from "../../../components/CustomButton/CustomButton";
 
+import moment from "moment";
+
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
 
@@ -54,6 +56,8 @@ const NotificationsButton = ({
     style={{
       flexDirection: "row",
       marginBottom: "0.5%",
+      paddingVertical: "0.5%",
+      // backgroundColor: "green",
     }}
   >
     <TouchableOpacity
@@ -89,8 +93,12 @@ const NotificationsButton = ({
             notificationUserImage
               ? {
                   uri: `${BASE_URL}images/mobile/photos/${notificationUserImage}`,
+                  cache: true,
                 }
-              : { uri: `${BASE_URL}images/profile/photos/default-profile.png` }
+              : {
+                  uri: `${BASE_URL}images/profile/photos/default-profile.png`,
+                  cache: true,
+                }
           }
           style={{
             borderWidth: 0.1,
@@ -163,7 +171,10 @@ const NotificationsButton = ({
               </>
             )}
           </Text>
-          <Text>{notificationDate}</Text>
+          <Text style={{ fontSize: RFPercentage(1.5) }}>
+            {" "}
+            {moment(notificationDate).fromNow()}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -186,6 +197,7 @@ const NotificationsButton = ({
 export default function NotificationsScreen() {
   const {
     refreshing,
+    setShowSuccessModal,
     showSuccessModal,
     modalHeader,
     modalMessage,
@@ -312,6 +324,10 @@ export default function NotificationsScreen() {
       });
   };
 
+  const renderItem = ({ item }) => {
+    const formattedTimestamp = moment(item.ntf_date_created).fromNow();
+  };
+
   return (
     <View style={GlobalStyles.root}>
       {userNotificationsLoading == true ? <LoadingScreen /> : null}
@@ -363,7 +379,7 @@ export default function NotificationsScreen() {
         style={{ backgroundColor: "#fff" }}
         extraData={refreshFlatList}
         keyExtractor={(item) => item.ntf_id}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        // ItemSeparatorComponent={() => <View style={styles.separator} />}
         // onEndReached={handleLoadMore}
         // onEndReachedThreshold={0.5}
         // ListFooterComponent={

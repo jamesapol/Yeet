@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
   const [validToken, setValidToken] = useState(false);
 
   const [userInfo, setUserInfo] = useState({});
-  const [userNFCDevices, setUserNFCDevices] = useState({});
+  const [userNFCDevices, setUserNFCDevices] = useState([]);
   const [userActiveYeetDevice, setUserActiveYeetDevice] = useState(null);
   const [userNotificationCount, setUserNotificationCount] = useState();
   const [userNotifications, setUserNotifications] = useState([]);
@@ -147,7 +147,7 @@ export const AuthProvider = ({ children }) => {
   const [editLinkMessageModalVisible, setEditLinkMessageModalVisible] =
     useState(false);
   const [homeModalVisible, setHomeModalVisible] = useState(false);
-  const [viewConnectionModalVisible, setViewConnectionModalVisible] =
+  const [addConnectionModalVisible, setAddConnectionModalVisible] =
     useState(false);
   const [connectionsScreenModalVisible, setConnectionsScreenModalVisible] =
     useState(false);
@@ -314,7 +314,7 @@ export const AuthProvider = ({ children }) => {
           setModalMessage(dataResponse.coverPhotoError);
         } else {
           let userInfo = dataResponse.user;
-          console.log(userInfo)
+          console.log(userInfo);
           setTempProfilePhoto(null);
           setTempCoverPhoto(null);
           setUserInfo(userInfo);
@@ -485,37 +485,6 @@ export const AuthProvider = ({ children }) => {
         setModalHeader("Error");
         setModalMessage(error.response.data);
         setValidEmail(false);
-        setIsLoading(false);
-      });
-  };
-
-  //REFACTORED
-  const checkPasswordResetCode = async (code, email) => {
-    setIsLoading(true);
-
-    axios
-      .post(`${BASE_URL}api/checkPasswordResetCode`, {
-        email: email,
-        code: code,
-      })
-      .then((response) => {
-        let resetResponse = response.data.data;
-        if (resetResponse.code == 200) {
-          setValidCode(true);
-        } else if (resetResponse.code == 401) {
-          setValidCode(false);
-          setResetCodeModalVisible(true);
-          setModalHeader("Error");
-          setModalMessage(resetResponse.error);
-        }
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        setResetCodeModalVisible(true);
-        setModalHeader("Error");
-        setModalMessage(error.response.data);
-        console.log(error.response.data);
-        setValidCode(false);
         setIsLoading(false);
       });
   };
@@ -906,12 +875,12 @@ export const AuthProvider = ({ children }) => {
         setAddLinkLoading(false);
         setUserLinksLoading(false);
         setNfcDeviceLoading(false);
-        setUserConnectionsLoading(false);
+        // setUserConnectionsLoading(false);
         setShowModal(false);
-        console.log("yayw")
+        console.log("yayw");
         console.log("No userUUID and userToken");
       } else if (userUUID && userToken) {
-          console.log("tangina naa man")
+        console.log("tangina naa man");
         if (userName) {
           setUserToken(userToken);
           setSplashLoading(false);
@@ -928,10 +897,10 @@ export const AuthProvider = ({ children }) => {
             headers: { Authorization: `Bearer ${userToken}` },
           })
           .then((response) => {
-            console.log("NAAY RESPONSE")
-            console.log(response.data)
+            console.log("NAAY RESPONSE");
+            console.log(response.data);
             let responseData = response.data;
-            if (response.status === 401) {
+            if (responseData.status === 401) {
               setWelcomeModalVisible(true);
               setModalHeader("Login Error");
               setModalMessage(
@@ -949,7 +918,7 @@ export const AuthProvider = ({ children }) => {
               );
               clearAll();
             } else {
-              console.log("NAAY DATA")
+              console.log("NAAY DATA");
               // console.log(response.data.userData)
               let userInfo = responseData.userData;
 
@@ -965,8 +934,8 @@ export const AuthProvider = ({ children }) => {
               setUserCoverPhoto(userInfo.user.usr_cover_photo_storage);
               setUserProfilePhoto(userInfo.user.usr_profile_photo_storage);
               setUserNotificationCount(userInfo.notificationCount);
-console.log("NASET TANAN")
-                SecureStore.setItemAsync("userName", userInfo.user.usr_name);
+              console.log("NASET TANAN");
+              SecureStore.setItemAsync("userName", userInfo.user.usr_name);
 
               if (userInfo.user.usr_bio) {
                 setUserBio(userInfo.user.usr_bio);
@@ -995,9 +964,8 @@ console.log("NASET TANAN")
               }
               console.log("Logged In as: " + userInfo.user.usr_email);
               console.log("User Links: " + userInfo.userLinks.length);
-
             }
-            console.log("NAHUMAN UG BASA ANG RESPONSE")
+            console.log("NAHUMAN UG BASA ANG RESPONSE");
             setSplashLoading(false);
             setUserInfoLoading(false);
             // setPublicLoading(false);
@@ -1343,9 +1311,10 @@ console.log("NASET TANAN")
         let connectionStatus = response.data.connectionStatus;
         setUserConnections(userConnections);
         setUserConnectionStatus(connectionStatus);
+        setPublicConnectionStatus(connectionStatus);
 
         console.log(response.data);
-        setViewConnectionModalVisible(true);
+        setAddConnectionModalVisible(true);
         setModalHeader("Success");
         setModalMessage("Connection added successfully!");
         setPublicLoading(false);
@@ -1372,11 +1341,12 @@ console.log("NASET TANAN")
         }
       )
       .then((response) => {
+        console.log(response.data.blockedConnections)
+        let blockedConnections = response.data.blockedConnections;
+        setUserBlockedConnections(blockedConnections);
         setShowSuccessModal(true);
         setModalHeader("Success");
         setModalMessage(response.data.success);
-        let blockedConnections = response.data.blockedConnections;
-        setUserBlockedConnections(blockedConnections);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -1908,7 +1878,6 @@ console.log("NASET TANAN")
         setValidCode,
         validPassword,
         setValidPassword,
-        checkPasswordResetCode,
         newPassword,
 
         //FOR CHECKING IF LOGGED IN
@@ -2084,8 +2053,8 @@ console.log("NASET TANAN")
         setMobileNumberModalVisible,
         addLinksModalVisible,
         setAddLinksModalVisible,
-        viewConnectionModalVisible,
-        setViewConnectionModalVisible,
+        addConnectionModalVisible,
+        setAddConnectionModalVisible,
         successPasswordModalVisible,
         setSuccessPasswordModalVisible,
         errorPasswordModalVisible,

@@ -47,6 +47,7 @@ const ConnectionsButton = ({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
+        // backgroundColor: "teal",
       }}
     >
       <View
@@ -98,23 +99,23 @@ const ConnectionsButton = ({
           </Text>
         </View>
       </View>
-    </TouchableOpacity>
-
-    <TouchableOpacity
-      onPress={onOptionsPressed}
-      style={{
-        alignItems: "center",
-        justifyContent: "center",
-        paddingHorizontal: width * 0.02,
-        marginRight: width * 0.03,
-        marginVertical: height * 0.003,
-      }}
-    >
-      <Ionicons
-        name="remove-circle-sharp"
-        size={RFPercentage(5)}
-        color="#d81d4c"
-      />
+      <TouchableOpacity
+        onPress={onOptionsPressed}
+        style={{
+          alignItems: "center",
+          justifyContent: "center",
+          paddingHorizontal: width * 0.02,
+          marginRight: width * 0.03,
+          marginVertical: height * 0.003,
+          // backgroundColor: 'red',
+        }}
+      >
+        <Ionicons
+          name="remove-circle-sharp"
+          size={RFPercentage(5)}
+          color="#d81d4c"
+        />
+      </TouchableOpacity>
     </TouchableOpacity>
   </View>
 );
@@ -222,7 +223,7 @@ export default function BlockedContactsScreen() {
         showsVerticalScrollIndicator={false}
         style={{ backgroundColor: "#fff" }}
         extraData={refreshFlatList}
-        keyExtractor={(item) => item.usr_id.toString()}
+        keyExtractor={(item) => item.blk_id}
         // keyExtractor={(item, index) => index.toString()}
         data={isLoading == false ? userBlockedConnections : null}
         renderItem={({ item }) => {

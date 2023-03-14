@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#000",
     backgroundColor: "#DEE0E2",
-    borderRadius: 30,
+    borderRadius: 15,
 
     paddingLeft: width * 0.04,
     marginVertical: height * 0.01,
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
 
   inputLabel: {
     color: "#562C73",
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2),
     fontWeight: "bold",
   },
 

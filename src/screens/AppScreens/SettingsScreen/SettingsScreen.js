@@ -10,7 +10,7 @@ import {
 import React, { useContext } from "react";
 import { AuthContext } from "../../../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
-import { ButtonStyles, GlobalStyles } from "../../../styles/GlobalStyles";
+import { ButtonStyles, Colors, GlobalStyles } from "../../../styles/GlobalStyles";
 
 import PageHeader from "../../../components/PageHeader";
 import CustomButton from "../../../components/CustomButton/CustomButton";
@@ -26,11 +26,10 @@ import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen";
 
 import * as Linking from "expo-linking";
 import * as SQLite from "expo-sqlite";
+import { RFPercentage } from "react-native-responsive-fontsize";
 
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
-
-
 
 export default function SettingsScreen() {
   const {
@@ -76,8 +75,6 @@ export default function SettingsScreen() {
       contentContainerStyle={{ flexGrow: 1 }}
       showsVerticalScrollIndicator={false}
     >
-
-      
       {isLoading == true ? <LoadingScreen /> : null}
       <PageHeader
         headerText="Settings"
@@ -140,14 +137,21 @@ export default function SettingsScreen() {
           <Text style={ButtonStyles.buttonText}>About</Text>
         </TouchableOpacity>
         <View style={styles.footerButtons}>
-          <CustomButton
-            bgColor="#DEE0E2"
-            fgColor="#562C73"
-            btnText="Sign Out"
+          {/* <CustomButton
+            bgColor="#562C73"
+            fgColor="#FFF"
+            btnText="SIGN OUT"
             justifyContent="center"
             style={ButtonStyles.buttons}
             onPress={logout}
-          />
+          /> */}
+
+          <TouchableOpacity
+            style={styles.button}
+            onPress={logout}
+          >
+            <Text style={styles.buttonText}>SIGN OUT</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </ScrollView>
@@ -156,6 +160,26 @@ export default function SettingsScreen() {
 
 const styles = StyleSheet.create({
   footerButtons: {
-    marginTop: height * 0.05,
+    marginTop: height * 0.1,
+  },
+
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "100%",
+    borderRadius: 15,
+    paddingHorizontal: width * 0.1,
+    paddingVertical: RFPercentage(1.7),
+    backgroundColor: Colors.yeetPink
+    
+  },
+
+  buttonText: {
+    fontWeight: 'bold',
+    fontSize: RFPercentage(2),
+    textAlign: "center",
+    fontWeight: "bold",
+    color: "#FFF"
   },
 });

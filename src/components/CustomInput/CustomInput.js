@@ -26,7 +26,7 @@ export default function CustomInput({
   return (
     <View style={styles.root}>
       <TextInput
-      
+        
         selectTextOnFocus={selectTextOnFocus}
         ref={innerRef}
         onFocus={onFocus}
@@ -64,6 +64,9 @@ const styles = StyleSheet.create({
   input: {
     // paddingVertical: height * 0.01,
     // backgroundColor: 'red',
+    justifyContent:'center',
+    alignItems:'center',
+    // textAlign:'center',
     fontSize: RFPercentage(2),
   },
 });

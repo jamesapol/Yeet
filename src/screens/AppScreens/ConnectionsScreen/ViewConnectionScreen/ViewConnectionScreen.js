@@ -10,6 +10,7 @@ import {
   Modal,
   BackHandler,
 } from "react-native";
+import * as WebBrowser from "expo-web-browser";
 import React, { useEffect, useState } from "react";
 
 import { RFPercentage } from "react-native-responsive-fontsize";
@@ -51,8 +52,8 @@ export default function ViewConnectionScreen() {
     setUserBlockStatus,
     userBlockStatus,
 
-    viewConnectionModalVisible,
-    setViewConnectionModalVisible,
+    addConnectionModalVisible,
+    setAddConnectionModalVisible,
 
     setModalHeader,
     setModalMessage,
@@ -102,7 +103,7 @@ export default function ViewConnectionScreen() {
 
   const closeModal = () => {
     setPaymentImageVisible(false);
-    setViewConnectionModalVisible(false);
+    setAddConnectionModalVisible(false);
     setErrorURLModalVisible(false);
   };
 
@@ -154,6 +155,16 @@ export default function ViewConnectionScreen() {
     // console.log(`File downloaded to: ${uri}`);
   };
 
+  const handleOpenLink = async (link) => {
+    try {
+      await WebBrowser.openBrowserAsync(link);
+    } catch (error) {
+      setErrorURLModalVisible(true);
+      setModalHeader("Error");
+      setModalMessage(`This link cannot be opened and may be broken.`);
+    }
+  };
+
   return (
     <View style={GlobalStyles.root}>
       <Modal
@@ -194,7 +205,7 @@ export default function ViewConnectionScreen() {
         transparent
         animationType="fade"
         hardwareAccelerated
-        visible={viewConnectionModalVisible}
+        visible={addConnectionModalVisible}
         onRequestClose={closeModal}
       >
         <ModalMessage
@@ -227,14 +238,17 @@ export default function ViewConnectionScreen() {
         pageActionColor={Colors.yeetPurple}
         pageActionIcon="address-card"
         pageAction={() => {
-          Linking.openURL(
+          handleOpenLink(
             `${BASE_URL}api/saveContact/${userConnectionData.usr_uuid}`
-          );
+          )
+          // Linking.openURL(
+          //   `${BASE_URL}api/saveContact/${userConnectionData.usr_uuid}`
+          // );
           // setOptionsModalVisible(true);
           // onDownloadVCFPressed();
         }}
       />
-      {userNotFound || userBlockStatus ? (
+      {userNotFound || userBlockStatus == 1 ? (
         <View style={{ flex: 1 }}>
           <View
             style={{ justifyContent: "center", alignItems: "center", flex: 1 }}
@@ -328,7 +342,8 @@ export default function ViewConnectionScreen() {
                   </View>
                 </View>
                 {isLoading == false ? (
-                  (userConnectionStatus == 0 && userConnectionData.usr_uuid != userInfo.usr_uuid)  ? (
+                  userConnectionStatus == 0 &&
+                  userConnectionData.usr_uuid != userInfo.usr_uuid ? (
                     <View style={styles.addContactContainer}>
                       <CustomButton
                         bgColor="transparent"
@@ -355,8 +370,8 @@ export default function ViewConnectionScreen() {
               <TouchableOpacity
                 style={[
                   {
-                    marginLeft: index % 3 == 0 ? width * 0.15 : width * 0.025,
-                    marginRight: index % 3 == 2 ? width * 0.15 : width * 0.025,
+                    marginLeft: index % 3 == 0 ? width * 0.05 : 0,
+                    marginRight: index % 3 == 2 ? width * 0.05 : 0,
                   },
                   ButtonStyles.socialMediaButtons,
                 ]}
@@ -379,42 +394,63 @@ export default function ViewConnectionScreen() {
                     setPaymentImageVisible(true);
                   } else if (item.lnk_id == 31) {
                     Linking.openURL(
-                      `${BASE_URL}api/downloadFile/` + item.uln_file
+                      `${BASE_URL}api/downloadFile/` + item.uln_url
                     );
                   } else {
-                    const url = item.uln_url;
-                    const parts = url.split("/");
-                    let userIdentifier = parts[parts.length - 1];
-                    if (userIdentifier === "") {
-                      userIdentifier = parts[parts.length - 2];
-                    }
+                    // const url = item.uln_url;
+                    // const parts = url.split("/");
+                    // let userIdentifier = parts[parts.length - 1];
+                    // if (userIdentifier === "") {
+                    //   userIdentifier = parts[parts.length - 2];
+                    // }
                     console.log(item.uln_url);
                     // console.log(item.uln_url);
-
-                    Linking.canOpenURL(item.uln_url).then((supported) => {
-                      if (supported) {
-                        Linking.openURL(item.uln_url);
-                      } else {
-                        setErrorURLModalVisible(true);
-                        setModalHeader("Error");
-                        setModalMessage(
-                          `This link cannot be opened and may be broken.`
-                        );
-                      }
-                    });
+                    handleOpenLink(item.uln_url);
+                    // Linking.canOpenURL(item.uln_url).then((supported) => {
+                    //   if (supported) {
+                    //     Linking.openURL(item.uln_url);
+                    //   } else {
+                    //     setErrorURLModalVisible(true);
+                    //     setModalHeader("Error");
+                    //     setModalMessage(
+                    //       `This link cannot be opened and may be broken.`
+                    //     );
+                    //   }
+                    // });
                   }
                 }}
               >
                 <Image
                   source={
                     item.lnk_id == 30
-                      ? { uri: item.uln_youtube_thumbnail }
+                      ? { uri: item.uln_youtube_thumbnail, cache: true }
                       : {
                           uri: `${BASE_URL}images/social-logo/${item.lnk_image}`,
+                          cache: true
                         }
                   }
                   style={{
-                    borderRadius: item.lnk_id == 30 ? 20 : null,
+                    borderWidth:
+                      item.lnk_id == 8 ||
+                      item.lnk_id == 16 ||
+                      item.lnk_id == 24 ||
+                      item.lnk_id == 25 ||
+                      item.lnk_id == 31 ||
+                      item.lnk_id == 32
+                        ? 2
+                        : 0,
+                    borderColor: Colors.yeetGray,
+                    borderRadius:
+                      item.lnk_id == 30
+                        ? 20
+                        : item.lnk_id == 8 ||
+                          item.lnk_id == 16 ||
+                          item.lnk_id == 24 ||
+                          item.lnk_id == 25 ||
+                          item.lnk_id == 31 ||
+                          item.lnk_id == 32
+                        ? 5000
+                        : null,
                     width: width * 0.13,
                     height: width * 0.13,
                   }}
@@ -424,7 +460,9 @@ export default function ViewConnectionScreen() {
                     <Text>{item.lnk_id}</Text> */}
                 <Text
                   style={{
-                    fontSize: RFPercentage(1.5),
+                    marginTop: "3%",
+                    textAlign: "center",
+                    fontSize: RFPercentage(2),
                   }}
                 >
                   {item.lnk_id == 30

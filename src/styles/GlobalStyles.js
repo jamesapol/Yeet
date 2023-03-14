@@ -9,26 +9,6 @@ var statusBarHeight = StatusBar.currentHeight;
 var { width } = Dimensions.get("window");
 var { height } = Dimensions.get("window");
 
-var themePrimaryColor;
-var themeSecondaryColor;
-var themeTertiaryColor;
-var themeQuaternaryColor;
-var themePrimaryBG;
-var themeSecondaryBG;
-var themeBodyColor;
-
-// global.testColor = 'green';
-
-export const updateTheme = (themeBGColor) => {
-  GlobalStyles.root.backgroundColor = themeBGColor;
-}
-
-export default function UserTheme() {
-  const { getUserTheme, setUserTheme, userTheme } = useContext(AuthContext);
-
-  const [primaryBG, setPrimaryBG] = useState("black");
-  themePrimaryBG = primaryBG;
-}
 
 export const AuthStyles = StyleSheet.create({
   root: {
@@ -56,7 +36,7 @@ export const AuthStyles = StyleSheet.create({
   },
 });
 
-export let GlobalStyles = StyleSheet.create({
+export const GlobalStyles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: "#FFF",
@@ -106,53 +86,61 @@ export let GlobalStyles = StyleSheet.create({
 
   userNameAndBioContainer: {
     // backgroundColor: "#F004",
+    // paddingTop: "2%",
     width: "90%",
     alignItems: "center",
-    marginBottom: height * 0.02,
+    marginBottom: '3%',
   },
 
   userNameContainer: {
-    marginTop: height * 0.025,
+    // marginTop: height * 0.025,
     // backgroundColor: "#00f3",
+    width: "100%",
     // flex: 1,
   },
 
   userNameText: {
-    fontSize: RFPercentage(3.7),
+    // color: "#562C73",
+    fontSize: RFPercentage(3.75),
     marginBottom: "2.5%",
     fontWeight: "bold",
     textAlign: "center",
+    letterSpacing: -0.5,
   },
 
   userBioContainer: {
     // backgroundColor: "#f2f3",
-    width: "70%",
+    width: "100%",
     flex: 1,
   },
 
   userBioText: {
+    // color: "#562C73",
     textAlign: "center",
-    fontSize: RFPercentage(1.7),
+    fontSize: RFPercentage(1.75),
+    fontWeight: "500",
+    letterSpacing: -0.5,
   },
 });
 
 export const ButtonStyles = StyleSheet.create({
   buttons: {
-    marginVertical: height * 0.006,
+    marginVertical: RFPercentage(0.7),
+    paddingHorizontal: RFPercentage(1),
+    paddingVertical: RFPercentage(0.5),
     backgroundColor: "#DEE0E2",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-start",
     width: "100%",
-    borderRadius: 50,
-    paddingHorizontal: width * 0.01,
+    borderRadius: 15,
     // paddingVertical: height * 0.013,
   },
 
   buttonText: {
     color: "#562C73",
 
-    fontSize: RFPercentage(1.5),
+    fontSize: RFPercentage(2),
     textAlign: "center",
     fontWeight: "bold",
   },
@@ -160,19 +148,27 @@ export const ButtonStyles = StyleSheet.create({
   buttonImage: {
     // backgroundColor: "#ff04",
     borderRadius: 1000,
-    height: RFPercentage(4.8),
-    width: RFPercentage(4.8),
-    marginRight: "1%",
+    height: RFPercentage(5.3),
+    width: RFPercentage(5.3),
+    marginRight: width * 0.01,
   },
 
   socialMediaButtons: {
     // backgroundColor: '#00F4',
-    marginVertical: height * 0.01,
-    width: width * 0.2,
-    height: width * 0.2,
+    marginVertical: height * 0.005,
+    // flex: 1,
+    width: width * 0.3,
+    height: width * 0.25,
 
     alignItems: "center",
-    justifyContent: "space-evenly",
+    justifyContent: "flex-start",
+  },
+  socialMediaButtonImage: {},
+  socialMediaButtonText: {
+    marginTop: "3%",
+    textAlign: "center",
+    fontSize: RFPercentage(2),
+    letterSpacing: -0.5,
   },
 });
 
@@ -184,4 +180,35 @@ export const Colors = StyleSheet.create({
   yeetBackgroundGray: "rgba(30,30,30,0.6)",
 });
 
-export const GlobalUserStyles = StyleSheet.create({});
+export const socialMediaButtonImages = (linkID) => ({
+  borderRadius:
+    linkID == 8 ||
+    linkID == 16 ||
+    linkID == 22 ||
+    linkID == 24 ||
+    linkID == 25 ||
+    linkID == 31 ||
+    linkID == 32
+      ? 5000
+      : linkID == 30
+      ? 20
+      : null,
+  borderWidth:
+    linkID == 8 ||
+    linkID == 16 ||
+    linkID == 22 ||
+    linkID == 24 ||
+    linkID == 25 ||
+    linkID == 31 ||
+    linkID == 32
+      ? 2
+      : 0,
+  borderColor: Colors.yeetGray,
+  width: linkID == 30 ? width * 0.165 : width * 0.13,
+  height: width * 0.13,
+});
+
+
+export default GlobalStyles;
+
+// export const GlobalUserStyles = StyleSheet.create({});
